@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="byuie499.auto_nvs.MainActivity">
+
+    <item android:id="@+id/bluetooth_settings"
+        android:title="@string/bluetooth_settings"
+        android:icon="@android:drawable/stat_sys_data_bluetooth"
+        android:visible="true"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/one"
+        android:title="@string/menu_1"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:visible="true"/>
+
+    <item android:id="@+id/two"
+        android:title="@string/menu_2"
+        android:icon="@android:drawable/ic_menu_help"
+        android:visible="true"/>
+
+    <item android:id="@+id/three"
+        android:title="@string/menu_3"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:visible="true" />
+
+</menu>
