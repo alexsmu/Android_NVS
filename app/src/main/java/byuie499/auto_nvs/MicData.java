@@ -1,6 +1,5 @@
 package byuie499.auto_nvs;
 
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -16,16 +15,15 @@ public class MicData {
     private int bufferSizeInBytes;
     private static Thread recordingThread = null;
     private static boolean isRecording = false;
-    private Context mContext = null;
     public static boolean isEnabled = false;
-    public Handler gHandler = null;
     public Handler mHandler = null;
+    private Fft audioFFT = null;
 
-    public MicData(Context gContext, Handler global_handler, int samples){
+    public MicData(Handler global_handler, int samples){
         buffer = samples;
         bufferSizeInBytes = buffer * 2;
-        mContext = gContext;
-        gHandler = global_handler;
+        mHandler = global_handler;
+        audioFFT = new Fft(16384, mHandler, 2);
     }
 
     //Conversion from short to double
@@ -51,7 +49,12 @@ public class MicData {
                     while (isRecording) {
                         recorder.read(buff, 0, buffer);
                         mic_data = short2double(buff);
-                        Message done = mHandler.obtainMessage(1, mic_data);
+                        audioFFT.data = mic_data;
+                        audioFFT.prepare();
+                        audioFFT.transform();
+                        audioFFT.getMagnitudeDB();
+                        audioFFT.shift();
+                        Message done = mHandler.obtainMessage(2, audioFFT.shifted);
                         mHandler.sendMessage(done);
                     }
                 }
