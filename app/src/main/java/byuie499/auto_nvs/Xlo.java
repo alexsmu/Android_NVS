@@ -34,8 +34,7 @@ public class Xlo {
         xAcc = new double[samples];
         yAcc = new double[samples];
         zAcc = new double[samples];
-        if (sm == null)
-            sm = (SensorManager) mMain.getSystemService(Activity.SENSOR_SERVICE);
+        sm = (SensorManager) mMain.getSystemService(Activity.SENSOR_SERVICE);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
     }
 
@@ -54,15 +53,18 @@ public class Xlo {
                             yAcc[val] = yc;
                             zAcc[val] = zc;
                             ++val;
-                            if (val == N / accum) {
+                            if (val % (N / accum) == 0) {
                                 Message done = mHandler.obtainMessage(3);
                                 mHandler.sendMessage(done);
                             }
+                            if (val == N)
+                                val = 0;
                         }
                     };
                     timer.schedule(accumulate, 0, 1);
-                    while (isRunning) ;
+                    while (isRunning);
                     timer.cancel();
+                    timer.purge();
                     sm.unregisterListener(xlo_read, accelerometer);
                 }
             }, "auto_nvs_fft");
