@@ -11,7 +11,7 @@ public class Fft {
     private double[] real;
     private double[] imag;
     private double[] mag;
-    private double[] shifted;
+    public double[] shifted;
     private int levels;
     private Handler mHandler;
     private int what;
@@ -39,25 +39,25 @@ public class Fft {
         }
     }
 
-    private void prepare() {
+    public void prepare() {
         for (int i = 0; i < data.length; ++i) {
             real[i] = data[i];
             imag[i] = 0;
         }
     }
 
-    private void getMagnitudeDB(){
+    public void getMagnitudeDB(){
         for (int i = 0; i < N; ++i){
             mag[i] = 20 * Math.log10(Math.hypot(real[i], imag[i]) / N);
         }
     }
 
-    private void shift() {
+    public void shift() {
         for (int i = 0; i < N; ++i)
             shifted[i] = mag[(N / 2 + i) % N];
     }
 
-    public void run(double[] samples) {
+    public void run(double[] samples, String instance) {
         data = samples;
         Thread fftThread = new Thread(new Runnable() {
             @Override
@@ -69,7 +69,7 @@ public class Fft {
                 Message done = mHandler.obtainMessage(what, shifted);
                 mHandler.sendMessage(done);
             }
-        }, "auto_nvs_fft");
+        }, "auto_nvs_fft_" + instance);
         fftThread.start();
     }
 
@@ -96,7 +96,7 @@ public class Fft {
      *   out of or in connection with the Software or the use or other dealings in the
      *   Software.
      */
-    private void transform() {
+    public void transform() {
         // Bit-reversed addressing permutation
         for (int i = 0; i < N; i++) {
             int j = Integer.reverse(i) >>> (32 - levels);
