@@ -18,7 +18,9 @@ public class Tab1Data {
     private static Set<String> ratio_names = new HashSet<>();
     private static Set<String> temp = null;
     private static Set<String> disabled_ratio_set = new HashSet<>();
+    private static Set<String> enabled_ratio_set = new HashSet<>();
     private static String[] disabled_ratios = null;
+    public static String[] enabled_ratios = null;
     private static ArrayAdapter<String> disabled_adapter = null;
     private static HashMap<String, Boolean> checkBoxes = new HashMap<>();
     private static HashMap<String, Float> ratios = new HashMap<>();
@@ -28,8 +30,8 @@ public class Tab1Data {
     public Tab1Data(Context context) {
         mContext = context;
         prefs = mContext.getSharedPreferences(mContext.getString(R.string.preference_file), Context.MODE_PRIVATE);
-        checkBoxes.put("vibration", prefs.getBoolean("c_vibration", true));
-        checkBoxes.put("noise", prefs.getBoolean("c_noise", false));
+        checkBoxes.put("Vibration", prefs.getBoolean("c_vibration", true));
+        checkBoxes.put("Noise", prefs.getBoolean("c_noise", false));
         defaultRatios.add("Differential gear ratio");
         defaultRatios.add("Crankshaft pulley diameter");
         defaultRatios.add("Power steering pulley diameter");
@@ -39,11 +41,14 @@ public class Tab1Data {
             ratio_names.add(s);
             ratios.put(s, prefs.getFloat("r_" + s, 1));
             checkBoxes.put(s, prefs.getBoolean("c_" + s, false));
-            if (!checkBoxes.get(s))
+            if (checkBoxes.get(s))
+                enabled_ratio_set.add(s);
+            else
                 disabled_ratio_set.add(s);
         }
         dropdown = new ListPopupWindow(mContext);
         disabled_ratios = disabled_ratio_set.toArray(new String[disabled_ratio_set.size()]);
+        enabled_ratios = enabled_ratio_set.toArray(new String[enabled_ratio_set.size()]);
         disabled_adapter = new ArrayAdapter<>(mContext, R.layout.ratios_dropdown, disabled_ratios);
         dropdown.setAdapter(disabled_adapter);
         dropdown.setOnItemClickListener(selectRatio);
@@ -78,6 +83,14 @@ public class Tab1Data {
         checkBoxes.put(name, EN);
         ratio_names.add(name);
         update_dropdown(name, EN);
+        if (EN) {
+            if (enabled_ratio_set.add(name))
+                enabled_ratios = enabled_ratio_set.toArray(new String[enabled_ratio_set.size()]);
+        }
+        else {
+            if (enabled_ratio_set.remove(name))
+                enabled_ratios = enabled_ratio_set.toArray(new String[enabled_ratio_set.size()]);
+        }
         editor = prefs.edit();
         editor.putFloat("r_" + name, val);
         editor.putBoolean("c_" + name, EN);
@@ -97,6 +110,7 @@ public class Tab1Data {
             ratios.remove(name);
             checkBoxes.remove(name);
             ratio_names.remove(name);
+            enabled_ratio_set.remove(name);
             editor = prefs.edit();
             editor.remove("r_" + name);
             editor.remove("c_" + name);
