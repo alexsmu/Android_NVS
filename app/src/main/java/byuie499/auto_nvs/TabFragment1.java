@@ -1,7 +1,13 @@
 package byuie499.auto_nvs;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +16,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import java.util.List;
 
 public class TabFragment1 extends Fragment implements View.OnFocusChangeListener{
     private View mMain;
@@ -26,10 +34,17 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
         vibration.setChecked(Tab1Data.getBool("Vibration", true));
         CheckBox check1 = (CheckBox) mMain.findViewById(R.id.check1);
         check1.setChecked(Tab1Data.getBool("check1", true));
+
         addListenerToToggleButtons();
         addListenerToNames();
         addListenersToValues();
         addListenersToCheckBoxes();
+
+        SensorManager sensorMngr = (SensorManager) this.getActivity().getSystemService(Activity.SENSOR_SERVICE);
+        List<Sensor> sensors = sensorMngr.getSensorList(Sensor.TYPE_ALL);
+
+        for (Sensor sensor : sensors) {Log.d("     " + "SENSOR LIST", sensor.getName());}
+
 
         return mMain;
     }
@@ -96,15 +111,63 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
     }
 
     void addListenersToCheckBoxes(){
-        CheckBox check1 = (CheckBox) mMain.findViewById(R.id.check1);
-        check1.setChecked(true);
-
+        final CheckBox check1 = (CheckBox) mMain.findViewById(R.id.check1);
         check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (Tab1Data.getBool("check1", true)) {
+                if (check1.isChecked()) {
                     Toast.makeText(getActivity(), "check1 true", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(getActivity(), "check1 false", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        final CheckBox check2 = (CheckBox) mMain.findViewById(R.id.check2);
+        check2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (check2.isChecked()) {
+                    Toast.makeText(getActivity(), "check2 true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "check2 false", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        final CheckBox check3 = (CheckBox) mMain.findViewById(R.id.check3);
+        check3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (check3.isChecked()) {
+                    Toast.makeText(getActivity(), "check3 true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "check3 false", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        final CheckBox check4 = (CheckBox) mMain.findViewById(R.id.check4);
+        check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (check4.isChecked()) {
+                    Toast.makeText(getActivity(), "check4 true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "check4 false", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        final CheckBox check5 = (CheckBox) mMain.findViewById(R.id.check5);
+        check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (check5.isChecked()) {
+                    Toast.makeText(getActivity(), "check5 true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "check5 false", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        final CheckBox check6 = (CheckBox) mMain.findViewById(R.id.check6);
+        check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (check6.isChecked()) {
+                    Toast.makeText(getActivity(), "check6 true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "check6 false", Toast.LENGTH_SHORT).show();
                 }
             }
         });
