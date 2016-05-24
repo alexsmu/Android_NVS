@@ -130,6 +130,7 @@ public class Tab1Data {
     public static void setCheckBox(String name, boolean val) {
         checkBoxes.put(name, val);
         putBool(name,val);
+
     }
 
     public static void setFirstRun(boolean val) {
