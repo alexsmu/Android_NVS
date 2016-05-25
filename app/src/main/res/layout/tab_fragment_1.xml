@@ -201,6 +201,7 @@
             android:background="@drawable/toggle_selector"
             android:layout_below="@+id/devices"
             android:layout_marginTop="20dp"
+            android:checked="true"
             android:layout_centerHorizontal="true" />
 
         <ToggleButton
@@ -211,6 +212,7 @@
             android:textOn="@string/vibration"
             android:disabledAlpha="1.2"
             android:id="@+id/toggleVibration"
+            android:checked="true"
             android:background="@drawable/toggle_selector"
             android:layout_below="@+id/toggleNoise"
             android:layout_marginTop="20dp"

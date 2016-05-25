@@ -53,8 +53,11 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
         noise.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Tab1Data.getBool("Noise", false))
-                {
+                if (!noise.isChecked() && !vibration.isChecked()) {
+                    noise.setChecked(true);
+                    Toast.makeText(getActivity().getApplicationContext(), "Cannot disable both buttons at the same time!",
+                            Toast.LENGTH_SHORT).show();
+                } else if (!noise.isChecked()){
                     noise.setChecked(false);
                     Tab1Data.setCheckBox("Noise", false);
                 } else {
@@ -68,7 +71,11 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
         vibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Tab1Data.getBool("Vibration", true))
+                if (!noise.isChecked() && !vibration.isChecked()) {
+                    vibration.setChecked(true);
+                    Toast.makeText(getActivity().getApplicationContext(), "Cannot disable both buttons at the same time!",
+                            Toast.LENGTH_SHORT).show();
+                } else if  (!vibration.isChecked())
                 {
                     vibration.setChecked(false);
                     Tab1Data.setCheckBox("Vibration", false);

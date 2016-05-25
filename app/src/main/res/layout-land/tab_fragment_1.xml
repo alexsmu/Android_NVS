@@ -200,6 +200,7 @@
             android:textOn="@string/noise"
             android:disabledAlpha="1.2"
             android:id="@+id/toggleNoise"
+            android:checked="true"
             android:background="@drawable/toggle_selector"
             android:layout_alignTop="@+id/devices"
             android:layout_alignLeft="@+id/toggleVibration"
@@ -213,11 +214,13 @@
             android:textOff="@string/vibration"
             android:textOn="@string/vibration"
             android:disabledAlpha="1.2"
+            android:checked="true"
             android:id="@+id/toggleVibration"
             android:background="@drawable/toggle_selector"
             android:layout_below="@+id/toggleNoise"
             android:layout_marginTop="20dp"
             android:layout_alignParentStart="false"
+            android:layout_alignParentLeft="false"
             android:layout_marginLeft="20dp" />
 
         <!--<ListView
