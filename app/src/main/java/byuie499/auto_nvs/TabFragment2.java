@@ -217,6 +217,10 @@ public class TabFragment2 extends Fragment {
         pauseButton = (ImageButton) mMain.findViewById(R.id.pauseButton);
         recordButton = (ImageButton) mMain.findViewById(R.id.recordButton);
 
+        //disable button for test
+        playButton.setEnabled(false);
+
+
         playButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
