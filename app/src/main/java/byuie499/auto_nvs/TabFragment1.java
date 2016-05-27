@@ -18,6 +18,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.List;
+import java.util.Set;
 
 public class TabFragment1 extends Fragment implements View.OnFocusChangeListener{
     private View mMain;
@@ -87,7 +88,7 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
         });
     }
 
-    void addListenerToNames() {
+    void addListenerToNames(){
         EditText name1 = (EditText) mMain.findViewById((R.id.name1));
         name1.setOnFocusChangeListener(this);
         EditText name2 = (EditText) mMain.findViewById((R.id.name2));
@@ -185,6 +186,11 @@ public class TabFragment1 extends Fragment implements View.OnFocusChangeListener
         switch (v.getId()) {
             case R.id.name1:
                 Toast.makeText(getActivity(), "name 1 focus change", Toast.LENGTH_SHORT).show();
+                //EditText name1 = (EditText) mMain.findViewById((R.id.name1));
+                //EditText ratio1 = (EditText) mMain.findViewById((R.id.value1));
+                //CheckBox check1 = (CheckBox) mMain.findViewById(R.id.check1);
+                //Tab1Data.putRatio(name1.getText().toString(), Float.valueOf(ratio1.getText().toString()), check1.isChecked());
+
                 break;
             case R.id.name2:
                 Toast.makeText(getActivity(), "name 2 focus change", Toast.LENGTH_SHORT).show();
