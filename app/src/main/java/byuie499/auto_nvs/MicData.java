@@ -23,7 +23,7 @@ public class MicData {
         buffer = samples;
         bufferSizeInBytes = buffer * 2;
         mHandler = global_handler;
-        audioFFT = new Fft(16384, mHandler, 2);
+        audioFFT = new Fft(8192, mHandler, 2);
     }
 
     //Conversion from short to double
