@@ -1,5 +1,7 @@
 package byuie499.auto_nvs;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,10 +45,13 @@ public class TabFragment2 extends Fragment {
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private GraphView graph = null;
     public Handler mHandler = null;
+    public OBDConnection obdConnection;
+    MyApplication app;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mMain = inflater.inflate(R.layout.tab_fragment_2, container, false);
+        checkBluetoothConnection();
         addListenerToToggleButtons();
         addListenerToImageButtons();
         addListenerToSeekBar();
@@ -180,6 +185,24 @@ public class TabFragment2 extends Fragment {
         return mMain;
     }
 
+    void checkBluetoothConnection() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        alertDialog.setTitle("Bluetooth Connection Alert");
+        alertDialog.setMessage("In order for this functionality to work correctly " +
+                "you need to be connected to an OBDII.");
+        alertDialog.setPositiveButton("I'm Connected", new AlertDialog.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                getActivity().finish();
+            }
+        });
+        alertDialog.setPositiveButton("Bluetooth Settings", new AlertDialog.OnClickListener(){
+            public void onClick(DialogInterface dialog, int which){
+                //Launch Bluetooth Activity
+            }
+        });
+        alertDialog.show();
+
+    }
     void addListenerToSeekBar() {
         fftseekBar = (SeekBar) mMain.findViewById(R.id.fftSeekBar);
 
