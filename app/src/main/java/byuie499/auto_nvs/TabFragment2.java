@@ -32,7 +32,7 @@ public class TabFragment2 extends Fragment {
     private TextView textTitle;
     private Spinner fileSpinner;
     private SeekBar fftseekBar;
-    private double[] audio_omega = new double[16384];
+    private double[] audio_omega = new double[8192];
     private double[] accel_omega = new double[256];
     private Fft[] accelFFT = new Fft[3];
     private MicData rec_mic = null;
