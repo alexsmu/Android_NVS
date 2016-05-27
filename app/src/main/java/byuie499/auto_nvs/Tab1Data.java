@@ -2,6 +2,7 @@ package byuie499.auto_nvs;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +34,7 @@ public class Tab1Data {
     public static CheckBox edit_cb = null;
 
     public Tab1Data(Context context) {
+
         mContext = context;
         prefs = mContext.getSharedPreferences(mContext.getString(R.string.preference_file), Context.MODE_PRIVATE);
         checkBoxes.put("Vibration", prefs.getBoolean("c_Vibration", true));
@@ -42,6 +44,7 @@ public class Tab1Data {
         defaultRatios.add("Power steering pulley diameter");
         defaultRatios.add("Tire size");
         temp = prefs.getStringSet("ratios", defaultRatios); // Cannot modify set instance returned by this call
+
         for (String s : temp) {
             ratio_names.add(s);
             ratios.put(s, prefs.getString("r_" + s, "1.0"));
@@ -51,6 +54,7 @@ public class Tab1Data {
             else
                 disabled_ratio_set.add(s);
         }
+
         dropdown = new ListPopupWindow(mContext);
         disabled_ratios = disabled_ratio_set.toArray(new String[disabled_ratio_set.size()]);
         enabled_ratios = enabled_ratio_set.toArray(new String[enabled_ratio_set.size()]);
@@ -101,6 +105,8 @@ public class Tab1Data {
         editor.putBoolean("c_" + name, EN);
         editor.putStringSet("ratios", ratio_names);
         editor.apply();
+        //Log.d(" enabled_ratios[0]", enabled_ratios[0] );
+        //Log.d(" ratio_names.toString()", ratio_names.toString());
     }
 
     public static void update_dropdown(String name, boolean EN) {
