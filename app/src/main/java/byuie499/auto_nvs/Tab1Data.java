@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListPopupWindow;
 
 import java.util.HashMap;
@@ -23,15 +25,18 @@ public class Tab1Data {
     public static String[] enabled_ratios = null;
     private static ArrayAdapter<String> disabled_adapter = null;
     private static HashMap<String, Boolean> checkBoxes = new HashMap<>();
-    private static HashMap<String, Float> ratios = new HashMap<>();
+    private static HashMap<String, String> ratios = new HashMap<>();
     public static Context mContext = null;
     public static ListPopupWindow dropdown = null;
+    public static EditText edit_ratio = null;
+    public static EditText edit_val = null;
+    public static CheckBox edit_cb = null;
 
     public Tab1Data(Context context) {
         mContext = context;
         prefs = mContext.getSharedPreferences(mContext.getString(R.string.preference_file), Context.MODE_PRIVATE);
-        checkBoxes.put("Vibration", prefs.getBoolean("c_vibration", true));
-        checkBoxes.put("Noise", prefs.getBoolean("c_noise", false));
+        checkBoxes.put("Vibration", prefs.getBoolean("c_Vibration", true));
+        checkBoxes.put("Noise", prefs.getBoolean("c_Noise", false));
         defaultRatios.add("Differential gear ratio");
         defaultRatios.add("Crankshaft pulley diameter");
         defaultRatios.add("Power steering pulley diameter");
@@ -39,7 +44,7 @@ public class Tab1Data {
         temp = prefs.getStringSet("ratios", defaultRatios); // Cannot modify set instance returned by this call
         for (String s : temp) {
             ratio_names.add(s);
-            ratios.put(s, prefs.getFloat("r_" + s, 1));
+            ratios.put(s, prefs.getString("r_" + s, "1.0"));
             checkBoxes.put(s, prefs.getBoolean("c_" + s, false));
             if (checkBoxes.get(s))
                 enabled_ratio_set.add(s);
@@ -67,18 +72,18 @@ public class Tab1Data {
         editor.apply();
     }
 
-    public static float getRatioVal(String name) {
+    public static String getRatioVal(String name) {
         if (ratios.containsKey(name))
             return ratios.get(name);
         else
-            return 1;
+            return "1.0";
     }
 
     public static boolean isRatioEN(String name) {
         return getBool(name, false);
     }
 
-    public static void putRatio(String name, float val, boolean EN) {
+    public static void putRatio(String name, String val, boolean EN) {
         ratios.put(name, val);
         checkBoxes.put(name, EN);
         ratio_names.add(name);
@@ -92,7 +97,7 @@ public class Tab1Data {
                 enabled_ratios = enabled_ratio_set.toArray(new String[enabled_ratio_set.size()]);
         }
         editor = prefs.edit();
-        editor.putFloat("r_" + name, val);
+        editor.putString("r_" + name, val);
         editor.putBoolean("c_" + name, EN);
         editor.putStringSet("ratios", ratio_names);
         editor.apply();
@@ -145,9 +150,11 @@ public class Tab1Data {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             String name = disabled_ratios[position];
-            float val = getRatioVal(name);
+            String val = getRatioVal(name);
             boolean EN = false;
-            // MISSING: change corresponding editText
+            edit_ratio.setText(name);
+            edit_val.setText(val);
+            edit_cb.setChecked(EN);
             dropdown.dismiss();
         }
     };
