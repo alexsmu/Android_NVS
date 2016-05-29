@@ -2,6 +2,8 @@ package byuie499.auto_nvs;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -47,6 +50,8 @@ public class TabFragment2 extends Fragment {
     public Handler mHandler = null;
     public OBDConnection obdConnection;
     MyApplication app;
+    public CheckBox dontShowAgain;
+    public static final String PREFS_NAME = "MyPrefsFile1";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -186,21 +191,49 @@ public class TabFragment2 extends Fragment {
     }
 
     void checkBluetoothConnection() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
-        alertDialog.setTitle("Bluetooth Connection Alert");
-        alertDialog.setMessage("In order for this functionality to work correctly " +
-                "you need to be connected to an OBDII.");
-        alertDialog.setPositiveButton("I'm Connected", new AlertDialog.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                getActivity().finish();
-            }
-        });
-        alertDialog.setPositiveButton("Bluetooth Settings", new AlertDialog.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                //Launch Bluetooth Activity
-            }
-        });
-        alertDialog.show();
+
+        app = new MyApplication();
+
+
+        if (app.getGlobalBluetoothSocket() == null) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+            LayoutInflater adbInflater = LayoutInflater.from(getActivity());
+            View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
+            dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
+            alertDialog.setView(eulaLayout);
+            alertDialog.setTitle("Bluetooth Connection Alert");
+            alertDialog.setMessage("In order for this app to work correctly " +
+                    "you need to be connected to an OBDII.");
+            alertDialog.setNegativeButton("Ok", new AlertDialog.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    String checkBoxResult = "NOT checked";
+                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
+                    SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("skipMessage", checkBoxResult);
+                    // Commit the edits!
+                    editor.commit();
+                }
+            });
+            alertDialog.setPositiveButton("Bluetooth Settings", new AlertDialog.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    String checkBoxResult = "NOT checked";
+                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
+                    SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("skipMessage", checkBoxResult);
+                    // Commit the edits!
+                    editor.commit();
+                    Intent intent = new Intent(getActivity(), BluetoothActivity.class);
+                    startActivity(intent);
+                }
+            });
+
+            SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+            String skipMessage = settings.getString("skipMessage", "NOT checked");
+            if (skipMessage != "checked" )
+                alertDialog.show();
+        }
 
     }
     void addListenerToSeekBar() {
