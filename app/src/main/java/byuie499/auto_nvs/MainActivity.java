@@ -6,18 +6,335 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LegendRenderer;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity{
+
+    View mMain = null;
+    private ToggleButton recordButton;
+    private TextView textTitle;
+    private Spinner fileSpinner;
+    private SeekBar fftseekBar;
+    private double[] audio_omega = new double[16384];
+    private double[] accel_omega = new double[256];
+    private Fft[] accelFFT = new Fft[3];
+    private MicData rec_mic = null;
+    private Xlo rec_acc = null;
+    private LineGraphSeries<DataPoint> audioSeries = new LineGraphSeries<>();
+    private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
+    private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
+    private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
+    private GraphView graph = null;
+    public Handler mHandler = null;
+    public OBDConnection obdConnection;
+    MyApplication app;
+    public CheckBox dontShowAgain;
+    public static final String PREFS_NAME = "MyPrefsFile1";
+    private ToggleButton noise, vibration;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        addListenerToToggleButtons();
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
+        }
+
+        checkBluetoothConnection();
+
+        mHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                switch(msg.what) {
+                    case 1: // Audio buffer is ready
+                    {
+                        // begin audio fft
+
+                        break;
+                    }
+                    case 2: // Audio fft is complete
+                    {
+                        // add to series
+                        double[] result = (double[]) msg.obj;
+                        DataPoint[] dps = new DataPoint[186];
+                        int j = 0;
+                        for (int i = 8192; i < 8378; ++i) {
+                            dps[j++] = new DataPoint(audio_omega[i], result[i]);
+                        }
+                        audioSeries.resetData(dps);
+                        break;
+                    }
+                    case 3: // Accelerometer data is ready
+                    {
+                        // begin fft
+                        accelFFT[0].run(Xlo.xAcc, "x");
+                        accelFFT[1].run(Xlo.yAcc, "y");
+                        accelFFT[2].run(Xlo.zAcc, "z");
+                        break;
+                    }
+                    case 4: // Accelerometer x fft is complete
+                    {
+                        // add to series
+                        double[] result = (double[]) msg.obj;
+                        DataPoint[] dps = new DataPoint[128];
+                        int j = 0;
+                        for (int i = 128; i < 256; ++i) {
+                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        }
+                        xSeries.resetData(dps);
+                        break;
+                    }
+                    case 5: // Accelerometer y fft complete
+                    {
+                        // add to series
+                        double[] result = (double[]) msg.obj;
+                        DataPoint[] dps = new DataPoint[128];
+                        int j = 0;
+                        for (int i = 128; i < 256; ++i) {
+                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        }
+                        ySeries.resetData(dps);
+                        break;
+                    }
+                    case 6: // Accelerometer z fft complete
+                    {
+                        //add to series
+                        double[] result = (double[]) msg.obj;
+                        DataPoint[] dps = new DataPoint[128];
+                        int j = 0;
+                        for (int i = 128; i < 256; ++i) {
+                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        }
+                        zSeries.resetData(dps);
+                        break;
+                    }
+                    case 7: // Audio fft correlation complete
+                    {
+                        // add to series
+                        break;
+                    }
+                    case 8: // Accelerometer fft correlation complete
+                    {
+                        //add to series
+                        break;
+                    }
+                    default:
+                    {
+                        super.handleMessage(msg);
+                    }
+                }
+            }
+        };
+
+        rec_acc = new Xlo(this, mHandler, 256, 2);
+        rec_mic = new MicData(mHandler, 16384);
+
+        accelFFT[0] = new Fft(256, mHandler, 4);
+        accelFFT[1] = new Fft(256, mHandler, 5);
+        accelFFT[2] = new Fft(256, mHandler, 6);
+
+        Fft.getOmega(audio_omega, 44100);
+        Fft.getOmega(accel_omega, 1000);
+
+        graph = (GraphView) findViewById(R.id.fftGraph);
+        assert graph != null;
+        graph.getLegendRenderer().setVisible(true);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
+
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(500);
+
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(-60);
+        graph.getViewport().setMaxY(20);
+
+        audioSeries.setTitle("Mic");
+        audioSeries.setColor(Color.parseColor("#181907"));
+
+        xSeries.setTitle("X");
+        ySeries.setTitle("Y");
+        zSeries.setTitle("Z");
+
+        xSeries.setColor(Color.parseColor("#0B3861"));
+        ySeries.setColor(Color.parseColor("#0B6138"));
+        zSeries.setColor(Color.parseColor("#610B0B"));
+
+        graph.addSeries(audioSeries);
+        graph.addSeries(xSeries);
+        graph.addSeries(ySeries);
+        graph.addSeries(zSeries);
+
+        rec_mic.run();
+        rec_acc.run();
+    }
+
+    void addListenerToToggleButtons() {
+        noise = (ToggleButton) findViewById(R.id.toggleNoise);
+        vibration = (ToggleButton) findViewById(R.id.toggleVibration);
+        recordButton = (ToggleButton) findViewById(R.id.startstop);
+
+        noise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!noise.isChecked()){
+                    noise.setChecked(false);
+                    rec_mic.onPause();
+                    graph.removeSeries(audioSeries);
+
+                } else {
+                    noise.setChecked(true);
+                    rec_mic.run();
+                    graph.addSeries(audioSeries);
+                }
+            }
+        });
+
+        vibration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if  (!vibration.isChecked())
+                {
+                    vibration.setChecked(false);
+                    rec_acc.onPause();
+                    graph.removeSeries(xSeries);
+                    graph.removeSeries(ySeries);
+                    graph.removeSeries(zSeries);
+                } else {
+                    vibration.setChecked(true);
+                    rec_acc.run();
+                    graph.addSeries(xSeries);
+                    graph.addSeries(ySeries);
+                    graph.addSeries(zSeries);
+                }
+            }
+        });
+
+        recordButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+    }
+
+    void checkBluetoothConnection() {
+
+        app = new MyApplication();
+
+        if (app.getGlobalBluetoothSocket() == null) {
+            android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(this);
+            LayoutInflater adbInflater = LayoutInflater.from(this);
+            View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
+            dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
+            alertDialog.setView(eulaLayout);
+            alertDialog.setTitle("Bluetooth Connection Alert");
+            alertDialog.setMessage("In order for this app to work correctly " +
+                    "you need to be connected to an OBDII.");
+            alertDialog.setNegativeButton("Ok", new android.app.AlertDialog.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    String checkBoxResult = "NOT checked";
+                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("skipMessage", checkBoxResult);
+                    // Commit the edits!
+                    editor.apply();
+                }
+            });
+            alertDialog.setPositiveButton("Bluetooth Settings", new android.app.AlertDialog.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    String checkBoxResult = "NOT checked";
+                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("skipMessage", checkBoxResult);
+                    // Commit the edits!
+                    editor.apply();
+                    Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                    startActivity(intent);
+                }
+            });
+
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+            String skipMessage = settings.getString("skipMessage", "NOT checked");
+            if (skipMessage != "checked" )
+                alertDialog.show();
+        }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        switch(item.getItemId()){
+            case R.id.one:
+
+                break;
+            case R.id.two:
+
+                break;
+            case R.id.three:
+                alertDialog.setTitle("About");
+                alertDialog.setMessage(getString(R.string.copyright));
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+                break;
+            case R.id.bluetooth_settings:
+                Intent intent = new Intent(this, BluetoothActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                Toast.makeText(getApplicationContext(),
+                        "Unknown...",
+                        Toast.LENGTH_SHORT).show();
+                break;
+        }
+        //Return false to allow normal menu processing to proceed,
+        //true to consume it here.
+        return false;
+    }
 
     //private variable
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -62,90 +379,10 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
-        }
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.tab_1));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.tab_2));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        final PagerAdapter adapter = new PagerAdapter (getSupportFragmentManager(), tabLayout.getTabCount());
-        viewPager.setAdapter(adapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-        switch(item.getItemId()){
-            case R.id.one:
-
-                break;
-            case R.id.two:
-
-                break;
-            case R.id.three:
-                alertDialog.setTitle("About");
-                alertDialog.setMessage(getString(R.string.copyright));
-                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                alertDialog.show();
-                break;
-            case R.id.bluetooth_settings:
-                Intent intent = new Intent(this, BluetoothActivity.class);
-                startActivity(intent);
-                break;
-            default:
-                Toast.makeText(getApplicationContext(),
-                        "Unknown...",
-                        Toast.LENGTH_SHORT).show();
-                break;
-        }
-
-        //Return false to allow normal menu processing to proceed,
-        //true to consume it here.
-        return false;
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
+        rec_acc.onPause();
+        rec_mic.onPause();
         unregisterReceiver(mReceiver);
     }
 
@@ -157,4 +394,6 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
     }
+
+
 }
