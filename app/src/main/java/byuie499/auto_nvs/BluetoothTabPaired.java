@@ -28,6 +28,7 @@ public class BluetoothTabPaired extends Fragment {
     private View view = null;
     private ArrayAdapter<String> listAdapter;
     ListView pairedDevicesList;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -72,6 +73,7 @@ public class BluetoothTabPaired extends Fragment {
 
         /***********This code is for testing in the emulator*******************/
         pDevices.add("OBDII Test" + "\n" + "00:00:00:00");
+        devices.add("00:00:00:00");
 
         /*********************************************************************/
 
@@ -84,24 +86,34 @@ public class BluetoothTabPaired extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position,
                                     long id) {
 
+
                 String deviceAddress = devices.get(position).toString();
-                BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+                ((MyApplication) getActivity().getApplicationContext()).setBluetoothDeviceAddress(deviceAddress);
 
-                BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-
-                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-                try {
-                    MyApplication myApp = ((MyApplication)getActivity().getApplicationContext());
-                    myApp.setGlobalBluetoothSocket(device.createInsecureRfcommSocketToServiceRecord(uuid));
-                    myApp.getGlobalBluetoothSocket().connect();
+                /***********This code is for testing in the emulator*******************/
+                if (deviceAddress == "00:00:00:00") {
                     Toast.makeText(getActivity().getApplicationContext(),"Bluetooth Connected",Toast.LENGTH_LONG).show();
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth Connected</font><small>"));
                 }
-                catch (Exception e)
-                {
-                    //Do Something with this exception
-                    Toast.makeText(getActivity().getApplicationContext(),"Error Connecting to Bluetooth Device",Toast.LENGTH_LONG).show();
+                else {
+                    /*********************************************************************/
+
+                    BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                    BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
+
+                    UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+                    try {
+
+                        ((MyApplication) getActivity().getApplicationContext()).setGlobalBluetoothSocket(device.createInsecureRfcommSocketToServiceRecord(uuid));
+                        ((MyApplication) getActivity().getApplicationContext()).getGlobalBluetoothSocket().connect();
+                        Toast.makeText(getActivity().getApplicationContext(), "Bluetooth Connected", Toast.LENGTH_LONG).show();
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth Connected</font><small>"));
+                    } catch (Exception e) {
+                        //Do Something with this exception
+                        Toast.makeText(getActivity().getApplicationContext(), "Error Connecting to Bluetooth Device", Toast.LENGTH_LONG).show();
+                    }
                 }
 
             }

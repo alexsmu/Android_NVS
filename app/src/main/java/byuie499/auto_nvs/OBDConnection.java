@@ -22,6 +22,7 @@ public class OBDConnection {
     private RPMCommand engineRpmCommand;
     private SpeedCommand speedCommand;
     private EngineCoolantTemperatureCommand engineCoolantTemperatureCommand;
+    private int testRPM = 3000;
 
     /**
      * OBDConnection CONSTRUCTOR : Will setup a connection with bluetooth socket,
@@ -48,6 +49,37 @@ public class OBDConnection {
 
         }
     }
+
+    public int getTestRPM() {
+        return testRPM;
+    }
+
+    public float getTestRPMFrequency() {
+        return (float)testRPM/60;
+    }
+
+    public float getVaryingTestRPM() {
+
+        int freq = (int)getTestRPMFrequency();
+        switch (freq) {
+            case 52:
+                return 53;
+            case 53:
+                return 54;
+            case 54:
+                return 55;
+            case 55:
+                return 58;
+            case 58:
+                return 61;
+            case 61:
+                return 50;
+            default:
+                return 52;
+
+        }
+    }
+
 
     /**
      * getRPM : Will get RPM Example Output: 3000

@@ -159,7 +159,7 @@ public class TabFragment2 extends Fragment {
         };
 
         rec_acc = new Xlo(this.getActivity(), mHandler, 256, 2);
-        rec_mic = new MicData(mHandler, 16384);
+        rec_mic = new MicData(mHandler, 16384,1.0,false);
 
         accelFFT[0] = new Fft(256, mHandler, 4);
         accelFFT[1] = new Fft(256, mHandler, 5);
@@ -201,9 +201,8 @@ public class TabFragment2 extends Fragment {
             View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
             dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
             alertDialog.setView(eulaLayout);
-            alertDialog.setTitle("Bluetooth Connection Alert");
-            alertDialog.setMessage("In order for this app to work correctly " +
-                    "you need to be connected to an OBDII.");
+            alertDialog.setTitle(R.string.BluetoothAlertTitle);
+            alertDialog.setMessage(R.string.BluetoothAlertMessage);
             alertDialog.setNegativeButton("Ok", new AlertDialog.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     String checkBoxResult = "NOT checked";

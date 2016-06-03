@@ -8,7 +8,20 @@ import android.bluetooth.BluetoothSocket;
  */
 public class MyApplication extends Application {
 
-    private BluetoothSocket globalBluetoothSocket = null;
+    private BluetoothSocket globalBluetoothSocket;
+    private String bluetoothDeviceAddress;
+    private String bluetoothDeviceName;
+
+    public void setBluetoothDeviceAddress(String bluetoothDeviceAddress) {
+        this.bluetoothDeviceAddress = bluetoothDeviceAddress;
+    }
+
+
+    public String getBluetoothDeviceAddress() {
+        return bluetoothDeviceAddress;
+    }
+
+
 
     public BluetoothSocket getGlobalBluetoothSocket() {
         return globalBluetoothSocket;
@@ -17,5 +30,11 @@ public class MyApplication extends Application {
     public void setGlobalBluetoothSocket(BluetoothSocket blu) {
         globalBluetoothSocket = blu;
     }
+
+    public void setBluetoothDeviceName(String name) {bluetoothDeviceName = name;}
+
+    public String getBluetoothDeviceName() {return bluetoothDeviceName;}
+
+
 
 }

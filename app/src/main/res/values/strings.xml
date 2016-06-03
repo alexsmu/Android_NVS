@@ -45,4 +45,7 @@
     <string name="pause">Pause</string>
     <string name="record">Record</string>
     <string name="skipMessage">Do not show again</string>
+    <string name="BluetoothAlertTitle">Bluetooth Connection Alert</string>
+    <string name="BluetoothAlertMessage">In order for this app to work correctly you need to be
+    connected to an OBDII</string>
 </resources>
