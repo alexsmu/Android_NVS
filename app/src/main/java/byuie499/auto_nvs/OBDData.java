@@ -1,6 +1,8 @@
 package byuie499.auto_nvs;
 
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.RequiresPermission;
 import android.webkit.ConsoleMessage;
 
@@ -13,42 +15,89 @@ import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.commands.temperature.EngineCoolantTemperatureCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Created by marlonvilorio on 5/26/16.
  */
-public class OBDConnection {
+public class OBDData {
     private BluetoothSocket socket;
     private MyApplication app;
     private RPMCommand engineRpmCommand;
     private SpeedCommand speedCommand;
     private EngineCoolantTemperatureCommand engineCoolantTemperatureCommand;
     private int testRPM = 3000;
+    boolean test = false;
+    private int n = 100; //100 times per minute?
+    private Handler mHandler = null;
+    private boolean isRunning = false;
+    public static double rpmFreq;
+    int val = 0;
 
     /**
-     * OBDConnection CONSTRUCTOR : Will setup a connection with bluetooth socket,
+     * OBDData CONSTRUCTOR : Will setup a connection with bluetooth socket,
      *  and initialize all needed variables
      */
-    public OBDConnection(){
+    public OBDData(Handler global_handler, int samples, boolean isTest){
+        test = isTest;
+        mHandler = global_handler;
+        n = samples;
+    }
 
-        engineRpmCommand = new RPMCommand();
-        speedCommand = new SpeedCommand();
-        engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
+    public void run(){
 
-        try {
+        if (!test) {
+            isRunning = true;
+            engineRpmCommand = new RPMCommand();
+            speedCommand = new SpeedCommand();
+            engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
 
-            app = new MyApplication();
-            socket = app.getGlobalBluetoothSocket();
-            new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
-            new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
-            new TimeoutCommand(125).run(socket.getInputStream(), socket.getOutputStream());
-            new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
-        }
-        catch (Exception ex) {
+            try {
 
-            //Throw exception if it did not work
+                app = new MyApplication();
+                socket = app.getGlobalBluetoothSocket();
+                new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+                new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+                new TimeoutCommand(125).run(socket.getInputStream(), socket.getOutputStream());
+                new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
+            } catch (Exception ex) {
+
+                //Unable to communicated with OBDII error
+
+            }
+        } else {
+            isRunning = true;
+            Thread obdThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //sm.registerListener(xlo_read, accelerometer, 1000);
+                    Timer timer = new Timer();
+                    TimerTask accumulate = new TimerTask() {
+                        @Override
+                        public void run() {
+
+                            //Switch these two lines depending of what type of test data we want
+                            rpmFreq = getVaryingTestRPMFreq();
+                            //rpmFreq = getTestRPMFrequency();
+                            ++val;
+                                Message done = mHandler.obtainMessage(9,rpmFreq);
+                                mHandler.sendMessage(done);
+                            }
+
+                    };
+                    timer.schedule(accumulate, 0, 1);
+                    while (isRunning);
+                    timer.cancel();
+                    timer.purge();
+                    //sm.unregisterListener(xlo_read, accelerometer);
+                }
+            }, "auto_nvs_fft");
+            obdThread.start();
 
         }
     }
+
 
     public int getTestRPM() {
         return testRPM;
@@ -58,24 +107,25 @@ public class OBDConnection {
         return (float)testRPM/60;
     }
 
-    public float getVaryingTestRPM() {
+    public float getVaryingTestRPMFreq() {
 
-        int freq = (int)getTestRPMFrequency();
-        switch (freq) {
-            case 52:
-                return 53;
-            case 53:
-                return 54;
-            case 54:
-                return 55;
-            case 55:
-                return 58;
-            case 58:
-                return 61;
-            case 61:
-                return 50;
+        int rpm = getTestRPM();
+        switch (rpm) {
+            case 3000:
+                testRPM+=1000;
+                return testRPM/60;
+            case 4000:
+                testRPM+=1000;
+                return testRPM/60;
+            case 5000:
+                testRPM+=1000;
+                return testRPM/60;
+            case 6000:
+                testRPM+=1000;
+                return testRPM/60;
             default:
-                return 52;
+                testRPM = 3000;
+                return testRPM/60;
 
         }
     }

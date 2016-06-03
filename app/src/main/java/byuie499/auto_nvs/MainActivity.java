@@ -7,7 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -29,10 +31,9 @@ import android.widget.ToggleButton;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.jjoe64.graphview.series.PointsGraphSeries;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -61,9 +62,10 @@ public class MainActivity extends AppCompatActivity{
     private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
+    private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private GraphView graph = null;
     public Handler mHandler = null;
-    public OBDConnection obdConnection;
+    public OBDData obdData;
     MyApplication app;
     public CheckBox dontShowAgain;
     public static final String PREFS_NAME = "MyPrefsFile1";
@@ -159,6 +161,17 @@ public class MainActivity extends AppCompatActivity{
                         //add to series
                         break;
                     }
+                    case 9:
+                    {
+                        //OBD Data (it is test data for now)
+                        double result = (double) msg.obj;
+                        DataPoint[] dps = new DataPoint[1];
+                        dps[0] = new DataPoint(result,0);
+                        obdSeries.resetData(dps);
+
+                        break;
+
+                    }
                     default:
                     {
                         super.handleMessage(msg);
@@ -168,6 +181,7 @@ public class MainActivity extends AppCompatActivity{
         };
 
         rec_acc = new Xlo(this, mHandler, acc_samples, 2);
+        obdData = new OBDData(mHandler,acc_samples,true);
         rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
 
         accelFFT[0] = new Fft(acc_samples, mHandler, 4);
@@ -196,18 +210,33 @@ public class MainActivity extends AppCompatActivity{
         xSeries.setTitle("X");
         ySeries.setTitle("Y");
         zSeries.setTitle("Z");
+        obdSeries.setTitle("RPMFreq");
 
         xSeries.setColor(Color.parseColor("#0B3861"));
         ySeries.setColor(Color.parseColor("#0B6138"));
         zSeries.setColor(Color.parseColor("#610B0B"));
+        obdSeries.setColor(Color.parseColor("red"));
+
+        //puts the line in the graph
+        obdSeries.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(10);
+                canvas.drawLine(x-20, y-20, x+20, y+20, paint);
+                canvas.drawLine(x+20, y-20, x-20, y+20, paint);
+                canvas.drawLine(x-1,y-250,x+1,y+500,paint);
+            }
+        });
 
         graph.addSeries(audioSeries);
         graph.addSeries(xSeries);
         graph.addSeries(ySeries);
         graph.addSeries(zSeries);
+        graph.addSeries(obdSeries);
 
         rec_mic.run();
         rec_acc.run();
+        obdData.run();
     }
 
     void addListenerToToggleButtons() {

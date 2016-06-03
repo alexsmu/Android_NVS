@@ -48,7 +48,7 @@ public class TabFragment2 extends Fragment {
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private GraphView graph = null;
     public Handler mHandler = null;
-    public OBDConnection obdConnection;
+    public OBDData obdData;
     MyApplication app;
     public CheckBox dontShowAgain;
     public static final String PREFS_NAME = "MyPrefsFile1";
