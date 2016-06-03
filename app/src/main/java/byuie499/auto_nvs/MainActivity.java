@@ -344,7 +344,11 @@ public class MainActivity extends AppCompatActivity{
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         switch(item.getItemId()){
             case R.id.one:
-
+                Intent intent1 = new Intent(this, PopUpRatios.class);
+                startActivity(intent1);
+                Toast.makeText(getApplicationContext(),
+                        "One Clicked",
+                        Toast.LENGTH_SHORT).show();
                 break;
             case R.id.two:
 

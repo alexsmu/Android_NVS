@@ -1,4 +1,4 @@
-package byuie499.auto_nvs;
+/*package byuie499.auto_nvs;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,7 +17,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
 
         switch (position) {
             case 0:
-                TabFragment1 tab1 = new TabFragment1();
+                //TabFragment1 tab1 = new TabFragment1();
                 return tab1;
             case 1:
                 TabFragment2 tab2 = new TabFragment2();
@@ -32,3 +32,4 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
         return mNumOfTabs;
     }
 }
+*/

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="byuie499.auto_nvs.MainActivity">
 
-    <item android:id="@+id/back"
+    <item android:id="@+id/back1"
         android:title="@string/back"
         android:orderInCategory="100"
         app:showAsAction="always" >

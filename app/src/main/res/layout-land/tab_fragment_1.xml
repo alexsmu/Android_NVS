@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
-
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -29,9 +23,8 @@
             android:id="@+id/devices"
             android:orientation="vertical"
             android:layout_below="@+id/textView"
-            android:layout_toRightOf="@id/toggleNoise"
-            android:layout_marginLeft="40dp"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true">
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
@@ -192,7 +185,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <ToggleButton
+        <!--<ToggleButton
             android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:textSize="20sp"
@@ -205,9 +198,9 @@
             android:layout_alignTop="@+id/devices"
             android:layout_alignLeft="@+id/toggleVibration"
             android:layout_alignStart="@+id/toggleVibration"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp" />-->
 
-        <ToggleButton
+        <!--<ToggleButton
             android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:textSize="20sp"
@@ -221,7 +214,7 @@
             android:layout_marginTop="20dp"
             android:layout_alignParentStart="false"
             android:layout_alignParentLeft="false"
-            android:layout_marginLeft="20dp" />
+            android:layout_marginLeft="20dp" />-->
 
         <!--<ListView
             android:id="@+id/EnterDeviceInfo"
@@ -253,5 +246,3 @@
             android:src="@android:drawable/ic_menu_delete" />-->
 
     </RelativeLayout>
-
-</ScrollView>

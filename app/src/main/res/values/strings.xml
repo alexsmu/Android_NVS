@@ -48,4 +48,5 @@
     <string name="BluetoothAlertTitle">Bluetooth Connection Alert</string>
     <string name="BluetoothAlertMessage">In order for this app to work correctly you need to be
     connected to an OBDII</string>
+    <string name="back">Back</string>
 </resources>
