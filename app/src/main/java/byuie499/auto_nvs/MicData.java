@@ -18,19 +18,27 @@ public class MicData {
     public static boolean isEnabled = false;
     public Handler mHandler = null;
     private Fft audioFFT = null;
+    private boolean norm = true;
+    private double scale = 1.0;
 
-    public MicData(Handler global_handler, int samples){
+    public MicData(Handler global_handler, int samples, double scaling, boolean normalize) {
         buffer = samples;
         bufferSizeInBytes = buffer * 2;
         mHandler = global_handler;
-        audioFFT = new Fft(16384, mHandler, 2);
+        audioFFT = new Fft(samples, mHandler, 2);
+        norm = normalize;
+        scale = scaling;
     }
 
     //Conversion from short to double
     private double[] short2double(short [] audioData){
         double[] micBufferData = new double[buffer];//size may need to change
-        for (int i = 0; i < buffer; ++i)
-            micBufferData[i] = audioData[i] / 8192.0;
+        if (norm)
+            for (int i = 0; i < buffer; ++i)
+                micBufferData[i] = scale * audioData[i] / buffer;
+        else
+            for (int i = 0; i < buffer; ++i)
+                micBufferData[i] = scale * audioData[i];
         return micBufferData;
     }
 
