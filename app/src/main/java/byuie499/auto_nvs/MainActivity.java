@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity{
         };
 
         rec_acc = new Xlo(this, mHandler, acc_samples, 2);
-        rec_mic = new MicData(mHandler, audio_samples, 1.0, false);
+        rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
 
         accelFFT[0] = new Fft(acc_samples, mHandler, 4);
         accelFFT[1] = new Fft(acc_samples, mHandler, 5);
@@ -218,13 +218,12 @@ public class MainActivity extends AppCompatActivity{
         noise.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                MicData.isEnabled = noise.isChecked();
                 if (!noise.isChecked()){
-                    noise.setChecked(false);
                     rec_mic.onPause();
                     graph.removeSeries(audioSeries);
 
                 } else {
-                    noise.setChecked(true);
                     rec_mic.run();
                     graph.addSeries(audioSeries);
                 }
@@ -234,6 +233,7 @@ public class MainActivity extends AppCompatActivity{
         vibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Xlo.isEnabled = vibration.isChecked();
                 if  (!vibration.isChecked()) {
                     vibration.setChecked(false);
                     rec_acc.onPause();
@@ -399,8 +399,10 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onResume() {
         super.onResume();
-        //Bluetooth setup
+        // Bluetooth setup
         // Register for broadcasts on BluetoothAdapter state change
+        MicData.isEnabled = noise.isChecked();
+        Xlo.isEnabled = vibration.isChecked();
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
     }
