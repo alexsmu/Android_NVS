@@ -37,12 +37,23 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
 
     View mMain = null;
+    private static final int graph_x_axis_end = 500;
+    private static final int audio_samples = 8192;
+    private static final double audio_Fs = 44100;
+    private static final int audio_numdps = (int)(Math.ceil(audio_samples / audio_Fs) * graph_x_axis_end);
+    private static final int audio_startdps = audio_samples / 2;
+    private static final int audio_enddps = audio_startdps + audio_numdps;
+    private static final int acc_samples = 256;
+    private static final double acc_Fs = 1000;
+    private static final int acc_numdps = (int) (Math.ceil(acc_samples / acc_Fs) * graph_x_axis_end);
+    private static final int acc_startdps = acc_samples / 2;
+    private static final int acc_enddps = acc_startdps + acc_numdps;
     private ToggleButton recordButton;
     private TextView textTitle;
     private Spinner fileSpinner;
     private SeekBar fftseekBar;
-    private double[] audio_omega = new double[16384];
-    private double[] accel_omega = new double[256];
+    private double[] audio_omega = new double[audio_samples];
+    private double[] accel_omega = new double[acc_samples];
     private Fft[] accelFFT = new Fft[3];
     private MicData rec_mic = null;
     private Xlo rec_acc = null;
@@ -86,9 +97,9 @@ public class MainActivity extends AppCompatActivity{
                     {
                         // add to series
                         double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[186];
+                        DataPoint[] dps = new DataPoint[audio_numdps];
                         int j = 0;
-                        for (int i = 8192; i < 8378; ++i) {
+                        for (int i = audio_startdps; i < audio_enddps; ++i) {
                             dps[j++] = new DataPoint(audio_omega[i], result[i]);
                         }
                         audioSeries.resetData(dps);
@@ -106,9 +117,9 @@ public class MainActivity extends AppCompatActivity{
                     {
                         // add to series
                         double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[128];
+                        DataPoint[] dps = new DataPoint[acc_numdps];
                         int j = 0;
-                        for (int i = 128; i < 256; ++i) {
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
                             dps[j++] = new DataPoint(accel_omega[i], result[i]);
                         }
                         xSeries.resetData(dps);
@@ -118,9 +129,9 @@ public class MainActivity extends AppCompatActivity{
                     {
                         // add to series
                         double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[128];
+                        DataPoint[] dps = new DataPoint[acc_numdps];
                         int j = 0;
-                        for (int i = 128; i < 256; ++i) {
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
                             dps[j++] = new DataPoint(accel_omega[i], result[i]);
                         }
                         ySeries.resetData(dps);
@@ -130,9 +141,9 @@ public class MainActivity extends AppCompatActivity{
                     {
                         //add to series
                         double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[128];
+                        DataPoint[] dps = new DataPoint[acc_numdps];
                         int j = 0;
-                        for (int i = 128; i < 256; ++i) {
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
                             dps[j++] = new DataPoint(accel_omega[i], result[i]);
                         }
                         zSeries.resetData(dps);
@@ -156,15 +167,15 @@ public class MainActivity extends AppCompatActivity{
             }
         };
 
-        rec_acc = new Xlo(this, mHandler, 256, 2);
-        rec_mic = new MicData(mHandler, 16384);
+        rec_acc = new Xlo(this, mHandler, acc_samples, 2);
+        rec_mic = new MicData(mHandler, audio_samples, 1.0, false);
 
-        accelFFT[0] = new Fft(256, mHandler, 4);
-        accelFFT[1] = new Fft(256, mHandler, 5);
-        accelFFT[2] = new Fft(256, mHandler, 6);
+        accelFFT[0] = new Fft(acc_samples, mHandler, 4);
+        accelFFT[1] = new Fft(acc_samples, mHandler, 5);
+        accelFFT[2] = new Fft(acc_samples, mHandler, 6);
 
-        Fft.getOmega(audio_omega, 44100);
-        Fft.getOmega(accel_omega, 1000);
+        Fft.getOmega(audio_omega, audio_Fs);
+        Fft.getOmega(accel_omega, acc_Fs);
 
         graph = (GraphView) findViewById(R.id.fftGraph);
         if (graph == null) throw new AssertionError("Object cannot be null");
@@ -173,11 +184,11 @@ public class MainActivity extends AppCompatActivity{
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(500);
+        graph.getViewport().setMaxX(graph_x_axis_end);
 
         graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(-60);
-        graph.getViewport().setMaxY(20);
+        graph.getViewport().setMinY(-80);
+        graph.getViewport().setMaxY(40);
 
         audioSeries.setTitle("Mic");
         audioSeries.setColor(Color.parseColor("#181907"));
