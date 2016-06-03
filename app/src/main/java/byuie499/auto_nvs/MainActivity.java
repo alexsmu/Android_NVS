@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity{
         Fft.getOmega(accel_omega, 1000);
 
         graph = (GraphView) findViewById(R.id.fftGraph);
-        assert graph != null;
+        if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
 
@@ -223,8 +223,7 @@ public class MainActivity extends AppCompatActivity{
         vibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if  (!vibration.isChecked())
-                {
+                if  (!vibration.isChecked()) {
                     vibration.setChecked(false);
                     rec_acc.onPause();
                     graph.removeSeries(xSeries);

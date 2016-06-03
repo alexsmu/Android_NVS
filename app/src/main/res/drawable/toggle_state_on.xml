@@ -4,9 +4,14 @@
         <shape android:shape="rectangle">
             <!-- Draw a 5dp width border around shape -->
             <stroke
-                android:color="#4c975d"
+                android:color="#FE2E2E"
                 android:width="5dp"
                 />
+            <corners
+                android:topLeftRadius="5dp"
+                android:topRightRadius="5dp"
+                android:bottomLeftRadius="5dp"
+                android:bottomRightRadius="5dp" />
         </shape>
     </item>
     <!-- Overlap the left, top and right border using background color  -->
@@ -14,7 +19,7 @@
         android:bottom="5dp"
         >
         <shape android:shape="rectangle">
-            <solid android:color="#6dd988"/>
+            <solid android:color="#FE2E2E"/>
         </shape>
     </item>
 </selector>
