@@ -1,12 +1,15 @@
 package byuie499.auto_nvs;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +38,17 @@ public class Xlo {
         yAcc = new double[samples];
         zAcc = new double[samples];
         sm = (SensorManager) mMain.getSystemService(Activity.SENSOR_SERVICE);
-        accelerometer = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+
+        /*Check for Linear Acceleration Sensor*/
+        /*If no Linear Accelerometer is present assign Accelerometer*/
+        if (sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null){
+            Log.d("Linear Accelerometer: ", "present");
+            accelerometer = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        }
+        else {
+            Log.d("Linear Accelerometer: ", "not present");
+            accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        }
     }
 
     public void run() {
