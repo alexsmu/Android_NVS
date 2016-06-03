@@ -70,6 +70,11 @@ public class BluetoothTabPaired extends Fragment {
             }
         }
 
+        /***********This code is for testing in the emulator*******************/
+        pDevices.add("OBDII Test" + "\n" + "00:00:00:00");
+
+        /*********************************************************************/
+
         ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.select_dialog_singlechoice,
                 pDevices.toArray(new String[pDevices.size()]));
         pairedDevicesList.setAdapter(adapter);

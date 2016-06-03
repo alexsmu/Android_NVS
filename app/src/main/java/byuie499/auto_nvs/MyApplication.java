@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothSocket;
  */
 public class MyApplication extends Application {
 
-    private BluetoothSocket globalBluetoothSocket;
+    private BluetoothSocket globalBluetoothSocket = null;
 
     public BluetoothSocket getGlobalBluetoothSocket() {
         return globalBluetoothSocket;
