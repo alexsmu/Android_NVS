@@ -40,12 +40,12 @@ public class MainActivity extends AppCompatActivity{
     private static final int graph_x_axis_end = 500;
     private static final int audio_samples = 8192;
     private static final double audio_Fs = 44100;
-    private static final int audio_numdps = (int)(Math.ceil(audio_samples / audio_Fs) * graph_x_axis_end);
+    private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) );
     private static final int audio_startdps = audio_samples / 2;
     private static final int audio_enddps = audio_startdps + audio_numdps;
     private static final int acc_samples = 256;
     private static final double acc_Fs = 1000;
-    private static final int acc_numdps = (int) (Math.ceil(acc_samples / acc_Fs) * graph_x_axis_end);
+    private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) );
     private static final int acc_startdps = acc_samples / 2;
     private static final int acc_enddps = acc_startdps + acc_numdps;
     private ToggleButton recordButton;
