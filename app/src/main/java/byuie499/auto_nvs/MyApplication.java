@@ -11,6 +11,7 @@ public class MyApplication extends Application {
     private BluetoothSocket globalBluetoothSocket;
     private String bluetoothDeviceAddress;
     private String bluetoothDeviceName;
+    private static double tireDiameterInches = 27; //test tire size 27 inches
 
     public void setBluetoothDeviceAddress(String bluetoothDeviceAddress) {
         this.bluetoothDeviceAddress = bluetoothDeviceAddress;
@@ -34,6 +35,12 @@ public class MyApplication extends Application {
     public void setBluetoothDeviceName(String name) {bluetoothDeviceName = name;}
 
     public String getBluetoothDeviceName() {return bluetoothDeviceName;}
+
+    public void setTireDiameterInches(double size) { tireDiameterInches = size;}
+
+    public double getTireDiameterInches() {return tireDiameterInches;}
+
+
 
 
 

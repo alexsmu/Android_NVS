@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity{
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private GraphView graph = null;
     public Handler mHandler = null;
     public OBDData obdData;
@@ -164,10 +165,16 @@ public class MainActivity extends AppCompatActivity{
                     case 9:
                     {
                         //OBD Data (it is test data for now)
-                        double result = (double) msg.obj;
+                        double[] result = (double[]) msg.obj;
                         DataPoint[] dps = new DataPoint[1];
-                        dps[0] = new DataPoint(result,0);
+                        dps[0] = new DataPoint(result[0],0);
                         obdSeries.resetData(dps);
+
+                        //Tire RPM Frequency
+                        DataPoint[] dps2 = new DataPoint[1];
+                        dps2[0] = new DataPoint(result[1],0);
+                        obdSeriesSpeed.resetData(dps2);
+
 
                         break;
 
@@ -211,14 +218,26 @@ public class MainActivity extends AppCompatActivity{
         ySeries.setTitle("Y");
         zSeries.setTitle("Z");
         obdSeries.setTitle("RPMFreq");
+        obdSeriesSpeed.setTitle("TireFreq");
 
         xSeries.setColor(Color.parseColor("#0B3861"));
         ySeries.setColor(Color.parseColor("#0B6138"));
         zSeries.setColor(Color.parseColor("#610B0B"));
         obdSeries.setColor(Color.parseColor("red"));
+        obdSeriesSpeed.setColor(Color.parseColor("blue"));
 
         //puts the line in the graph
         obdSeries.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(10);
+                canvas.drawLine(x-20, y-20, x+20, y+20, paint);
+                canvas.drawLine(x+20, y-20, x-20, y+20, paint);
+                canvas.drawLine(x-1,y-250,x+1,y+500,paint);
+            }
+        });
+
+        obdSeriesSpeed.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(10);
@@ -233,6 +252,7 @@ public class MainActivity extends AppCompatActivity{
         graph.addSeries(ySeries);
         graph.addSeries(zSeries);
         graph.addSeries(obdSeries);
+        graph.addSeries(obdSeriesSpeed);
 
         rec_mic.run();
         rec_acc.run();
