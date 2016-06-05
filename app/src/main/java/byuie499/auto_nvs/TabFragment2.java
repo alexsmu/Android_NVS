@@ -414,8 +414,8 @@ public class TabFragment2 extends Fragment {
                 graph.removeAllSeries();
             }
             else if(graph != null) {
-                Xlo.isEnabled = Tab1Data.getBool("Vibration", true);
-                MicData.isEnabled = Tab1Data.getBool("Noise", false);
+                Xlo.isEnabled = SettingsData.isChecked("Vibration", true);
+                MicData.isEnabled = SettingsData.isChecked("Noise", false);
                 if (MicData.isEnabled)
                     graph.addSeries(audioSeries);
                 if (Xlo.isEnabled) {
