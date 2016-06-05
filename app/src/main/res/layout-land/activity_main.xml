@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="byuie499.auto_nvs.MainActivity">
+
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/fftGraph" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textOff="@string/noise"
+        android:textOn="@string/noise"
+        android:id="@+id/toggleNoise"
+        android:tag="noise"
+        android:layout_below="@+id/fftGraph"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textOff="@string/vibration"
+        android:textOn="@string/vibration"
+        android:id="@+id/toggleVibration"
+        android:tag="vibration"
+        android:checked="true"
+        android:layout_toEndOf="@+id/toggleNoise"
+        android:layout_below="@+id/fftGraph"
+        android:layout_toRightOf="@+id/toggleNoise"
+        android:layout_alignBottom="@+id/toggleNoise" />
+
+    <ToggleButton
+        android:layout_width="140dp"
+        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textOff="@string/record"
+        android:textOn="@string/stop"
+        android:id="@+id/startstop"
+        android:background="@drawable/toggle_selector"
+        android:layout_below="@+id/fftGraph"
+        android:layout_alignRight="@+id/fftGraph"
+        android:layout_alignEnd="@+id/fftGraph"
+        android:layout_marginTop="5dp" />
+
+</RelativeLayout>
