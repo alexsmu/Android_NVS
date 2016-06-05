@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.audiofx.BassBoost;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -23,9 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.SeekBar;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.jjoe64.graphview.GraphView;
@@ -36,8 +35,6 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 
 public class MainActivity extends AppCompatActivity{
-
-    View mMain = null;
     private static final int graph_x_axis_end = 500;
     private static final int audio_samples = 8192;
     private static final double audio_Fs = 44100;
@@ -50,9 +47,6 @@ public class MainActivity extends AppCompatActivity{
     private static final int acc_startdps = acc_samples / 2;
     private static final int acc_enddps = acc_startdps + acc_numdps;
     private ToggleButton recordButton;
-    private TextView textTitle;
-    private Spinner fileSpinner;
-    private SeekBar fftseekBar;
     private double[] audio_omega = new double[audio_samples];
     private double[] accel_omega = new double[acc_samples];
     private Fft[] accelFFT = new Fft[3];
@@ -65,139 +59,73 @@ public class MainActivity extends AppCompatActivity{
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private GraphView graph = null;
+    private SettingsData settingsData = null;
     public Handler mHandler = null;
     public OBDData obdData;
     MyApplication app;
     public CheckBox dontShowAgain;
-    public static final String PREFS_NAME = "MyPrefsFile1";
     private ToggleButton noise, vibration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        addListenerToToggleButtons();
-
-        if (getSupportActionBar() != null) {
+        if (getSupportActionBar() != null)
             getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
-        }
-
+        initMembers();
+        initGraph();
+        addListenerToToggleButtons();
         checkBluetoothConnection();
+    }
 
-        mHandler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(Message msg) {
-                switch(msg.what) {
-                    case 1: // Audio buffer is ready
-                    {
-                        // begin audio fft
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-                        break;
-                    }
-                    case 2: // Audio fft is complete
-                    {
-                        // add to series
-                        double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[audio_numdps];
-                        int j = 0;
-                        for (int i = audio_startdps; i < audio_enddps; ++i) {
-                            dps[j++] = new DataPoint(audio_omega[i], result[i]);
-                        }
-                        audioSeries.resetData(dps);
-                        break;
-                    }
-                    case 3: // Accelerometer data is ready
-                    {
-                        // begin fft
-                        accelFFT[0].run(Xlo.xAcc, "x");
-                        accelFFT[1].run(Xlo.yAcc, "y");
-                        accelFFT[2].run(Xlo.zAcc, "z");
-                        break;
-                    }
-                    case 4: // Accelerometer x fft is complete
-                    {
-                        // add to series
-                        double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[acc_numdps];
-                        int j = 0;
-                        for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
-                        }
-                        xSeries.resetData(dps);
-                        break;
-                    }
-                    case 5: // Accelerometer y fft complete
-                    {
-                        // add to series
-                        double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[acc_numdps];
-                        int j = 0;
-                        for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
-                        }
-                        ySeries.resetData(dps);
-                        break;
-                    }
-                    case 6: // Accelerometer z fft complete
-                    {
-                        //add to series
-                        double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[acc_numdps];
-                        int j = 0;
-                        for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            dps[j++] = new DataPoint(accel_omega[i], result[i]);
-                        }
-                        zSeries.resetData(dps);
-                        break;
-                    }
-                    case 7: // Audio fft correlation complete
-                    {
-                        // add to series
-                        break;
-                    }
-                    case 8: // Accelerometer fft correlation complete
-                    {
-                        //add to series
-                        break;
-                    }
-                    case 9:
-                    {
-                        //OBD Data (it is test data for now)
-                        double[] result = (double[]) msg.obj;
-                        DataPoint[] dps = new DataPoint[1];
-                        dps[0] = new DataPoint(result[0],0);
-                        obdSeries.resetData(dps);
+    @Override
+    public void onResume() {
+        super.onResume();
+        noise.setChecked(SettingsData.isChecked(noise.getTag().toString(), false));
+        MicData.isEnabled = noise.isChecked();
+        vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), true));
+        Xlo.isEnabled = vibration.isChecked();
+        // Bluetooth setup
+        // Register for broadcasts on BluetoothAdapter state change
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
+        // Start threads
+        rec_mic.run();
+        rec_acc.run();
+        obdData.run();
+    }
 
-                        //Tire RPM Frequency
-                        DataPoint[] dps2 = new DataPoint[1];
-                        dps2[0] = new DataPoint(result[1],0);
-                        obdSeriesSpeed.resetData(dps2);
+    @Override
+    public void onPause() {
+        super.onPause();
+        rec_acc.onPause();
+        rec_mic.onPause();
+        unregisterReceiver(mReceiver);
+    }
 
 
-                        break;
-
-                    }
-                    default:
-                    {
-                        super.handleMessage(msg);
-                    }
-                }
-            }
-        };
-
+    protected void initMembers() {
+        if (SettingsData.mContext == null)
+            settingsData = new SettingsData(getApplicationContext());
+        mHandler = new MainHandler(Looper.getMainLooper());
         rec_acc = new Xlo(this, mHandler, acc_samples, 2);
         obdData = new OBDData(mHandler,acc_samples,true);
         rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
-
         accelFFT[0] = new Fft(acc_samples, mHandler, 4);
         accelFFT[1] = new Fft(acc_samples, mHandler, 5);
         accelFFT[2] = new Fft(acc_samples, mHandler, 6);
-
         Fft.getOmega(audio_omega, audio_Fs);
         Fft.getOmega(accel_omega, acc_Fs);
+    }
 
+    protected void initGraph() {
         graph = (GraphView) findViewById(R.id.fftGraph);
         if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
@@ -246,17 +174,12 @@ public class MainActivity extends AppCompatActivity{
                 canvas.drawLine(x-1,y-250,x+1,y+500,paint);
             }
         });
-
         graph.addSeries(audioSeries);
         graph.addSeries(xSeries);
         graph.addSeries(ySeries);
         graph.addSeries(zSeries);
         graph.addSeries(obdSeries);
         graph.addSeries(obdSeriesSpeed);
-
-        rec_mic.run();
-        rec_acc.run();
-        obdData.run();
     }
 
     void addListenerToToggleButtons() {
@@ -264,37 +187,36 @@ public class MainActivity extends AppCompatActivity{
         vibration = (ToggleButton) findViewById(R.id.toggleVibration);
         recordButton = (ToggleButton) findViewById(R.id.startstop);
 
-        noise.setOnClickListener(new View.OnClickListener() {
+        noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                MicData.isEnabled = noise.isChecked();
-                if (!noise.isChecked()){
-                    rec_mic.onPause();
-                    graph.removeSeries(audioSeries);
-
-                } else {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                MicData.isEnabled = isChecked;
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
+                if (isChecked){
                     rec_mic.run();
                     graph.addSeries(audioSeries);
+                } else {
+                    rec_mic.onPause();
+                    graph.removeSeries(audioSeries);
                 }
             }
         });
 
-        vibration.setOnClickListener(new View.OnClickListener() {
+        vibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                Xlo.isEnabled = vibration.isChecked();
-                if  (!vibration.isChecked()) {
-                    vibration.setChecked(false);
-                    rec_acc.onPause();
-                    graph.removeSeries(xSeries);
-                    graph.removeSeries(ySeries);
-                    graph.removeSeries(zSeries);
-                } else {
-                    vibration.setChecked(true);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Xlo.isEnabled = isChecked;
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
+                if  (isChecked) {
                     rec_acc.run();
                     graph.addSeries(xSeries);
                     graph.addSeries(ySeries);
                     graph.addSeries(zSeries);
+                } else {
+                    rec_acc.onPause();
+                    graph.removeSeries(xSeries);
+                    graph.removeSeries(ySeries);
+                    graph.removeSeries(zSeries);
                 }
             }
         });
@@ -316,48 +238,33 @@ public class MainActivity extends AppCompatActivity{
             LayoutInflater adbInflater = LayoutInflater.from(this);
             View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
             dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
+            dontShowAgain.setChecked(SettingsData.isChecked(dontShowAgain.getTag().toString(), false));
+            dontShowAgain.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
+                }
+            });
             alertDialog.setView(eulaLayout);
             alertDialog.setTitle("Bluetooth Connection Alert");
             alertDialog.setMessage("In order for this app to work correctly " +
                     "you need to be connected to an OBDII.");
             alertDialog.setNegativeButton("Ok", new android.app.AlertDialog.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    String checkBoxResult = "NOT checked";
-                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
-                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("skipMessage", checkBoxResult);
-                    // Commit the edits!
-                    editor.apply();
+
                 }
             });
             alertDialog.setPositiveButton("Bluetooth Settings", new android.app.AlertDialog.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    String checkBoxResult = "NOT checked";
-                    if (dontShowAgain.isChecked())  checkBoxResult = "checked";
-                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("skipMessage", checkBoxResult);
-                    // Commit the edits!
-                    editor.apply();
                     Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
                     startActivity(intent);
                 }
             });
 
-            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-            String skipMessage = settings.getString("skipMessage", "NOT checked");
-            if (skipMessage != "checked" )
+            if (!dontShowAgain.isChecked())
                 alertDialog.show();
         }
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -366,9 +273,6 @@ public class MainActivity extends AppCompatActivity{
             case R.id.one:
                 Intent intent1 = new Intent(this, PopUpRatios.class);
                 startActivity(intent1);
-                Toast.makeText(getApplicationContext(),
-                        "One Clicked",
-                        Toast.LENGTH_SHORT).show();
                 break;
             case R.id.two:
 
@@ -441,24 +345,98 @@ public class MainActivity extends AppCompatActivity{
         }
     };
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        rec_acc.onPause();
-        rec_mic.onPause();
-        unregisterReceiver(mReceiver);
+    private class MainHandler extends Handler {
+        MainHandler(Looper looper) {
+            super(looper);
+        }
+        public void handleMessage(Message msg) {
+            switch(msg.what) {
+                case 2: // Audio fft is complete
+                {
+                    // add to series
+                    double[] result = (double[]) msg.obj;
+                    DataPoint[] dps = new DataPoint[audio_numdps];
+                    int j = 0;
+                    for (int i = audio_startdps; i < audio_enddps; ++i) {
+                        dps[j++] = new DataPoint(audio_omega[i], result[i]);
+                    }
+                    audioSeries.resetData(dps);
+                    break;
+                }
+                case 3: // Accelerometer data is ready
+                {
+                    // begin fft
+                    accelFFT[0].run(Xlo.xAcc, "x");
+                    accelFFT[1].run(Xlo.yAcc, "y");
+                    accelFFT[2].run(Xlo.zAcc, "z");
+                    break;
+                }
+                case 4: // Accelerometer x fft is complete
+                {
+                    // add to series
+                    double[] result = (double[]) msg.obj;
+                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    int j = 0;
+                    for (int i = acc_startdps; i < acc_enddps; ++i) {
+                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                    }
+                    xSeries.resetData(dps);
+                    break;
+                }
+                case 5: // Accelerometer y fft complete
+                {
+                    // add to series
+                    double[] result = (double[]) msg.obj;
+                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    int j = 0;
+                    for (int i = acc_startdps; i < acc_enddps; ++i) {
+                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                    }
+                    ySeries.resetData(dps);
+                    break;
+                }
+                case 6: // Accelerometer z fft complete
+                {
+                    //add to series
+                    double[] result = (double[]) msg.obj;
+                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    int j = 0;
+                    for (int i = acc_startdps; i < acc_enddps; ++i) {
+                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                    }
+                    zSeries.resetData(dps);
+                    break;
+                }
+                case 7: // Audio fft correlation complete
+                {
+                    // add to series
+                    break;
+                }
+                case 8: // Accelerometer fft correlation complete
+                {
+                    //add to series
+                    break;
+                }
+                case 9:
+                {
+                    //OBD Data (it is test data for now)
+                    double[] result = (double[]) msg.obj;
+                    DataPoint[] dps = new DataPoint[1];
+                    dps[0] = new DataPoint(result[0],0);
+                    obdSeries.resetData(dps);
+
+                    //Tire RPM Frequency
+                    DataPoint[] dps2 = new DataPoint[1];
+                    dps2[0] = new DataPoint(result[1],0);
+                    obdSeriesSpeed.resetData(dps2);
+
+                    break;
+                }
+                default:
+                {
+                    super.handleMessage(msg);
+                }
+            }
+        }
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Bluetooth setup
-        // Register for broadcasts on BluetoothAdapter state change
-        MicData.isEnabled = noise.isChecked();
-        Xlo.isEnabled = vibration.isChecked();
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mReceiver, filter);
-    }
-
-
 }
