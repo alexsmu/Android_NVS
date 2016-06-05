@@ -6,6 +6,7 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/abc_action_bar_default_height_material"
         android:id="@+id/listView"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
