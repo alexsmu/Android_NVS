@@ -11,20 +11,16 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class PopUpRatios extends AppCompatActivity implements View.OnFocusChangeListener{
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.popupratios, menu);
-        return true;
-    }
+    private SettingsData staticData = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Tab1Data staticData = new Tab1Data(getApplicationContext());
+        if (SettingsData.mContext == null)
+            staticData = new SettingsData(getApplicationContext());
         setContentView(R.layout.tab_fragment_1);
         CheckBox check1 = (CheckBox) findViewById(R.id.check1);
-        //check1.setChecked(Tab1Data.getBool("check1", true));
+        //check1.setChecked(SettingsData.isChecked(check1.getTag().toString(), true));
 
         addListenerToNames();
         addListenersToValues();
@@ -92,7 +88,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check1 != null) {
             check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check1.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check1 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check1 false", Toast.LENGTH_SHORT).show();
@@ -104,7 +100,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check2 != null) {
             check2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check2.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check2 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check2 false", Toast.LENGTH_SHORT).show();
@@ -116,7 +112,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check3 != null) {
             check3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check3.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check3 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check3 false", Toast.LENGTH_SHORT).show();
@@ -128,7 +124,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check4 != null) {
             check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check4.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check4 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check4 false", Toast.LENGTH_SHORT).show();
@@ -140,7 +136,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check5 != null) {
             check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check5.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check5 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check5 false", Toast.LENGTH_SHORT).show();
@@ -152,7 +148,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         if (check6 != null) {
             check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (check6.isChecked()) {
+                    if (isChecked) {
                         Toast.makeText(getApplicationContext(), "check6 true", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(getApplicationContext(), "check6 false", Toast.LENGTH_SHORT).show();
@@ -160,21 +156,6 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
                 }
             });
         }
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.back1:
-                super.onBackPressed();
-                break;
-            default:
-                Toast.makeText(getApplicationContext(),
-                        "Unknown...",
-                        Toast.LENGTH_SHORT).show();
-                break;
-        }
-
-        return false;
     }
 
     @Override
@@ -185,7 +166,7 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
                 //EditText name1 = (EditText) findViewById((R.id.name1));
                 //EditText ratio1 = (EditText) findViewById((R.id.value1));
                 //CheckBox check1 = (CheckBox) findViewById(R.id.check1);
-                //Tab1Data.putRatio(name1.getText().toString(), Float.valueOf(ratio1.getText().toString()), check1.isChecked());
+                //SettingsData.putRatio(name1.getText().toString(), Float.valueOf(ratio1.getText().toString()), check1.isChecked());
 
                 break;
             case R.id.name2:
