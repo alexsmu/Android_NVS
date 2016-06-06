@@ -1,5 +1,6 @@
 package byuie499.auto_nvs;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -14,6 +16,8 @@ import android.media.audiofx.BassBoost;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,18 +38,19 @@ import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 
-public class MainActivity extends AppCompatActivity{
-    private static final int graph_x_axis_end = 500;
-    private static final int audio_samples = 8192;
-    private static final double audio_Fs = 44100;
-    private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) );
-    private static final int audio_startdps = audio_samples / 2;
-    private static final int audio_enddps = audio_startdps + audio_numdps;
-    private static final int acc_samples = 256;
-    private static final double acc_Fs = 1000;
+public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+    private static final int graph_x_axis_end = 500;  // graph x axis domain limit
+    private static final int audio_samples = 8192;    // samples to record before taking fft (must be power of 2)
+    private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
+    private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
+    private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
+    private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
+    private static final int acc_samples = 256; // accelerometer samples
+    private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) );
     private static final int acc_startdps = acc_samples / 2;
     private static final int acc_enddps = acc_startdps + acc_numdps;
+    private static boolean permission = false;
     private ToggleButton recordButton;
     private double[] audio_omega = new double[audio_samples];
     private double[] accel_omega = new double[acc_samples];
@@ -88,17 +93,15 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onResume() {
         super.onResume();
-        noise.setChecked(SettingsData.isChecked(noise.getTag().toString(), false));
-        MicData.isEnabled = noise.isChecked();
-        vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), true));
-        Xlo.isEnabled = vibration.isChecked();
+        noise.setChecked(!SettingsData.isChecked(noise.getTag().toString(), false));
+        noise.performClick();
+        vibration.setChecked(!SettingsData.isChecked(vibration.getTag().toString(), true));
+        vibration.performClick();
         // Bluetooth setup
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
         // Start threads
-        rec_mic.run();
-        rec_acc.run();
         obdData.run();
     }
 
@@ -110,6 +113,18 @@ public class MainActivity extends AppCompatActivity{
         unregisterReceiver(mReceiver);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permission = true;
+            } else {
+                permission = false;
+            }
+        }
+    }
 
     protected void initMembers() {
         if (SettingsData.mContext == null)
@@ -190,11 +205,25 @@ public class MainActivity extends AppCompatActivity{
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                MicData.isEnabled = isChecked;
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
                 if (isChecked){
-                    rec_mic.run();
-                    graph.addSeries(audioSeries);
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                                                    Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED) {
+                        permission = false;
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.RECORD_AUDIO},
+                                1);
+                    } else {
+                        permission = true;
+                    }
+                    if (permission) {
+                        MicData.isEnabled = true;
+                        rec_mic.run();
+                        graph.addSeries(audioSeries);
+                    } else {
+                        buttonView.setChecked(false);
+                    }
                 } else {
                     rec_mic.onPause();
                     graph.removeSeries(audioSeries);
