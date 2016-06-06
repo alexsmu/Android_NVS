@@ -50,6 +50,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
     private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
     private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
+    private static DataPoint[] audio_dps = new DataPoint[audio_numdps];
+    private static DataPoint[] accel_dpsX = new DataPoint[acc_numdps];
+    private static DataPoint[] accel_dpsY = new DataPoint[acc_numdps];
+    private static DataPoint[] accel_dpsZ = new DataPoint[acc_numdps];
+    private static DataPoint[] tire_dps = new DataPoint[1];
+    private static DataPoint[] rpm_dps = new DataPoint[1];
+    private static double[] audio_result = null;
+    private static double[] accel_resultX = null;
+    private static double[] accel_resultY = null;
+    private static double[] accel_resultZ = null;
+    private static double[] obd_result = null;
     private static boolean permission = false; // RECORD_AUDIO permission granted?
     private double[] audio_omega = new double[audio_samples]; // omega container for audio FFT
     private double[] accel_omega = new double[acc_samples];   // omega container for accel FFT
@@ -386,13 +397,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 case 2: // Audio fft is complete
                 {
                     // add to series
-                    double[] result = (double[]) msg.obj;
-                    DataPoint[] dps = new DataPoint[audio_numdps];
+                    audio_result = (double[]) msg.obj;
                     int j = 0;
                     for (int i = audio_startdps; i < audio_enddps; ++i) {
-                        dps[j++] = new DataPoint(audio_omega[i], result[i]);
+                        audio_dps[j++] = new DataPoint(audio_omega[i], audio_result[i]);
                     }
-                    audioSeries.resetData(dps);
+                    audioSeries.resetData(audio_dps);
                     break;
                 }
                 case 3: // Accelerometer data is ready
@@ -406,37 +416,34 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 case 4: // Accelerometer x fft is complete
                 {
                     // add to series
-                    double[] result = (double[]) msg.obj;
-                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    accel_resultX = (double[]) msg.obj;
                     int j = 0;
                     for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        accel_dpsX[j++] = new DataPoint(accel_omega[i], accel_resultX[i]);
                     }
-                    xSeries.resetData(dps);
+                    xSeries.resetData(accel_dpsX);
                     break;
                 }
                 case 5: // Accelerometer y fft complete
                 {
                     // add to series
-                    double[] result = (double[]) msg.obj;
-                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    accel_resultY = (double[]) msg.obj;
                     int j = 0;
                     for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        accel_dpsY[j++] = new DataPoint(accel_omega[i], accel_resultY[i]);
                     }
-                    ySeries.resetData(dps);
+                    ySeries.resetData(accel_dpsY);
                     break;
                 }
                 case 6: // Accelerometer z fft complete
                 {
                     //add to series
-                    double[] result = (double[]) msg.obj;
-                    DataPoint[] dps = new DataPoint[acc_numdps];
+                    accel_resultZ = (double[]) msg.obj;
                     int j = 0;
                     for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        dps[j++] = new DataPoint(accel_omega[i], result[i]);
+                        accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
                     }
-                    zSeries.resetData(dps);
+                    zSeries.resetData(accel_dpsZ);
                     break;
                 }
                 case 7: // Audio fft correlation complete
@@ -452,15 +459,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 case 9:
                 {
                     //OBD Data (it is test data for now)
-                    double[] result = (double[]) msg.obj;
-                    DataPoint[] dps = new DataPoint[1];
-                    dps[0] = new DataPoint(result[0],0);
-                    obdSeries.resetData(dps);
+                    obd_result = (double[]) msg.obj;
+                    rpm_dps[0] = new DataPoint(obd_result[0],0);
+                    obdSeries.resetData(rpm_dps);
 
                     //Tire RPM Frequency
-                    DataPoint[] dps2 = new DataPoint[1];
-                    dps2[0] = new DataPoint(result[1],0);
-                    obdSeriesSpeed.resetData(dps2);
+                    tire_dps[0] = new DataPoint(obd_result[1],0);
+                    obdSeriesSpeed.resetData(tire_dps);
 
                     break;
                 }
