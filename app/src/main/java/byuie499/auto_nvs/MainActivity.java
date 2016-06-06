@@ -47,40 +47,39 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
     private static final int acc_samples = 256; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
-    private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) );
-    private static final int acc_startdps = acc_samples / 2;
-    private static final int acc_enddps = acc_startdps + acc_numdps;
-    private static boolean permission = false;
-    private ToggleButton recordButton;
-    private double[] audio_omega = new double[audio_samples];
-    private double[] accel_omega = new double[acc_samples];
-    private Fft[] accelFFT = new Fft[3];
-    private MicData rec_mic = null;
-    private Xlo rec_acc = null;
-    private LineGraphSeries<DataPoint> audioSeries = new LineGraphSeries<>();
+    private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
+    private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
+    private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
+    private static boolean permission = false; // RECORD_AUDIO permission granted?
+    private double[] audio_omega = new double[audio_samples]; // omega container for audio FFT
+    private double[] accel_omega = new double[acc_samples];   // omega container for accel FFT
+    private Fft[] accelFFT = new Fft[3]; // containers for each accelerometer axis FFT results
+    private MicData rec_mic = null;      // container for audio recording thread object
+    private Xlo rec_acc = null;          // container for accelerometer recording thread object
+    private LineGraphSeries<DataPoint> audioSeries = new LineGraphSeries<>();       // graph series
     private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
-    private GraphView graph = null;
-    private SettingsData settingsData = null;
-    public Handler mHandler = null;
-    public OBDData obdData;
-    MyApplication app;
-    public CheckBox dontShowAgain;
-    private ToggleButton noise, vibration;
+    private GraphView graph = null; // container for graph object
+    private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
+    public Handler mHandler = null;  // container for thread handler
+    public OBDData obdData;         // container for OBD recording thread object
+    MyApplication app;              // required for bluetooth socket
+    public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
+    private ToggleButton recordButton, noise, vibration; // containers for layout buttons
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if (getSupportActionBar() != null)
+        setContentView(R.layout.activity_main); // load layout
+        if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
             getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
-        initMembers();
-        initGraph();
-        addListenerToToggleButtons();
-        checkBluetoothConnection();
+        initMembers(); // initialize containers
+        initGraph();   // initialize graph
+        addListenerToToggleButtons(); // add listeners
+        checkBluetoothConnection();   // show connection pop-up if necessary
     }
 
     @Override
@@ -93,27 +92,30 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     public void onResume() {
         super.onResume();
-        noise.setChecked(!SettingsData.isChecked(noise.getTag().toString(), false));
-        noise.performClick();
+        // NOTE: buttons first set to opposite state than what is retrieved from the settings
+        // then a click is perform to change them to the correct state. This is done in order to
+        // trigger the onCheckChanged listener, which better handles the functionality.
+        noise.setChecked(!SettingsData.isChecked(noise.getTag().toString(), false)); // retrieve previous state
+        noise.performClick(); // update state
         vibration.setChecked(!SettingsData.isChecked(vibration.getTag().toString(), true));
         vibration.performClick();
         // Bluetooth setup
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
-        // Start threads
+        // Start obd thread
         obdData.run();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        rec_acc.onPause();
+        rec_acc.onPause(); // stop recordings
         rec_mic.onPause();
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(mReceiver); // release bluetooth receiver
     }
 
-    @Override
+    @Override // Handles whether user granted recording permission (Android 6.0+)
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         if (requestCode == 1) {
@@ -126,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     }
 
-    protected void initMembers() {
-        if (SettingsData.mContext == null)
+    protected void initMembers() { // Initialize member containers
+        if (SettingsData.mContext == null) //Check if settings already have context
             settingsData = new SettingsData(getApplicationContext());
         mHandler = new MainHandler(Looper.getMainLooper());
         rec_acc = new Xlo(this, mHandler, acc_samples, 2);
@@ -205,52 +207,52 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
-                if (isChecked){
+                if (isChecked) { // enable mic recording
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                                                     Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED) {
+                        != PackageManager.PERMISSION_GRANTED) { // check for permission
                         permission = false;
-                        ActivityCompat.requestPermissions(MainActivity.this,
+                        ActivityCompat.requestPermissions(MainActivity.this, // request permission
                                 new String[]{Manifest.permission.RECORD_AUDIO},
                                 1);
-                    } else {
+                    } else { // we have permission
                         permission = true;
                     }
                     if (permission) {
-                        MicData.isEnabled = true;
-                        rec_mic.run();
-                        graph.addSeries(audioSeries);
+                        MicData.isEnabled = true; // enable thread
+                        rec_mic.run(); // run recording thread
+                        graph.addSeries(audioSeries); // graph results
                     } else {
-                        buttonView.setChecked(false);
+                        buttonView.setChecked(false); // no permission, undo check
                     }
                 } else {
                     rec_mic.onPause();
                     graph.removeSeries(audioSeries);
-                }
+                } // store settings (remember checked state)
+                SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
         });
 
         vibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Xlo.isEnabled = isChecked;
-                SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
+                Xlo.isEnabled = isChecked; // enable/disable thread
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if  (isChecked) {
-                    rec_acc.run();
-                    graph.addSeries(xSeries);
+                    rec_acc.run(); // run thread
+                    graph.addSeries(xSeries); // graph results
                     graph.addSeries(ySeries);
                     graph.addSeries(zSeries);
                 } else {
-                    rec_acc.onPause();
-                    graph.removeSeries(xSeries);
+                    rec_acc.onPause(); // stop thread
+                    graph.removeSeries(xSeries); // remove results from graph
                     graph.removeSeries(ySeries);
                     graph.removeSeries(zSeries);
                 }
             }
         });
 
-        recordButton.setOnClickListener(new View.OnClickListener(){
+        recordButton.setOnClickListener(new View.OnClickListener(){ //to be implemented
             @Override
             public void onClick(View v) {
 
@@ -374,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     };
 
+    // separated handler as a class, so the code is more readable, and less things clog onCreate
     private class MainHandler extends Handler {
         MainHandler(Looper looper) {
             super(looper);
