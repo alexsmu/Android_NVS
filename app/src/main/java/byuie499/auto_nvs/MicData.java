@@ -48,7 +48,6 @@ public class MicData {
             recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE,
                     RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, bufferSizeInBytes);
             recorder.startRecording();
-            isRecording = true;
             recordingThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
