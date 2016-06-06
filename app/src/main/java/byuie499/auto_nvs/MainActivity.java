@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
     public OBDData obdData;         // container for OBD recording thread object
-    MyApplication app;              // required for bluetooth socket
+    MyApplication app = new MyApplication();              // required for bluetooth socket
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
     private ToggleButton recordButton, noise, vibration; // containers for layout buttons
 
@@ -85,12 +85,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
-        if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
-            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
+        checkBluetoothConnection();   // show connection pop-up if necessary
         initMembers(); // initialize containers
         initGraph();   // initialize graph
         addListenerToToggleButtons(); // add listeners
-        checkBluetoothConnection();   // show connection pop-up if necessary
     }
 
     @Override
@@ -144,8 +142,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             settingsData = new SettingsData(getApplicationContext());
         mHandler = new MainHandler(Looper.getMainLooper());
         rec_acc = new Xlo(this, mHandler, acc_samples, 2);
-        obdData = new OBDData(mHandler,acc_samples,true);
         rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
+
+        //We might want to hand this differently in the future
+        if (app.getGlobalBluetoothSocket() == null) {
+            obdData = new OBDData(mHandler, acc_samples, true);
+        } else {
+            obdData = new OBDData(mHandler,acc_samples,false);
+        }
+
         accelFFT[0] = new Fft(acc_samples, mHandler, 4);
         accelFFT[1] = new Fft(acc_samples, mHandler, 5);
         accelFFT[2] = new Fft(acc_samples, mHandler, 6);
@@ -187,9 +192,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(10);
-                canvas.drawLine(x-20, y-20, x+20, y+20, paint);
-                canvas.drawLine(x+20, y-20, x-20, y+20, paint);
-                canvas.drawLine(x-1,y-250,x+1,y+500,paint);
+               // canvas.drawLine(x-20, y-20, x+20, y+20, paint);
+               // canvas.drawLine(x+20, y-20, x-20, y+20, paint);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
             }
         });
 
@@ -197,9 +202,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(10);
-                canvas.drawLine(x-20, y-20, x+20, y+20, paint);
-                canvas.drawLine(x+20, y-20, x-20, y+20, paint);
-                canvas.drawLine(x-1,y-250,x+1,y+500,paint);
+               // canvas.drawLine(x-20, y-20, x+20, y+20, paint);
+               // canvas.drawLine(x+20, y-20, x-20, y+20, paint);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
             }
         });
         graph.addSeries(audioSeries);
@@ -273,8 +278,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     void checkBluetoothConnection() {
 
-        app = new MyApplication();
-
         if (app.getGlobalBluetoothSocket() == null) {
             android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(this);
             LayoutInflater adbInflater = LayoutInflater.from(this);
@@ -293,6 +296,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     "you need to be connected to an OBDII.");
             alertDialog.setNegativeButton("Ok", new android.app.AlertDialog.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
+                    if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
+                        getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
 
                 }
             });
@@ -305,6 +310,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             if (!dontShowAgain.isChecked())
                 alertDialog.show();
+        } else {
+            if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
+                getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Connected</font><small>"));
         }
 
     }
