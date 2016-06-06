@@ -15,20 +15,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Xlo {
-    public static Sensor accelerometer = null;
-    public static SensorManager sm = null;
-    public static double xc = 0;
+    public static Sensor accelerometer = null; // sensor
+    public static SensorManager sm = null;     // manager
+    public static double xc = 0;  // current value as read from the sensor
     public static double yc = 0;
     public static double zc = 0;
-    public static double[] xAcc;
+    public static double[] xAcc; // accumulator for values
     public static double[] yAcc;
     public static double[] zAcc;
-    public static boolean isRunning = false;
-    public static boolean isEnabled = true;
-    private int val = 0;
-    private int N = 0;
-    private int accum = 1;
-    private Handler mHandler = null;
+    public static boolean isRunning = false; // continue thread flag
+    public static boolean isEnabled = true;  // vibration selected flag
+    private int val = 0; // index for accumulator
+    private int N = 0;   // number of samples to accumulate before overwriting
+    private int accum = 1; // divisions of buffer to wait before sending message
+    private Handler mHandler = null; // thread handler for message
 
     public Xlo(Activity mMain, Handler global_handler, int samples, int dvsr){
         mHandler = global_handler;
@@ -57,31 +57,35 @@ public class Xlo {
             Thread fftThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    sm.registerListener(xlo_read, accelerometer, 1000);
+                    sm.registerListener(xlo_read, //listener
+                                        accelerometer, //sensor
+                                        1000); // period in us (NOT PRECISE, USUALLY FASTER)
                     Timer timer = new Timer();
                     TimerTask accumulate = new TimerTask() {
                         @Override
                         public void run() {
-                            xAcc[val] = xc;
+                            if (val == N) // avoid segmentation fault
+                                val = 0;
+                            xAcc[val] = xc; // store current sensor values
                             yAcc[val] = yc;
                             zAcc[val] = zc;
-                            ++val;
-                            if (val % (N / accum) == 0) {
+                            ++val; // increment index
+                            if (val % (N / accum) == 0) { // send message to main thread
                                 Message done = mHandler.obtainMessage(3);
                                 mHandler.sendMessage(done);
                             }
-                            if (val == N)
-                                val = 0;
                         }
                     };
-                    timer.schedule(accumulate, 0, 1);
-                    while (isRunning);
+                    timer.schedule(accumulate, // timer task
+                                   0, // delay
+                                   1); // period in ms
+                    while (isRunning); // keep timer thread until main thread indicates end
                     timer.cancel();
                     timer.purge();
-                    sm.unregisterListener(xlo_read, accelerometer);
+                    sm.unregisterListener(xlo_read, accelerometer); // release listener
                 }
             }, "auto_nvs_fft");
-            fftThread.start();
+            fftThread.start(); //run thread
         }
     }
 
