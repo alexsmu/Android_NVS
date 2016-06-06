@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothSocket;
  */
 public class MyApplication extends Application {
 
-    private BluetoothSocket globalBluetoothSocket;
+    private static BluetoothSocket globalBluetoothSocket;
     private String bluetoothDeviceAddress;
     private String bluetoothDeviceName;
     private static double tireDiameterInches = 27; //test tire size 27 inches

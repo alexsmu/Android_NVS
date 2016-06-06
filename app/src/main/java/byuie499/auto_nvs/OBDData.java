@@ -52,45 +52,55 @@ public class OBDData {
         n = samples;
     }
 
-    /** Runs OBD Threads and polls for RPM Frequency*/
+    /** Runs OBD Threads and polls for RPM Frequency and Tire RPM Frequency*/
     public void run(){
 
+        //if this is not a test actually get the information from OBDII
         if (!test) {
+
+            //Initializing necessary OBDII commands
             isRunning = true;
             engineRpmCommand = new RPMCommand();
             speedCommand = new SpeedCommand();
             engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
 
             try {
-
+                //Get GLOBAL bluetooth socket
                 app = new MyApplication();
                 socket = app.getGlobalBluetoothSocket();
+
+                //Create connection between phone and OBDII
                 new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
                 new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
                 new TimeoutCommand(125).run(socket.getInputStream(), socket.getOutputStream());
                 new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
 
+                //Thread to get necessary RPMs
                 Thread obdThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        //sm.registerListener(xlo_read, accelerometer, 1000);
                         Timer timer = new Timer();
                         TimerTask accumulate = new TimerTask() {
                             @Override
                             public void run() {
 
-                                //get rpm Frequency
+                                //get motor & wheel RPM
                                 rpmFreq = getRPMFrequency();
-                                Message done = mHandler.obtainMessage(9,rpmFreq);
+                                imperialTireRPMFreq = getImperialTireRPMFreq();
+
+                                //Put into array to be sent to main thread
+                                objectToSend[0] = rpmFreq;
+                                objectToSend[1] = imperialTireRPMFreq;
+
+                                //Send RPMs to main thread
+                                Message done = mHandler.obtainMessage(9,objectToSend);
                                 mHandler.sendMessage(done);
                             }
-
                         };
-                        timer.schedule(accumulate, 0, 1);
+                        timer.schedule(accumulate, 0, n);
                         while (isRunning);
                         timer.cancel();
                         timer.purge();
-                        //sm.unregisterListener(xlo_read, accelerometer);
                     }
                 }, "auto_nvs_fft");
                 obdThread.start();
@@ -101,11 +111,12 @@ public class OBDData {
 
             }
         } else {
+
+            //If this is a test, use test data and test methods
             isRunning = true;
             Thread obdThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    //sm.registerListener(xlo_read, accelerometer, 1000);
                     Timer timer = new Timer();
                     TimerTask accumulate = new TimerTask() {
                         @Override
@@ -124,11 +135,10 @@ public class OBDData {
                             }
 
                     };
-                    timer.schedule(accumulate, 0, 100);
+                    timer.schedule(accumulate, 0, n);
                     while (isRunning);
                     timer.cancel();
                     timer.purge();
-                    //sm.unregisterListener(xlo_read, accelerometer);
                 }
             }, "auto_nvs_fft");
             obdThread.start();
@@ -142,18 +152,6 @@ public class OBDData {
 
     public int getTestRPM() {
         return testRPM;
-    }
-
-    public int getTestImperialSpeed() {
-       return testImperialSpeed;
-    }
-
-    public float getTestImperialSpeedFreq() {
-        return testImperialSpeed/60;
-    }
-
-    public float getTestRPMFrequency() {
-        return (float)testRPM/60;
     }
 
     public float getVaryingTestRPMFreq() {
@@ -257,7 +255,7 @@ public class OBDData {
     }
 
     public double getImperialTireRPMFreq() {
-        return getImperialTireRPM()/60;
+        return getImperialTireRPM()/60.0;
     }
 
     public double getImperialTireRPMTEST() {
