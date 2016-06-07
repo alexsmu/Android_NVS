@@ -23,7 +23,7 @@ import java.util.TimerTask;
  */
 public class OBDData {
     private BluetoothSocket socket;
-    private MyApplication app;
+    private MyApplication app = new MyApplication();
     private RPMCommand engineRpmCommand;
     private SpeedCommand speedCommand;
     private EngineCoolantTemperatureCommand engineCoolantTemperatureCommand;
@@ -58,22 +58,26 @@ public class OBDData {
         //if this is not a test actually get the information from OBDII
         if (!test) {
 
-            //Initializing necessary OBDII commands
-            isRunning = true;
-            engineRpmCommand = new RPMCommand();
-            speedCommand = new SpeedCommand();
-            engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
+
 
             try {
                 //Get GLOBAL bluetooth socket
-                app = new MyApplication();
                 socket = app.getGlobalBluetoothSocket();
 
-                //Create connection between phone and OBDII
                 new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
                 new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
                 new TimeoutCommand(125).run(socket.getInputStream(), socket.getOutputStream());
                 new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
+
+                //Initializing necessary OBDII commands
+                isRunning = true;
+                engineRpmCommand = new RPMCommand();
+                speedCommand = new SpeedCommand();
+                engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
+
+                engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
+                speedCommand.run(socket.getInputStream(), socket.getOutputStream());
+                engineCoolantTemperatureCommand.run(socket.getInputStream(),socket.getOutputStream());
 
                 //Thread to get necessary RPMs
                 Thread obdThread = new Thread(new Runnable() {
@@ -83,6 +87,8 @@ public class OBDData {
                         TimerTask accumulate = new TimerTask() {
                             @Override
                             public void run() {
+
+
 
                                 //get motor & wheel RPM
                                 rpmFreq = getRPMFrequency();
@@ -182,6 +188,11 @@ public class OBDData {
      * getRPM : Will get RPM Example Output: 3000
      */
     public int getRPM() {
+        try {
+            engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
+        } catch (Exception ex) {
+            //do something
+        }
         return engineRpmCommand.getRPM();
     }
 
@@ -189,6 +200,11 @@ public class OBDData {
      * getRPMFormatted : Will get RPM Formatted Example Output: 3000RPM
      */
     public String getRPMFormatted() {
+        try {
+            engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
+        } catch (Exception ex) {
+            //Do something
+        }
         return engineRpmCommand.getFormattedResult();
     }
 
@@ -196,7 +212,7 @@ public class OBDData {
      * getRPMFrequency : Will get RPM Frequency Example Output: 7.3
      */
     public double getRPMFrequency() {
-        return (double)(getRPM())/60;
+        return (double)(getRPM())/60.0;
     }
 
     /**
@@ -210,6 +226,11 @@ public class OBDData {
      * getImperialSpeed : Will get Speed in Imperial Units (MPH) Example Output: 65.0
      */
     public double getImperialSpeed() {
+        try {
+            speedCommand.run(socket.getInputStream(), socket.getOutputStream());
+        } catch (Exception ex) {
+            //do something
+        }
         return speedCommand.getImperialSpeed();
     }
 
