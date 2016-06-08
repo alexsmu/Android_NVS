@@ -33,17 +33,20 @@ import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.PointsGraphSeries;
+import com.jjoe64.graphview.series.Series;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
-    private static final int audio_samples = 8192;    // samples to record before taking fft (must be power of 2)
+    private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
     private static final int acc_samples = 256; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
+    private static final int peakThresh = -50;
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
     private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
     private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
@@ -177,12 +181,30 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         zSeries.setTitle("Z");
         obdSeries.setTitle("RPMFreq");
         obdSeriesSpeed.setTitle("TireFreq");
+        audio_peaks.setTitle("APeaks");
 
         xSeries.setColor(Color.parseColor("#0B3861"));
         ySeries.setColor(Color.parseColor("#0B6138"));
         zSeries.setColor(Color.parseColor("#610B0B"));
         obdSeries.setColor(Color.parseColor("red"));
         obdSeriesSpeed.setColor(Color.parseColor("blue"));
+        audio_peaks.setColor(Color.parseColor("yellow"));
+
+        audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(4);
+                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
+                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
+            }
+        });
+
+        audio_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         //puts the line in the graph
         obdSeries.setCustomShape(new PointsGraphSeries.CustomShape() {
@@ -210,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.addSeries(zSeries);
         graph.addSeries(obdSeries);
         graph.addSeries(obdSeriesSpeed);
+        graph.addSeries(audio_peaks);
     }
 
     void addListenerToToggleButtons() {
@@ -234,13 +257,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     if (permission) {
                         MicData.isEnabled = true; // enable thread
                         rec_mic.run(); // run recording thread
-                        graph.addSeries(audioSeries); // graph results
+                       // graph.addSeries(audioSeries); // graph results
                     } else {
                         buttonView.setChecked(false); // no permission, undo check
                     }
                 } else {
                     rec_mic.onPause();
-                    graph.removeSeries(audioSeries);
+                    //graph.removeSeries(audioSeries);
                 } // store settings (remember checked state)
                 SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
@@ -392,6 +415,38 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     };
 
+    // The part of the function that help detect peaks
+    public DataPoint[] findPeaks(DataPoint[] data){
+
+        int max = 1;
+        int numPeaks = 0 ;
+        int[] indexes = new int[(data.length)/2];
+        DataPoint[] peaks;
+        // Checking for the conditions of the peaks
+        // if the change is ocurring, then graph.
+        for(int i = 1; i < data.length; i++){
+            while(i < data.length && data[i].getY() < data[i-1].getY()){
+                i++;
+            }
+            while(i < data.length && data[i].getY() > data[i-1].getY()){
+                max = i++;
+            }
+            if(i < data.length && data[max].getY() > peakThresh)
+                indexes[numPeaks++]= max;
+        }
+
+        if(numPeaks > 0)
+            peaks = new DataPoint[numPeaks];
+        else
+            peaks = new DataPoint[]{};
+        //placing the peaks in the coordinates into peaks so we can see where they are
+        for(int i = 0; i < numPeaks; i++)
+            peaks[i] = data[indexes[i]];
+
+    // make diplayable variable to show us the interval =audio_dps[1] - audio_dps[2];
+        return peaks;
+    }
+
     // separated handler as a class, so the code is more readable, and less things clog onCreate
     private class MainHandler extends Handler {
         MainHandler(Looper looper) {
@@ -406,9 +461,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     int j = 0;
                     for (int i = audio_startdps; i < audio_enddps; ++i) {
                         audio_dps[j++] = new DataPoint(audio_omega[i], audio_result[i]);
+
+
+                        // Void intervalSpacing{
+
+                        //if(audio_dps[i] > audio_dps[i+1])
+                          //  aps.appendData(audio_dps[i],false, audio_dps.length);
+
+                        // make diplayable variable to show us the interval =audio_dps[1] - audio_dps[2];
+
                     }
                     audioSeries.resetData(audio_dps);
+                    audio_peaks.resetData(findPeaks(audio_dps));
                     break;
+
                 }
                 case 3: // Accelerometer data is ready
                 {
