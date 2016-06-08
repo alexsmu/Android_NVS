@@ -24,7 +24,7 @@
         <activity android:name=".BluetoothActivity"
             android:parentActivityName=".MainActivity" >
         </activity>
-        <activity android:name=".PopUpRatios"
+        <activity android:name=".SettingsMenu"
             android:parentActivityName=".MainActivity" >
         </activity>
     </application>

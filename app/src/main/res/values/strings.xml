@@ -49,4 +49,10 @@
     <string name="BluetoothAlertMessage">In order for this app to work correctly you need to be
     connected to an OBDII</string>
     <string name="back">Back</string>
+    <string name="diameter">Diameter</string>
+    <string name="pulley_diameter">Pulley Diameters</string>
+    <string name="in">in.</string>
+    <string name="tire_diameter">Tire Diameter</string>
+    <string name="tire">Tire</string>
+    <string name="speed_parameters">Speed Parameters</string>
 </resources>

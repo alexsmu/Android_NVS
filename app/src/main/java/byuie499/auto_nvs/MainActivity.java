@@ -7,12 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.media.audiofx.BassBoost;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -21,7 +19,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -321,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         switch(item.getItemId()){
             case R.id.one:
-                Intent intent1 = new Intent(this, PopUpRatios.class);
+                Intent intent1 = new Intent(this, SettingsMenu.class);
                 startActivity(intent1);
                 break;
             case R.id.two:

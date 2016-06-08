@@ -10,7 +10,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class PopUpRatios extends AppCompatActivity implements View.OnFocusChangeListener{
+public class SettingsMenu extends AppCompatActivity implements View.OnFocusChangeListener{
     private SettingsData staticData = null;
 
     @Override
@@ -18,13 +18,13 @@ public class PopUpRatios extends AppCompatActivity implements View.OnFocusChange
         super.onCreate(savedInstanceState);
         if (SettingsData.mContext == null)
             staticData = new SettingsData(getApplicationContext());
-        setContentView(R.layout.tab_fragment_1);
+        setContentView(R.layout.settings);
         CheckBox check1 = (CheckBox) findViewById(R.id.check1);
         //check1.setChecked(SettingsData.isChecked(check1.getTag().toString(), true));
 
-        addListenerToNames();
-        addListenersToValues();
-        addListenersToCheckBoxes();
+        //addListenerToNames();
+        //addListenersToValues();
+        //addListenersToCheckBoxes();
     }
 
     void addListenerToNames(){

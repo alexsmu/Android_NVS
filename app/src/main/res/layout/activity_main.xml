@@ -19,10 +19,19 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:id="@+id/fftGraph"
-        android:layout_above="@+id/toggleNoise" />
+        android:layout_above="@+id/toggleVibration" />
+
+    <!--<android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/startstop"
+        android:id="@+id/graph_toolbar"
+        android:background="#AAAAAA"
+        >
+    </android.support.v7.widget.Toolbar>-->
 
     <ToggleButton
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
         android:textOff="@string/noise"
@@ -30,12 +39,12 @@
         android:id="@+id/toggleNoise"
         android:tag="noise"
         android:checked="true"
-        android:layout_above="@+id/toggleVibration"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_toRightOf="@+id/toggleVibration"
+        android:layout_toEndOf="@+id/toggleVibration"
+        android:layout_above="@+id/startstop"/>
 
     <ToggleButton
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
         android:textOff="@string/vibration"
@@ -50,6 +59,7 @@
     <ToggleButton
         android:layout_width="140dp"
         android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textOff="@string/record"
