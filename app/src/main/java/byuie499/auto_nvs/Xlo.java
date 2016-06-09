@@ -63,7 +63,7 @@ public class Xlo {
                     Timer timer = new Timer();
                     TimerTask accumulate = new TimerTask() {
                         @Override
-                        public void run() {
+                        public synchronized void run() {
                             if (val == N) // avoid segmentation fault
                                 val = 0;
                             xAcc[val] = xc; // store current sensor values

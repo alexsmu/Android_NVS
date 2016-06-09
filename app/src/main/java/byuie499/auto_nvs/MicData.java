@@ -50,7 +50,7 @@ public class MicData {
             recorder.startRecording();
             recordingThread = new Thread(new Runnable() {
                 @Override
-                public void run() {
+                public synchronized void run() {
                     short[] buff = new short[buffer];
                     double[] mic_data;
                     while (isRecording) {

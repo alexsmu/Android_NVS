@@ -1,5 +1,6 @@
 package byuie499.auto_nvs;
 
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -19,6 +20,9 @@ public class BluetoothActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_activity);
+
+        //Set Global Bluetooth Adapter to be used by both bluetooth tabs
+        ((MyApplication) getApplicationContext()).setGlobalBluetoothAdapter(BluetoothAdapter.getDefaultAdapter());
 
         getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
         getSupportActionBar().setTitle("Bluetooth Settings");

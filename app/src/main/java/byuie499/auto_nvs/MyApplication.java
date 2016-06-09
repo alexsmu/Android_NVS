@@ -1,6 +1,7 @@
 package byuie499.auto_nvs;
 
 import android.app.Application;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothSocket;
 
 /**
@@ -9,6 +10,16 @@ import android.bluetooth.BluetoothSocket;
 public class MyApplication extends Application {
 
     private static BluetoothSocket globalBluetoothSocket;
+
+    public static BluetoothAdapter getGlobalBluetoothAdapter() {
+        return globalBluetoothAdapter;
+    }
+
+    public static void setGlobalBluetoothAdapter(BluetoothAdapter globalBluetoothAdapter) {
+        MyApplication.globalBluetoothAdapter = globalBluetoothAdapter;
+    }
+
+    private static BluetoothAdapter globalBluetoothAdapter;
     private String bluetoothDeviceAddress;
     private String bluetoothDeviceName;
     private static double tireDiameterInches = 27; //test tire size 27 inches

@@ -38,7 +38,7 @@ public class BluetoothTabPaired extends Fragment {
 
 
         //Check to see if user has Bluetooth, if bluetooth is off turn it on
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter mBluetoothAdapter = ((MyApplication) getActivity().getApplicationContext()).getGlobalBluetoothAdapter();
         if (mBluetoothAdapter == null) {
             Toast.makeText(getActivity().getApplicationContext(),"Device does not support Bluetooth",Toast.LENGTH_LONG).show();
             return view;
