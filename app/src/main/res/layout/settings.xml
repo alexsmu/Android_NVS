@@ -31,8 +31,16 @@
                 android:text="@string/pulley_diameter"
                 android:id="@+id/textView1"
                 android:layout_marginLeft="5dp"
-                android:layout_marginStart="5dp"  />
-
+                android:layout_marginStart="5dp"
+                android:textSize="20sp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/adtlopt1"
+            android:orientation="vertical"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
@@ -50,8 +58,9 @@
                     android:layout_weight="10"
                     android:gravity="center_vertical"
                     android:text="@string/crankshaft"
-                    android:textSize="18dp"
-                    android:layout_marginLeft="4dp" />
+                    android:textSize="16sp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"/>
                 <EditText
                     android:id="@+id/value1"
                     android:layout_width="0sp"
@@ -59,14 +68,16 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -85,7 +96,8 @@
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
+                    android:hint="@string/name"
+                    android:textSize="16sp" />
                 <EditText
                     android:id="@+id/value2"
                     android:layout_width="0sp"
@@ -93,14 +105,16 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -119,7 +133,8 @@
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
+                    android:hint="@string/name"
+                    android:textSize="16sp" />
                 <EditText
                     android:id="@+id/value3"
                     android:layout_width="0sp"
@@ -127,14 +142,16 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -153,7 +170,8 @@
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
+                    android:hint="@string/name"
+                    android:textSize="16sp" />
                 <EditText
                     android:id="@+id/value4"
                     android:layout_width="0sp"
@@ -161,14 +179,16 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -187,7 +207,8 @@
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
+                    android:hint="@string/name"
+                    android:textSize="16sp" />
                 <EditText
                     android:id="@+id/value5"
                     android:layout_width="0sp"
@@ -195,14 +216,16 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -221,7 +244,8 @@
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
+                    android:hint="@string/name"
+                    android:textSize="16sp" />
                 <EditText
                     android:id="@+id/value6"
                     android:layout_width="0sp"
@@ -229,17 +253,20 @@
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:gravity="center_vertical"
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
+        </LinearLayout>
 
             <View
                 android:layout_width="fill_parent"
@@ -267,8 +294,17 @@
                 android:text="@string/speed_parameters"
                 android:id="@+id/textView2"
                 android:layout_marginLeft="5dp"
-                android:layout_marginStart="5dp"  />
+                android:layout_marginStart="5dp"
+                android:textSize="20sp" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/adtlopt2"
+            android:orientation="vertical"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
@@ -283,15 +319,17 @@
                     android:layout_weight="10"
                     android:gravity="center_vertical"
                     android:text="@string/tire"
-                    android:textSize="18dp"
-                    android:layout_marginLeft="4dp" />
+                    android:textSize="16sp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp" />
                 <EditText
                     android:layout_width="0sp"
                     android:layout_height="fill_parent"
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
+                    android:hint="@string/diameter"
+                    android:textSize="16sp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -315,56 +353,101 @@
                     android:gravity="center_vertical"
                     android:text="Differential Gear"
                     android:layout_marginLeft="4dp"
-                    android:textSize="18dp" />
+                    android:layout_marginStart="4dp"
+                    android:textSize="16sp" />
                 <EditText
                     android:layout_width="0sp"
                     android:layout_height="fill_parent"
                     android:layout_weight="5"
                     android:gravity="center"
                     android:inputType="numberDecimal"
-                    android:hint="@string/ratio"/>
+                    android:hint="@string/ratio"
+                    android:textSize="16sp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:gravity="center_vertical" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="3dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="10sp"
+                android:background="#BDBDBD" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/adtlopt"
+            android:orientation="vertical"
+            android:layout_below="@id/devices2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/additional_options"
+                android:id="@+id/textView3"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/devices4"
+            android:orientation="vertical"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
+            <LinearLayout
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/additionaloptions"
+                android:orientation="horizontal">
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"/>
+                <TextView
+                    android:layout_width="0sp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="10"
+                    android:gravity="center_vertical"
+                    android:text="Launch tutorial on next app start."
+                    android:textSize="16sp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/device3"
                 android:orientation="horizontal">
                 <CheckBox
-                    android:id="@+id/check3"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"/>
-                <EditText
-                    android:id="@+id/name3"
+                <TextView
                     android:layout_width="0sp"
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:hint="@string/name"/>
-                <EditText
-                    android:id="@+id/value3"
-                    android:layout_width="0sp"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="5"
-                    android:gravity="center"
-                    android:inputType="numberDecimal"
-                    android:hint="@string/diameter"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/in"
-                    android:gravity="center_vertical" />
+                    android:text="Additional option 1"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
+                    android:textSize="16sp" />
 
             </LinearLayout>
-
+        </LinearLayout>
 
             <View
                 android:layout_width="fill_parent"
