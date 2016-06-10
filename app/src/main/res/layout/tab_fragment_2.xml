@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:fillViewport="true">
-
+<!--
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,15 +22,15 @@
             />
 
         <Spinner
-            android:id="@+id/fileSpinner"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:layout_below="@+id/textTitle"
-            android:layout_centerHorizontal="true"
-            android:spinnerMode="dropdown" />
+        android:id="@+id/fileSpinner"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_below="@+id/textTitle"
+        android:layout_centerHorizontal="true"
+        android:spinnerMode="dropdown" />
 
         <com.jjoe64.graphview.GraphView
             android:layout_width="match_parent"
@@ -56,8 +56,8 @@
             android:checked="true"
             />
 
-        <!-- THIS IMAGE VIEW IS BEING USED TO CENTER ELEMENTS
-            IN THIS VIEW - DO NOT REMOVE !-->
+        THIS IMAGE VIEW IS BEING USED TO CENTER ELEMENTS
+            IN THIS VIEW - DO NOT REMOVE
         <ImageView
             android:id="@+id/CenterImageView"
             android:layout_width="10dp"
@@ -142,4 +142,6 @@
 
 
     </RelativeLayout>
+
+-->
 </ScrollView>

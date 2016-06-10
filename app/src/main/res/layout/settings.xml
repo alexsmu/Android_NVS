@@ -15,11 +15,61 @@
         android:focusableInTouchMode="true">
 
         <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/profs"
+            android:orientation="vertical"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings"
+                android:id="@+id/title"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:textSize="30sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/profs1"
+                android:orientation="vertical"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp">
+
+
+
+                <Spinner
+                    android:id="@+id/fileSpinner"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="30sp"
+                    android:spinnerMode="dropdown"
+                    android:layout_gravity="end" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="3dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="10sp"
+                android:background="#BDBDBD" />
+
+            </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/devices1"
             android:orientation="vertical"
-            android:layout_alignParentTop="true"
+            android:layout_below="@id/profs"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
             android:layout_marginLeft="15dp"
@@ -268,6 +318,15 @@
 
         </LinearLayout>
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save"
+                android:layout_gravity="end"
+                android:layout_marginRight="20dp"
+                android:layout_marginEnd="20dp"
+                android:id="@+id/save1" />
+
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="3dp"
@@ -329,7 +388,8 @@
                     android:gravity="center"
                     android:inputType="numberDecimal"
                     android:hint="@string/diameter"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:id="@+id/tire1" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -362,7 +422,8 @@
                     android:gravity="center"
                     android:inputType="numberDecimal"
                     android:hint="@string/ratio"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:id="@+id/gearval" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -371,6 +432,15 @@
 
             </LinearLayout>
         </LinearLayout>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save"
+                android:layout_gravity="end"
+                android:layout_marginRight="20dp"
+                android:layout_marginEnd="20dp"
+                android:id="@+id/save2" />
 
             <View
                 android:layout_width="fill_parent"

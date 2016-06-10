@@ -56,4 +56,6 @@
     <string name="tire">Tire</string>
     <string name="speed_parameters">Speed Parameters</string>
     <string name="additional_options">Additional Options</string>
+    <string name="save">Save</string>
+    <string name="settings">Settings</string>
 </resources>

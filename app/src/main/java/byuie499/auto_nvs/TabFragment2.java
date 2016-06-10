@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TabFragment2 extends Fragment {
-    View mMain = null;
+/*    View mMain = null;
     private ToggleButton toggleRealTime, togglePlayBack;
     private ImageButton playButton,stopButton,pauseButton,recordButton;
     private TextView textTitle;
@@ -60,18 +60,18 @@ public class TabFragment2 extends Fragment {
         addListenerToToggleButtons();
         addListenerToImageButtons();
         addListenerToSeekBar();
-        /*THE FOLLOWING ITEMS ARE FOR TESTING ONLY*/
+
         List<String> testFiles = new ArrayList<String>();
         testFiles.add("BlueCar.txt");
         testFiles.add("RedCar.txt");
         testFiles.add("NeonCar.txt");
         testFiles.add("BlackCar.txt");
-        /*TESTCODE ENDS HERE*/
+
 
         fileSpinner = (Spinner) mMain.findViewById(R.id.fileSpinner);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                getActivity().getApplicationContext(), R.layout.file_spinner, testFiles);
+                getActivity().getApplicationContext(), R.layout.spinner_item, testFiles);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         fileSpinner.setAdapter(adapter);
 
@@ -425,5 +425,5 @@ public class TabFragment2 extends Fragment {
                 }
             }
         }
-    }
+    }*/
 }

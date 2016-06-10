@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
-
+<!--
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
@@ -54,8 +54,8 @@
         android:layout_alignRight="@+id/pauseButton"
         android:layout_alignEnd="@+id/pauseButton" />
 
-    <!-- THIS IMAGE VIEW IS BEING USED TO CENTER ELEMENTS
-        IN THIS VIEW - DO NOT REMOVE !-->
+   THIS IMAGE VIEW IS BEING USED TO CENTER ELEMENTS
+        IN THIS VIEW - DO NOT REMOVE
     <ImageView
         android:id="@+id/CenterImageView"
         android:layout_width="10dp"
@@ -139,4 +139,6 @@
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/fftGraph"
         android:layout_alignEnd="@+id/fftGraph" />
+
+    -->
 </RelativeLayout>

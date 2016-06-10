@@ -6,5 +6,11 @@
         <item name="colorPrimaryDark">#151515</item>
         <item name="colorAccent">#0174DF</item>
     </style>
+    <style name="spinnerItemStyle" parent="android:Widget.TextView.SpinnerItem">
 
+    </style>
+
+    <style name="spinnerDropDownItemStyle" parent="android:TextAppearance.Widget.TextView.SpinnerItem">
+
+    </style>
 </resources>
