@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
@@ -173,16 +174,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.getViewport().setMinY(-80);
         graph.getViewport().setMaxY(40);
 
+        // Titles
         audioSeries.setTitle("Mic");
-        audioSeries.setColor(Color.parseColor("#181907"));
-
         xSeries.setTitle("X");
         ySeries.setTitle("Y");
         zSeries.setTitle("Z");
         obdSeries.setTitle("RPMFreq");
         obdSeriesSpeed.setTitle("TireFreq");
         audio_peaks.setTitle("APeaks");
+        
+        //device2_series.setTitle();
 
+        // Colors
+        audioSeries.setColor(Color.parseColor("#181907"));
         xSeries.setColor(Color.parseColor("#0B3861"));
         ySeries.setColor(Color.parseColor("#0B6138"));
         zSeries.setColor(Color.parseColor("#610B0B"));
@@ -190,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         obdSeriesSpeed.setColor(Color.parseColor("blue"));
         audio_peaks.setColor(Color.parseColor("yellow"));
 
+        // Shapes
         audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
@@ -223,9 +228,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 paint.setStrokeWidth(10);
                // canvas.drawLine(x-20, y-20, x+20, y+20, paint);
                // canvas.drawLine(x+20, y-20, x-20, y+20, paint);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+                canvas.drawLine(x,y-500,x,y+1000,paint);
             }
         });
+
+        // Add to graph
         graph.addSeries(audioSeries);
         graph.addSeries(xSeries);
         graph.addSeries(ySeries);
