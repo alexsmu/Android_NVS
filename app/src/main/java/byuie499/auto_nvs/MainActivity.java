@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static DataPoint[] accel_dpsZ = new DataPoint[acc_numdps];
     private static DataPoint[] tire_dps = new DataPoint[1];
     private static DataPoint[] rpm_dps = new DataPoint[1];
+    private static DataPoint[] device2_dps = new DataPoint[1];
     private static double[] audio_result = null;
     private static double[] accel_resultX = null;
     private static double[] accel_resultY = null;
@@ -72,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
@@ -81,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     MyApplication app = new MyApplication();              // required for bluetooth socket
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
     private ToggleButton recordButton, noise, vibration; // containers for layout buttons
+    private SharedPreferences prefs;
+    private SharedPreferences settingsPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         initMembers(); // initialize containers
         initGraph();   // initialize graph
         addListenerToToggleButtons(); // add listeners
+
+        setPrefs();
     }
 
     @Override
@@ -138,6 +146,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
     }
 
+    protected void setPrefs(){
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
+        String profile = settingsPrefs.getString("profile", "");
+        settingsPrefs.edit().putString("profile", profile).apply();
+        prefs = getSharedPreferences(profile, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.apply();
+
+    }
+
     protected void initMembers() { // Initialize member containers
         if (SettingsData.mContext == null) //Check if settings already have context
             settingsData = new SettingsData(getApplicationContext());
@@ -181,8 +200,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         obdSeries.setTitle("RPMFreq");
         obdSeriesSpeed.setTitle("TireFreq");
         audio_peaks.setTitle("APeaks");
-        
-        //device2_series.setTitle();
+
+        setPrefs();
+        device2_series.setTitle(prefs.getString("name2", ""));
 
         // Colors
         audioSeries.setColor(Color.parseColor("#181907"));
@@ -192,6 +212,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         obdSeries.setColor(Color.parseColor("red"));
         obdSeriesSpeed.setColor(Color.parseColor("blue"));
         audio_peaks.setColor(Color.parseColor("yellow"));
+
+        device2_series.setColor(Color.parseColor("green"));
 
         // Shapes
         audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
@@ -221,6 +243,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
+        device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
+
         obdSeriesSpeed.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
@@ -239,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.addSeries(obdSeries);
         graph.addSeries(obdSeriesSpeed);
         graph.addSeries(audio_peaks);
+
+        graph.addSeries(device2_series);
     }
 
     void addListenerToToggleButtons() {
@@ -539,6 +571,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     obd_result = (double[]) msg.obj;
                     rpm_dps[0] = new DataPoint(obd_result[0],0);
                     obdSeries.resetData(rpm_dps);
+
+                    /*TESTING*/
+                    obd_result = (double[]) msg.obj;
+                    device2_dps[0] = new DataPoint(3*obd_result[0]/2.5,0);
+                    device2_series.resetData(device2_dps);
+                    /*TESTING*/
 
                     //Tire RPM Frequency
                     tire_dps[0] = new DataPoint(obd_result[1],0);
