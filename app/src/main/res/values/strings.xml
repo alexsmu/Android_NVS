@@ -55,6 +55,8 @@
     <string name="tire_diameter">Tire Diameter</string>
     <string name="tire">Tire</string>
     <string name="speed_parameters">Speed Parameters</string>
+    <string name="Scan">Scan</string>
+    <string name="Scanning">Scanning</string>
     <string name="additional_options">Additional Options</string>
     <string name="save">Save</string>
     <string name="settings">Settings</string>
