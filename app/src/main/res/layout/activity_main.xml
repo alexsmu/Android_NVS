@@ -57,6 +57,19 @@
         android:layout_alignParentStart="true" />
 
     <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textOff="Measure"
+        android:textOn="Measure"
+        android:id="@+id/toggleMeasure"
+        android:tag="measure"
+        android:checked="true"
+        android:layout_below="@+id/toggleVibration"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <ToggleButton
         android:layout_width="140dp"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
@@ -68,6 +81,47 @@
         android:background="@drawable/toggle_selector"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        />
+
+
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/xCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/toggleNoise"
+        android:layout_toEndOf="@id/toggleNoise"
+        android:layout_above="@id/startstop"
+        android:text="X"/>
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/yCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/xCheck"
+        android:layout_toEndOf="@id/xCheck"
+        android:layout_above="@id/startstop"
+        android:text="Y"
+        />
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/zCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/yCheck"
+        android:layout_toEndOf="@id/yCheck"
+        android:layout_above="@id/startstop"
+        android:text="Z"
+        />
+
+    <Button
+        android:id="@+id/clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/startstop"
+        android:layout_toEndOf="@id/startstop"
+        android:layout_alignParentBottom="true"
+        android:text="CLEAR"
         />
 
 </RelativeLayout>

@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -78,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> x_peaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> y_peaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> z_peaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
@@ -87,11 +91,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private ToggleButton recordButton, noise, vibration; // containers for layout buttons
     private SharedPreferences prefs;
     private SharedPreferences settingsPrefs;
+    private CheckBox xCheck;
+    private CheckBox yCheck;
+    private CheckBox zCheck;
+    private Button clearButton;
+    private ToggleButton measureButton;
+    private double measureX1 = 0;
+    private double measureX2 = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
+        handleVibrationChecks();
         checkBluetoothConnection();   // show connection pop-up if necessary
         initMembers(); // initialize containers
         initGraph();   // initialize graph
@@ -100,6 +112,64 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         setPrefs();
     }
 
+    public void handleVibrationChecks(){
+        xCheck = (CheckBox) findViewById(R.id.xCheck);
+        yCheck = (CheckBox) findViewById(R.id.yCheck);
+        zCheck = (CheckBox) findViewById(R.id.zCheck);
+        clearButton = (Button) findViewById(R.id.clear);
+        measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
+
+//        clearButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                graph.removeSeries(xSeries);
+//                graph.removeSeries(ySeries);
+//                graph.removeSeries(zSeries);
+//                graph.removeSeries(x_peaks);
+//                graph.removeSeries(y_peaks);
+//                graph.removeSeries(z_peaks);
+//            }
+//        });
+
+//        xCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if(isChecked) {
+//                    graph.addSeries(x_peaks);
+//                }
+//                else
+//                {
+//                    graph.removeSeries(x_peaks);
+//                }
+//            }
+//        });
+//
+//        yCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if(isChecked) {
+//                    graph.addSeries(y_peaks);
+//                }
+//                else
+//                {
+//                    graph.removeSeries(y_peaks);
+//                }
+//            }
+//        });
+//
+//        zCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if(isChecked) {
+//                    graph.addSeries(z_peaks);
+//                }
+//                else
+//                {
+//                    graph.removeSeries(z_peaks);
+//                }
+//            }
+//        });
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -200,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         obdSeries.setTitle("RPMFreq");
         obdSeriesSpeed.setTitle("TireFreq");
         audio_peaks.setTitle("APeaks");
+        x_peaks.setTitle("XPeaks");
 
         setPrefs();
         device2_series.setTitle(prefs.getString("name2", ""));
@@ -212,6 +283,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         obdSeries.setColor(Color.parseColor("red"));
         obdSeriesSpeed.setColor(Color.parseColor("blue"));
         audio_peaks.setColor(Color.parseColor("yellow"));
+        x_peaks.setColor(Color.parseColor("yellow"));
+        y_peaks.setColor(Color.parseColor("yellow"));
+        z_peaks.setColor(Color.parseColor("yellow"));
 
         device2_series.setColor(Color.parseColor("green"));
 
@@ -225,7 +299,67 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
+        x_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(4);
+                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
+                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
+            }
+        });
+
+        y_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(4);
+                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
+                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
+            }
+        });
+
+        z_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(4);
+                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
+                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
+            }
+        });
+
         audio_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                if(measureButton.isChecked()){
+                    if (measureX1 == 0){
+                        measureX1 = dataPoint.getX();
+                    } else if (measureX2 == 0) {
+                        measureX2 = dataPoint.getX();
+                        double result = measureX2 - measureX1;
+                        Toast.makeText(MainActivity.this,"Distance: "+ Double.toString(result),Toast.LENGTH_SHORT).show();
+                        measureX2 =0;
+                        measureX1 = 0;
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Ap: " + dataPoint, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        x_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        y_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        z_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
@@ -270,6 +404,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.addSeries(obdSeriesSpeed);
         graph.addSeries(audio_peaks);
 
+        /*
+        graph.addSeries(x_peaks);
+        graph.addSeries(y_peaks);
+        graph.addSeries(z_peaks);
+        */
+
         graph.addSeries(device2_series);
     }
 
@@ -313,15 +453,29 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 Xlo.isEnabled = isChecked; // enable/disable thread
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if  (isChecked) {
-                    rec_acc.run(); // run thread
-                    graph.addSeries(xSeries); // graph results
-                    graph.addSeries(ySeries);
-                    graph.addSeries(zSeries);
-                } else {
-                    rec_acc.onPause(); // stop thread
                     graph.removeSeries(xSeries); // remove results from graph
                     graph.removeSeries(ySeries);
                     graph.removeSeries(zSeries);
+                    rec_acc.run(); // run thread
+                    if(xCheck.isChecked()) {
+                        graph.addSeries(xSeries); // graph results
+                        graph.addSeries(x_peaks);
+                    }
+
+                    if(yCheck.isChecked()) {
+                        graph.addSeries(ySeries);
+                        graph.addSeries(y_peaks);
+                    }
+
+                    if(zCheck.isChecked()) {
+                        graph.addSeries(zSeries);
+                        graph.addSeries(z_peaks);
+                    }
+                } else {
+                    rec_acc.onPause(); // stop thread
+                   // graph.removeSeries(xSeries); // remove results from graph
+                   // graph.removeSeries(ySeries);
+                   // graph.removeSeries(zSeries);
                 }
             }
         });
@@ -531,6 +685,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         accel_dpsX[j++] = new DataPoint(accel_omega[i], accel_resultX[i]);
                     }
                     xSeries.resetData(accel_dpsX);
+                    x_peaks.resetData(findPeaks(accel_dpsX));
                     break;
                 }
                 case 5: // Accelerometer y fft complete
@@ -542,6 +697,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         accel_dpsY[j++] = new DataPoint(accel_omega[i], accel_resultY[i]);
                     }
                     ySeries.resetData(accel_dpsY);
+                    y_peaks.resetData(findPeaks(accel_dpsY));
                     break;
                 }
                 case 6: // Accelerometer z fft complete
@@ -553,6 +709,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
                     }
                     zSeries.resetData(accel_dpsZ);
+                    z_peaks.resetData(findPeaks(accel_dpsZ));
                     break;
                 }
                 case 7: // Audio fft correlation complete
