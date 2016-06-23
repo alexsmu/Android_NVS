@@ -282,6 +282,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.getViewport().setMinY(-80);
         graph.getViewport().setMaxY(40);
 
+        //Set Scalable and Zoom
+        graph.getViewport().setScalable(true);
+        graph.getViewport().setScrollable(true);
+
         // Titles
         audioSeries.setTitle("Mic");
         xSeries.setTitle("X");
