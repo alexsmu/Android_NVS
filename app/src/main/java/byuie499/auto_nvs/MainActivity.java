@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -91,6 +92,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private ToggleButton recordButton, noise, vibration; // containers for layout buttons
     private SharedPreferences prefs;
     private SharedPreferences settingsPrefs;
+    private String spinnerName = "Profile 1";
+    private float dev1val;
+    private float dev2val;
+    private float dev3val;
+    private float dev4val;
+    private float dev5val;
+    private float dev6val;
     private CheckBox xCheck;
     private CheckBox yCheck;
     private CheckBox zCheck;
@@ -193,6 +201,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         registerReceiver(mReceiver, filter);
         // Start obd thread
         obdData.run();
+
+        setPrefs();
     }
 
     @Override
@@ -225,6 +235,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
 
+        if (dev1val != 0.0f) {
+            dev1val = Float.parseFloat(prefs.getString("ratio1", ""));
+        }
+        if (dev1val != 0.0f) {
+            dev2val = Float.parseFloat(prefs.getString("ratio2", ""));
+        }
+        //dev3val = Float.parseFloat(prefs.getString("ratio3", ""));
+        //dev4val = Float.parseFloat(prefs.getString("ratio4", ""));
+        //dev5val = Float.parseFloat(prefs.getString("ratio5", ""));
+        //dev6val = Float.parseFloat(prefs.getString("ratio6", ""));
     }
 
     protected void initMembers() { // Initialize member containers
@@ -483,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         recordButton.setOnClickListener(new View.OnClickListener(){ //to be implemented
             @Override
             public void onClick(View v) {
-
+                //Toast.makeText(getApplicationContext(), prefs.getString("ratio1", ""), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -731,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     /*TESTING*/
                     obd_result = (double[]) msg.obj;
-                    device2_dps[0] = new DataPoint(3*obd_result[0]/2.5,0);
+                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
                     device2_series.resetData(device2_dps);
                     /*TESTING*/
 

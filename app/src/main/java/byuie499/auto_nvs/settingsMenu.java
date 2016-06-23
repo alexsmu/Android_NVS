@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,7 +15,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -37,6 +38,14 @@ public class SettingsMenu extends AppCompatActivity {
     private EditText name4;
     private EditText name5;
     private EditText name6;
+    private CheckBox check1;
+    private CheckBox check2;
+    private CheckBox check3;
+    private CheckBox check4;
+    private CheckBox check5;
+    private CheckBox check6;
+    private CheckBox check7;
+    private CheckBox check8;
 
 
     @Override
@@ -67,14 +76,15 @@ public class SettingsMenu extends AppCompatActivity {
         fileSpinner.setAdapter(adapter);
 
         settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
-
+        update();
         setSpinner();
 
         addListenerToSpinner();
         addListenersToCheckBoxes();
+        addListenersToEditTexts();
         addListenerToButtons();
 
-        update();
+
     }
 
     void update(){
@@ -85,6 +95,15 @@ public class SettingsMenu extends AppCompatActivity {
         ratio5  = (EditText) findViewById((R.id.value5));
         ratio6  = (EditText) findViewById((R.id.value6));
 
+        check1 = (CheckBox) findViewById(R.id.check1);
+        check2 = (CheckBox) findViewById(R.id.check2);
+        check3 = (CheckBox) findViewById(R.id.check3);
+        check4 = (CheckBox) findViewById(R.id.check4);
+        check5 = (CheckBox) findViewById(R.id.check5);
+        check6 = (CheckBox) findViewById(R.id.check6);
+        check7 = (CheckBox) findViewById(R.id.check7);
+        check8 = (CheckBox) findViewById(R.id.check8);
+
         name2  = (EditText) findViewById((R.id.name2));
         name3  = (EditText) findViewById((R.id.name3));
         name4  = (EditText) findViewById((R.id.name4));
@@ -94,8 +113,6 @@ public class SettingsMenu extends AppCompatActivity {
         ratio7  = (EditText) findViewById((R.id.tire1));
         ratio8  = (EditText) findViewById((R.id.gearval));
 
-        saveVars();
-
         String profile = fileSpinner.getSelectedItem().toString();
         prefs = getSharedPreferences(profile, MODE_PRIVATE);
         settingsPrefs.edit().putString("profile", profile).apply();
@@ -104,20 +121,191 @@ public class SettingsMenu extends AppCompatActivity {
         loadVars();
     }
 
-    void saveVars(){
-        prefs.edit().putString("ratio1", ratio1.getText().toString()).apply();
-        prefs.edit().putString("ratio2", ratio2.getText().toString()).apply();
-        prefs.edit().putString("ratio3", ratio3.getText().toString()).apply();
-        prefs.edit().putString("ratio4", ratio4.getText().toString()).apply();
-        prefs.edit().putString("ratio5", ratio5.getText().toString()).apply();
-        prefs.edit().putString("ratio6", ratio6.getText().toString()).apply();
-        prefs.edit().putString("name2", name2.getText().toString()).apply();
-        prefs.edit().putString("name3", name3.getText().toString()).apply();
-        prefs.edit().putString("name4", name4.getText().toString()).apply();
-        prefs.edit().putString("name5", name5.getText().toString()).apply();
-        prefs.edit().putString("name6", name6.getText().toString()).apply();
-        prefs.edit().putString("ratio7", ratio7.getText().toString()).apply();
-        prefs.edit().putString("ratio8", ratio8.getText().toString()).apply();
+    void addListenersToEditTexts(){
+        ratio1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio1", ratio1.getText().toString()).apply();
+            }
+        });
+        ratio2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio2", ratio2.getText().toString()).apply();
+            }
+        });
+        ratio3.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio3", ratio3.getText().toString()).apply();
+            }
+        });
+        ratio4.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio4", ratio4.getText().toString()).apply();
+            }
+        });
+        ratio5.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio5", ratio5.getText().toString()).apply();
+            }
+        });
+        ratio6.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio6", ratio6.getText().toString()).apply();
+            }
+        });
+
+        name2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("name2", name2.getText().toString()).apply();
+            }
+        });
+        name3.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("name3", name3.getText().toString()).apply();
+            }
+        });
+        name4.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("name4", name4.getText().toString()).apply();
+            }
+        });
+        name5.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("name5", name3.getText().toString()).apply();
+            }
+        });
+        name6.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("name6", name6.getText().toString()).apply();
+            }
+        });
+
+        ratio7.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio7", ratio7.getText().toString()).apply();
+            }
+        });
+        ratio8.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                prefs.edit().putString("ratio8", ratio8.getText().toString()).apply();
+            }
+        });
     }
 
     void loadVars(){
@@ -127,15 +315,24 @@ public class SettingsMenu extends AppCompatActivity {
         ratio4.setText(prefs.getString("ratio4", ""));
         ratio5.setText(prefs.getString("ratio5", ""));
         ratio6.setText(prefs.getString("ratio6", ""));
+
         name2.setText(prefs.getString("name2", ""));
         name3.setText(prefs.getString("name3", ""));
         name4.setText(prefs.getString("name4", ""));
         name5.setText(prefs.getString("name5", ""));
         name6.setText(prefs.getString("name6", ""));
+
         ratio7.setText(prefs.getString("ratio7", ""));
         ratio8.setText(prefs.getString("ratio8", ""));
 
-        //Toast.makeText(getApplicationContext(), "Loaded", Toast.LENGTH_SHORT).show();
+        check1.setChecked(Boolean.valueOf(prefs.getString("check1", "")));
+        check2.setChecked(Boolean.valueOf(prefs.getString("check2", "")));
+        check3.setChecked(Boolean.valueOf(prefs.getString("check3", "")));
+        check4.setChecked(Boolean.valueOf(prefs.getString("check4", "")));
+        check5.setChecked(Boolean.valueOf(prefs.getString("check5", "")));
+        check6.setChecked(Boolean.valueOf(prefs.getString("check6", "")));
+        check7.setChecked(Boolean.valueOf(prefs.getString("check7", "")));
+        check8.setChecked(Boolean.valueOf(prefs.getString("check8", "")));
     }
 
     void setSpinner(){
@@ -206,7 +403,6 @@ public class SettingsMenu extends AppCompatActivity {
             save1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    saveVars();
                     Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -215,7 +411,6 @@ public class SettingsMenu extends AppCompatActivity {
             save2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    saveVars();
                     Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -223,84 +418,51 @@ public class SettingsMenu extends AppCompatActivity {
     }
 
     void addListenersToCheckBoxes(){
-        final CheckBox check1 = (CheckBox) findViewById(R.id.check1);
-        if (check1 != null) {
-            check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check1 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check1 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-        final CheckBox check2 = (CheckBox) findViewById(R.id.check2);
-        if (check2 != null) {
-            check2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check2 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check2 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-        final CheckBox check3 = (CheckBox) findViewById(R.id.check3);
-        if (check3 != null) {
-            check3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check3 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check3 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-        final CheckBox check4 = (CheckBox) findViewById(R.id.check4);
-        if (check4 != null) {
-            check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check4 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check4 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-        final CheckBox check5 = (CheckBox) findViewById(R.id.check5);
-        if (check5 != null) {
-            check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check5 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check5 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-        final CheckBox check6 = (CheckBox) findViewById(R.id.check6);
-        if (check6 != null) {
-            check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Toast.makeText(getApplicationContext(), "check6 true", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(getApplicationContext(), "check6 false", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
+        check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check1", String.valueOf(check1.isChecked())).apply();
+            }
+        });
+        check2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check2", String.valueOf(check2.isChecked())).apply();
+            }
+        });
+        check3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check3", String.valueOf(check3.isChecked())).apply();
+            }
+        });
+        check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check4", String.valueOf(check4.isChecked())).apply();
+            }
+        });
+        check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check5", String.valueOf(check5.isChecked())).apply();
+            }
+        });
+        check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check6", String.valueOf(check6.isChecked())).apply();
+            }
+        });
+        check7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check7", String.valueOf(check7.isChecked())).apply();
+            }
+        });
+        check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putString("check8", String.valueOf(check8.isChecked())).apply();
+            }
+        });
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        saveVars();
     }
 
     @Override
