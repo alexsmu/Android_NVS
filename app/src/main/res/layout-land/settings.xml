@@ -316,14 +316,14 @@
 
             </LinearLayout>
 
-            <Button
+            <!--<Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/save"
                 android:layout_gravity="end"
                 android:layout_marginRight="20dp"
                 android:layout_marginEnd="20dp"
-                android:id="@+id/save1" />
+                android:id="@+id/save1" />-->
 
             <View
                 android:layout_width="fill_parent"
@@ -430,14 +430,14 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <Button
+            <!--<Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/save"
                 android:layout_gravity="end"
                 android:layout_marginRight="20dp"
                 android:layout_marginEnd="20dp"
-                android:id="@+id/save2" />
+                android:id="@+id/save2" />-->
 
             <View
                 android:layout_width="fill_parent"
