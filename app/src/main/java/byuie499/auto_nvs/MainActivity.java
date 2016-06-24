@@ -93,12 +93,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private SharedPreferences prefs;
     private SharedPreferences settingsPrefs;
     private String spinnerName = "Profile 1";
-    private float dev1val;
-    private float dev2val;
-    private float dev3val;
-    private float dev4val;
-    private float dev5val;
-    private float dev6val;
+    private double dev1val;
+    private double dev2val;
+    private double dev3val;
+    private double dev4val;
+    private double dev5val;
+    private double dev6val;
     private CheckBox xCheck;
     private CheckBox yCheck;
     private CheckBox zCheck;
@@ -116,8 +116,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         initMembers(); // initialize containers
         initGraph();   // initialize graph
         addListenerToToggleButtons(); // add listeners
-
-        setPrefs();
     }
 
     public void handleVibrationChecks(){
@@ -235,16 +233,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
 
-        //if (dev1val != 0.0f) {
-        //    dev1val = Float.parseFloat(prefs.getString("ratio1", ""));
-        //}
-        //if (dev1val != 0.0f) {
-        //    dev2val = Float.parseFloat(prefs.getString("ratio2", ""));
-        //}
-        //dev3val = Float.parseFloat(prefs.getString("ratio3", ""));
-        //dev4val = Float.parseFloat(prefs.getString("ratio4", ""));
-        //dev5val = Float.parseFloat(prefs.getString("ratio5", ""));
-        //dev6val = Float.parseFloat(prefs.getString("ratio6", ""));
+        try {
+            dev1val = Double.parseDouble(prefs.getString("ratio1", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev1val = 3.5; // default ??
+        }
+        try {
+            dev2val = Double.parseDouble(prefs.getString("ratio2", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev2val = 3.5; // default ??
+        }
+
+
     }
 
     protected void initMembers() { // Initialize member containers
@@ -296,9 +298,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         audio_peaks.setTitle("APeaks");
         x_peaks.setTitle("XPeaks");
 
-        setPrefs();
-        device2_series.setTitle(prefs.getString("name2", ""));
-
         // Colors
         audioSeries.setColor(Color.parseColor("#181907"));
         xSeries.setColor(Color.parseColor("#0B3861"));
@@ -310,8 +309,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         x_peaks.setColor(Color.parseColor("yellow"));
         y_peaks.setColor(Color.parseColor("yellow"));
         z_peaks.setColor(Color.parseColor("yellow"));
-
-        device2_series.setColor(Color.parseColor("green"));
 
         // Shapes
         audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
@@ -401,13 +398,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
+
 
         obdSeriesSpeed.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
@@ -434,7 +425,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.addSeries(z_peaks);
         */
 
+        setPrefs();
+        device2_series.setTitle(prefs.getString("name2", ""));
+        device2_series.setColor(Color.parseColor("green"));
+
+        device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
+
         graph.addSeries(device2_series);
+
     }
 
     void addListenerToToggleButtons() {
