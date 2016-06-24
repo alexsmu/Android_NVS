@@ -10,7 +10,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SettingsMenu extends AppCompatActivity {
-    private SettingsData staticData = null;
+    //private SettingsData staticData = null;
     private Spinner fileSpinner;
     private SharedPreferences prefs;
     private SharedPreferences settingsPrefs;
@@ -47,7 +46,6 @@ public class SettingsMenu extends AppCompatActivity {
     private CheckBox check7;
     private CheckBox check8;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,13 +55,11 @@ public class SettingsMenu extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
 
-        if (SettingsData.mContext == null)
-            staticData = new SettingsData(getApplicationContext());
+        //if (SettingsData.mContext == null)
+        //    staticData = new SettingsData(getApplicationContext());
         setContentView(R.layout.settings);
-        //CheckBox check1 = (CheckBox) findViewById(R.id.check1);
-        //check1.setChecked(SettingsData.isChecked(check1.getTag().toString(), true));
 
-        List<String> testFiles = new ArrayList<String>();
+        List<String> testFiles = new ArrayList<>();
         testFiles.add("Profile 1");
         testFiles.add("Profile 2");
         testFiles.add("Profile 3");
@@ -71,23 +67,23 @@ public class SettingsMenu extends AppCompatActivity {
 
         fileSpinner = (Spinner) findViewById(R.id.fileSpinner);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.spinner_item, testFiles);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, testFiles);
         adapter.setDropDownViewResource(R.layout.spinner_item);
         fileSpinner.setAdapter(adapter);
 
         settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
-        update();
-        setSpinner();
+
+        init();
 
         addListenerToSpinner();
         addListenersToCheckBoxes();
         addListenersToEditTexts();
-        addListenerToButtons();
+        //addListenerToButtons();
 
-
+        //setSpinner();
     }
 
-    void update(){
+    void init(){
         ratio1  = (EditText) findViewById((R.id.value1));
         ratio2  = (EditText) findViewById((R.id.value2));
         ratio3  = (EditText) findViewById((R.id.value3));
@@ -112,7 +108,9 @@ public class SettingsMenu extends AppCompatActivity {
 
         ratio7  = (EditText) findViewById((R.id.tire1));
         ratio8  = (EditText) findViewById((R.id.gearval));
+    }
 
+    void update(){
         String profile = fileSpinner.getSelectedItem().toString();
         prefs = getSharedPreferences(profile, MODE_PRIVATE);
         settingsPrefs.edit().putString("profile", profile).apply();
@@ -337,10 +335,13 @@ public class SettingsMenu extends AppCompatActivity {
 
     void setSpinner(){
         String profile = settingsPrefs.getString("profile", "");
+        String strNum = profile.substring(8,9);
+        int num = Integer.parseInt(strNum);
 
-        switch(profile) {
-            case "Profile 1":
-                Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), Integer.toString(num), Toast.LENGTH_SHORT).show();
+
+        switch(num) {
+            case 1:
                 fileSpinner.post(new Runnable() {
                     @Override
                     public void run() {
@@ -349,8 +350,7 @@ public class SettingsMenu extends AppCompatActivity {
                 });
                 update();
                 break;
-            case "Profile 2":
-                Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
+            case 2:
                 fileSpinner.post(new Runnable() {
                     @Override
                     public void run() {
@@ -359,8 +359,7 @@ public class SettingsMenu extends AppCompatActivity {
                 });
                 update();
                 break;
-            case "Profile 3":
-                Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
+            case 3:
                 fileSpinner.post(new Runnable() {
                     @Override
                     public void run() {
@@ -369,8 +368,7 @@ public class SettingsMenu extends AppCompatActivity {
                 });
                 update();
                 break;
-            case "Profile 4":
-                Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
+            case 4:
                 fileSpinner.post(new Runnable() {
                     @Override
                     public void run() {
@@ -383,6 +381,8 @@ public class SettingsMenu extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
                 break;
         }
+
+        Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
     }
 
     void addListenerToSpinner(){
@@ -391,12 +391,12 @@ public class SettingsMenu extends AppCompatActivity {
                 update();
             }
             public void onNothingSelected(AdapterView<?> parent) {
-
+                update();
             }
         });
     }
 
-    void addListenerToButtons(){
+    /*void addListenerToButtons(){
         Button save1 = (Button) findViewById(R.id.save1);
         Button save2 = (Button) findViewById(R.id.save2);
         if (save1 != null) {
@@ -415,7 +415,7 @@ public class SettingsMenu extends AppCompatActivity {
                 }
             });
         }
-    }
+    }*/
 
     void addListenersToCheckBoxes(){
         check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -463,12 +463,13 @@ public class SettingsMenu extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
+        update();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        update();
+        setSpinner();
     }
 
 }

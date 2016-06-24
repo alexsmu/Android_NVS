@@ -235,12 +235,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
 
-        if (dev1val != 0.0f) {
-            dev1val = Float.parseFloat(prefs.getString("ratio1", ""));
-        }
-        if (dev1val != 0.0f) {
-            dev2val = Float.parseFloat(prefs.getString("ratio2", ""));
-        }
+        //if (dev1val != 0.0f) {
+        //    dev1val = Float.parseFloat(prefs.getString("ratio1", ""));
+        //}
+        //if (dev1val != 0.0f) {
+        //    dev2val = Float.parseFloat(prefs.getString("ratio2", ""));
+        //}
         //dev3val = Float.parseFloat(prefs.getString("ratio3", ""));
         //dev4val = Float.parseFloat(prefs.getString("ratio4", ""));
         //dev5val = Float.parseFloat(prefs.getString("ratio5", ""));
