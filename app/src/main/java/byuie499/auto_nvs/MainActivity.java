@@ -61,6 +61,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static DataPoint[] tire_dps = new DataPoint[1];
     private static DataPoint[] rpm_dps = new DataPoint[1];
     private static DataPoint[] device2_dps = new DataPoint[1];
+    private static DataPoint[] device3_dps = new DataPoint[1];
+    private static DataPoint[] device4_dps = new DataPoint[1];
+    private static DataPoint[] device5_dps = new DataPoint[1];
+    private static DataPoint[] device6_dps = new DataPoint[1];
     private static double[] audio_result = null;
     private static double[] accel_resultX = null;
     private static double[] accel_resultY = null;
@@ -78,6 +82,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device3_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device5_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> device6_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> x_peaks = new PointsGraphSeries<>();
@@ -237,15 +245,38 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             dev1val = Double.parseDouble(prefs.getString("ratio1", ""));
         }
         catch(NumberFormatException ex) {
-            dev1val = 3.5; // default ??
+            dev1val = 0; // default ??
         }
         try {
             dev2val = Double.parseDouble(prefs.getString("ratio2", ""));
         }
         catch(NumberFormatException ex) {
-            dev2val = 3.5; // default ??
+            dev2val = 0; // default ??
         }
-
+        try {
+            dev3val = Double.parseDouble(prefs.getString("ratio3", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev3val = 0; // default ??
+        }
+        try {
+            dev4val = Double.parseDouble(prefs.getString("ratio4", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev4val = 0; // default ??
+        }
+        try {
+            dev5val = Double.parseDouble(prefs.getString("ratio5", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev5val = 0; // default ??
+        }
+        try {
+            dev6val = Double.parseDouble(prefs.getString("ratio6", ""));
+        }
+        catch(NumberFormatException ex) {
+            dev6val = 0; // default ??
+        }
 
     }
 
@@ -426,8 +457,24 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         */
 
         setPrefs();
+        addDevices();
+    }
+
+    void addDevices(){
         device2_series.setTitle(prefs.getString("name2", ""));
         device2_series.setColor(Color.parseColor("green"));
+
+        device3_series.setTitle(prefs.getString("name3", ""));
+        device3_series.setColor(Color.parseColor("#FA8258"));
+
+        device4_series.setTitle(prefs.getString("name4", ""));
+        device4_series.setColor(Color.parseColor("#AC58FA"));
+
+        device5_series.setTitle(prefs.getString("name5", ""));
+        device5_series.setColor(Color.parseColor("#81BEF7"));
+
+        device6_series.setTitle(prefs.getString("name6", ""));
+        device6_series.setColor(Color.parseColor("#F781F3"));
 
         device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
@@ -436,9 +483,50 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
             }
         });
+        device3_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
+        device4_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
+        device5_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
+        device6_series.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(5);
+                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
+            }
+        });
 
-        graph.addSeries(device2_series);
-
+        if (Boolean.valueOf(prefs.getString("check2", ""))){
+            graph.addSeries(device2_series);
+        }
+        if (Boolean.valueOf(prefs.getString("check3", ""))){
+            graph.addSeries(device3_series);
+        }
+        if (Boolean.valueOf(prefs.getString("check4", ""))){
+            graph.addSeries(device4_series);
+        }
+        if (Boolean.valueOf(prefs.getString("check5", ""))){
+            graph.addSeries(device5_series);
+        }
+        if (Boolean.valueOf(prefs.getString("check6", ""))){
+            graph.addSeries(device6_series);
+        }
     }
 
     void addListenerToToggleButtons() {
@@ -548,8 +636,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
             });
 
-            if (!dontShowAgain.isChecked())
-                alertDialog.show();
+            if (!dontShowAgain.isChecked()){
+                //less annoying popup for now
+                Toast.makeText(this, "bluetooth", Toast.LENGTH_SHORT).show();
+                //alertDialog.show();
+            }
+
+
         } else {
             if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
                 getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Connected</font><small>"));
@@ -761,6 +854,22 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     obd_result = (double[]) msg.obj;
                     device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
                     device2_series.resetData(device2_dps);
+
+                    obd_result = (double[]) msg.obj;
+                    device3_dps[0] = new DataPoint(dev1val*obd_result[0]/dev3val,0);
+                    device3_series.resetData(device3_dps);
+
+                    obd_result = (double[]) msg.obj;
+                    device4_dps[0] = new DataPoint(dev1val*obd_result[0]/dev4val,0);
+                    device4_series.resetData(device4_dps);
+
+                    obd_result = (double[]) msg.obj;
+                    device5_dps[0] = new DataPoint(dev1val*obd_result[0]/dev5val,0);
+                    device5_series.resetData(device5_dps);
+
+                    obd_result = (double[]) msg.obj;
+                    device6_dps[0] = new DataPoint(dev1val*obd_result[0]/dev6val,0);
+                    device6_series.resetData(device6_dps);
                     /*TESTING*/
 
                     //Tire RPM Frequency

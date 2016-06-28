@@ -75,13 +75,14 @@ public class SettingsMenu extends AppCompatActivity {
         if (settingsPrefs.getString("profile", "").length() == 0){
             settingsPrefs.edit().putString("profile", "Profile 1").apply();
         }
+
         init();
 
         addListenerToSpinner();
         addListenersToCheckBoxes();
         addListenersToEditTexts();
-        //addListenerToButtons();
 
+        //addListenerToButtons();
         //setSpinner();
     }
 
