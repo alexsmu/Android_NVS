@@ -26,10 +26,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.jjoe64.graphview.GraphView;
@@ -40,6 +44,8 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 import com.jjoe64.graphview.series.Series;
+
+import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
@@ -110,10 +116,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private CheckBox xCheck;
     private CheckBox yCheck;
     private CheckBox zCheck;
-    private Button clearButton;
+    private TextView rpmFreqText;
+    private TextView tireRPMFreqText;
     private ToggleButton measureButton;
     private double measureX1 = 0;
     private double measureX2 = 0;
+    private ToggleButton vibPause;
+    private ToggleButton noisePause;
+    private Spinner scope;
+    private int xMaxBoundary = 400;
+    private boolean decreasingZoom=true;
+    private Button leftScroll;
+    private Button rightScroll;
+    private String[] arraySpinner;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,8 +146,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         xCheck = (CheckBox) findViewById(R.id.xCheck);
         yCheck = (CheckBox) findViewById(R.id.yCheck);
         zCheck = (CheckBox) findViewById(R.id.zCheck);
-        clearButton = (Button) findViewById(R.id.clear);
+        rpmFreqText = (TextView) findViewById(R.id.rpmFreq);
+        tireRPMFreqText = (TextView) findViewById(R.id.tireFreq);
         measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
+        vibPause = (ToggleButton) findViewById(R.id.vibrationPause);
+        noisePause = (ToggleButton) findViewById(R.id.noisePause);
+        scope = (Spinner) findViewById(R.id.zoom);
+        rightScroll = (Button) findViewById(R.id.right);
+        leftScroll = (Button) findViewById(R.id.left);
+
+        this.arraySpinner = new String[]{
+            "100","200","300","400"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,arraySpinner);
+        scope.setAdapter(adapter);
+
+
 
 //        clearButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -145,44 +176,98 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 //            }
 //        });
 
-//        xCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if(isChecked) {
-//                    graph.addSeries(x_peaks);
-//                }
-//                else
-//                {
-//                    graph.removeSeries(x_peaks);
-//                }
-//            }
-//        });
-//
-//        yCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if(isChecked) {
-//                    graph.addSeries(y_peaks);
-//                }
-//                else
-//                {
-//                    graph.removeSeries(y_peaks);
-//                }
-//            }
-//        });
-//
-//        zCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if(isChecked) {
-//                    graph.addSeries(z_peaks);
-//                }
-//                else
-//                {
-//                    graph.removeSeries(z_peaks);
-//                }
-//            }
-//        });
+        rightScroll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(xMaxBoundary == 300) {
+                    graph.getViewport().setMinX(100);
+                    graph.getViewport().setMaxX(400);
+                } else if (xMaxBoundary == 200){
+                    graph.getViewport().setMinX(200);
+                    graph.getViewport().setMaxX(300);
+                } else if (xMaxBoundary == 100) {
+                    graph.getViewport().setMinX(100);
+                    graph.getViewport().setMaxX(200);
+                }
+            }
+        });
+
+        leftScroll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+        vibPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    rec_acc.onPause();
+                }else {
+                    rec_acc.run();
+                }
+            }
+        });
+
+        noisePause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    rec_mic.onPause();
+                } else {
+                    rec_mic.run();
+                }
+            }
+        });
+
+
+        xCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+
+                    graph.addSeries(x_peaks);
+                    graph.addSeries(xSeries);
+                }
+                else
+                {
+                    graph.removeSeries(x_peaks);
+                    graph.removeSeries(xSeries);
+                }
+            }
+        });
+
+        yCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    graph.addSeries(y_peaks);
+                    graph.addSeries(ySeries);
+                }
+                else
+                {
+                    graph.removeSeries(y_peaks);
+                    graph.removeSeries(ySeries);
+                }
+            }
+        });
+
+        zCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    graph.addSeries(z_peaks);
+                    graph.addSeries(zSeries);
+                }
+                else
+                {
+                    graph.removeSeries(z_peaks);
+                    graph.removeSeries(zSeries);
+                }
+            }
+        });
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -309,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(graph_x_axis_end);
+        graph.getViewport().setMaxX(xMaxBoundary);
 
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(-80);
@@ -317,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         //Set Scalable and Zoom
         graph.getViewport().setScalable(true);
-        graph.getViewport().setScrollable(true);
+        //graph.getViewport().setScrollable(true);
 
         // Titles
         audioSeries.setTitle("Mic");
@@ -534,6 +619,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         vibration = (ToggleButton) findViewById(R.id.toggleVibration);
         recordButton = (ToggleButton) findViewById(R.id.startstop);
 
+        noise.setChecked(false);
+        noise.setChecked(false);
+
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -551,13 +639,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     if (permission) {
                         MicData.isEnabled = true; // enable thread
                         rec_mic.run(); // run recording thread
-                       // graph.addSeries(audioSeries); // graph results
+                        graph.addSeries(audioSeries); // graph results
                     } else {
                         buttonView.setChecked(false); // no permission, undo check
                     }
                 } else {
-                    rec_mic.onPause();
-                    //graph.removeSeries(audioSeries);
+                    //rec_mic.onPause();
+                    graph.removeSeries(audioSeries);
                 } // store settings (remember checked state)
                 SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
@@ -588,10 +676,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         graph.addSeries(z_peaks);
                     }
                 } else {
-                    rec_acc.onPause(); // stop thread
-                   // graph.removeSeries(xSeries); // remove results from graph
-                   // graph.removeSeries(ySeries);
-                   // graph.removeSeries(zSeries);
+                   // rec_acc.onPause(); // stop thread
+                    graph.removeSeries(xSeries); // remove results from graph
+                   graph.removeSeries(ySeries);
+                   graph.removeSeries(zSeries);
+                    graph.removeSeries(x_peaks); // remove results from graph
+                    graph.removeSeries(y_peaks);
+                    graph.removeSeries(z_peaks);
                 }
             }
         });
@@ -850,6 +941,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     rpm_dps[0] = new DataPoint(obd_result[0],0);
                     obdSeries.resetData(rpm_dps);
 
+                    DecimalFormat df = new DecimalFormat("#.##");
+
+                    rpmFreqText.setText("RPM/Freq: "+ df.format(obd_result[0]));
+
+//                    /*TESTING*/
+//                    obd_result = (double[]) msg.obj;
+//                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
+//                    device2_series.resetData(device2_dps);
+//                    /*TESTING*/
                     /*TESTING*/
                     obd_result = (double[]) msg.obj;
                     device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
@@ -875,6 +975,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     //Tire RPM Frequency
                     tire_dps[0] = new DataPoint(obd_result[1],0);
                     obdSeriesSpeed.resetData(tire_dps);
+                    tireRPMFreqText.setText("TireRPM/Freq: "+ df.format(obd_result[1]));
 
                     break;
                 }

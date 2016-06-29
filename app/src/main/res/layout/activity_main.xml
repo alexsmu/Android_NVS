@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<ScrollView
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--xmlns:android="http://schemas.android.com/apk/res/android">-->
+
+    <RelativeLayout
     android:id="@+id/main_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -12,14 +20,33 @@
     tools:context="byuie499.auto_nvs.MainActivity"
     android:orientation="vertical">
 
+
+    <TextView
+        android:id="@+id/rpmFreq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="RPM/Freq:"/>
+
+    <TextView
+        android:id="@+id/tireFreq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="150dp"
+        android:text="TireRPM/Freq:"/>
+
+
+
     <com.jjoe64.graphview.GraphView
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="475dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/rpmFreq"
         android:id="@+id/fftGraph"
-        android:layout_above="@+id/toggleVibration" />
+ />
+
 
     <!--<android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
@@ -38,10 +65,9 @@
         android:textOn="@string/noise"
         android:id="@+id/toggleNoise"
         android:tag="noise"
-        android:checked="true"
-        android:layout_toRightOf="@+id/toggleVibration"
-        android:layout_toEndOf="@+id/toggleVibration"
-        android:layout_above="@+id/startstop"/>
+        android:checked="false"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/fftGraph"/>
 
     <ToggleButton
         android:layout_width="wrap_content"
@@ -51,10 +77,9 @@
         android:textOn="@string/vibration"
         android:id="@+id/toggleVibration"
         android:tag="vibration"
-        android:checked="true"
-        android:layout_above="@+id/startstop"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:checked="false"
+        android:layout_below="@+id/fftGraph"
+        android:layout_toLeftOf="@id/toggleNoise" />
 
     <ToggleButton
         android:layout_width="wrap_content"
@@ -65,9 +90,136 @@
         android:id="@+id/toggleMeasure"
         android:tag="measure"
         android:checked="true"
-        android:layout_below="@+id/toggleVibration"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_toRightOf="@+id/toggleNoise"
+        android:layout_below="@id/fftGraph"
+         />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Graph Options"
+        android:id="@+id/graphOptions"
+        android:layout_below="@id/toggleVibration"
+        android:background="#E0E0E0"
+        android:textColor="#000000"/>
+
+
+
+        <Spinner
+            android:id="@+id/zoom"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_below="@id/graphOptions"
+            android:layout_centerHorizontal="true"
+            />  
+
+
+        <Button
+        android:id="@+id/left"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/graphOptions"
+        android:layout_toLeftOf="@+id/zoom"
+        android:text="Left"
+        android:textSize="20sp"/>  
+
+        <Button
+        android:id="@+id/right"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/graphOptions"
+        android:layout_toRightOf="@+id/zoom"
+        android:text="Right"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Vibration Options"
+        android:id="@+id/vibOptions"
+        android:layout_below="@id/zoom"
+        android:background="#E0E0E0"
+        android:textColor="#000000"/>
+
+
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/xCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/vibOptions"
+        android:text="X"
+        />
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/yCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/xCheck"
+        android:layout_below="@id/vibOptions"
+        android:text="Y"
+        />
+
+    <android.support.v7.widget.AppCompatCheckBox
+        android:id="@+id/zCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/yCheck"
+        android:layout_below="@id/vibOptions"
+        android:checked="true"
+        android:text="Z"
+        />
+
+    <ToggleButton
+        android:layout_width="70dp"
+        android:layout_marginLeft="10dp"
+        android:layout_height="27dp"
+        android:textSize="13sp"
+        android:layout_marginTop="3dp"
+        android:textOff="Pause"
+        android:textOn="Play"
+        android:id="@+id/vibrationPause"
+        android:background="@drawable/toggle_selector"
+        android:layout_below="@id/vibOptions"
+        android:checked="false"
+        android:layout_toRightOf="@id/zCheck"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Noise Options"
+        android:id="@+id/noiseOptions"
+        android:layout_below="@id/xCheck"
+        android:background="#E0E0E0"
+        android:textColor="#000000"/>
+
+    <ToggleButton
+        android:layout_width="70dp"
+        android:layout_marginLeft="10dp"
+        android:layout_height="27dp"
+        android:textSize="13sp"
+        android:layout_marginTop="3dp"
+        android:textOff="Pause"
+        android:textOn="Play"
+        android:id="@+id/noisePause"
+        android:background="@drawable/toggle_selector"
+        android:layout_below="@id/noiseOptions"
+        android:layout_toRightOf="@id/zCheck"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Save Options"
+        android:id="@+id/saveOptions"
+        android:layout_below="@id/noisePause"
+        android:background="#E0E0E0"
+        android:textColor="#000000"/>
 
     <ToggleButton
         android:layout_width="140dp"
@@ -79,49 +231,10 @@
         android:textOn="@string/stop"
         android:id="@+id/startstop"
         android:background="@drawable/toggle_selector"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/saveOptions"
         android:layout_centerHorizontal="true"
         />
 
 
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/xCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/toggleNoise"
-        android:layout_toEndOf="@id/toggleNoise"
-        android:layout_above="@id/startstop"
-        android:text="X"/>
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/yCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/xCheck"
-        android:layout_toEndOf="@id/xCheck"
-        android:layout_above="@id/startstop"
-        android:text="Y"
-        />
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/zCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/yCheck"
-        android:layout_toEndOf="@id/yCheck"
-        android:layout_above="@id/startstop"
-        android:text="Z"
-        />
-
-    <Button
-        android:id="@+id/clear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/startstop"
-        android:layout_toEndOf="@id/startstop"
-        android:layout_alignParentBottom="true"
-        android:text="CLEAR"
-        />
-
 </RelativeLayout>
+</ScrollView>
