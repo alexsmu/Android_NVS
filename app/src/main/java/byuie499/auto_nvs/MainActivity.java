@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
-    private static final int acc_samples = 256; // accelerometer samples
+    private static final int acc_samples = 512; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
     private static final int peakThresh = -50;
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
@@ -369,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (SettingsData.mContext == null) //Check if settings already have context
             settingsData = new SettingsData(getApplicationContext());
         mHandler = new MainHandler(Looper.getMainLooper());
-        rec_acc = new Xlo(this, mHandler, acc_samples, 2);
+        rec_acc = new Xlo(this, mHandler, acc_samples, 1);
         rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
 
         //We might want to hand this differently in the future
@@ -824,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         int max = 1;
         int numPeaks = 0 ;
-        int[] indexes = new int[(data.length)/2];
+        int[] indexes = new int[(data.length + 1)/2];
         DataPoint[] peaks;
         // Checking for the conditions of the peaks
         // if the change is ocurring, then graph.
@@ -835,7 +835,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             while(i < data.length && data[i].getY() > data[i-1].getY()){
                 max = i++;
             }
-            if(i < data.length && data[max].getY() > peakThresh)
+            if(i < indexes.length && data[max].getY() > peakThresh)
                 indexes[numPeaks++]= max;
         }
 

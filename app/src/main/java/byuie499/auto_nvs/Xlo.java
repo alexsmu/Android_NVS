@@ -64,12 +64,11 @@ public class Xlo {
                     TimerTask accumulate = new TimerTask() {
                         @Override
                         public synchronized void run() {
-                            if (val == N) // avoid segmentation fault
-                                val = 0;
+                            val = (val + 1) % N; // increment index
                             xAcc[val] = xc; // store current sensor values
                             yAcc[val] = yc;
                             zAcc[val] = zc;
-                            ++val; // increment index
+
                             if (val % (N / accum) == 0) { // send message to main thread
                                 Message done = mHandler.obtainMessage(3);
                                 mHandler.sendMessage(done);

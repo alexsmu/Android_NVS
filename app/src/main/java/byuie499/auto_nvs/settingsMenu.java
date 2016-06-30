@@ -71,6 +71,7 @@ public class SettingsMenu extends AppCompatActivity {
         adapter.setDropDownViewResource(R.layout.spinner_item);
         fileSpinner.setAdapter(adapter);
 
+
         settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
         if (settingsPrefs.getString("profile", "").length() == 0){
             settingsPrefs.edit().putString("profile", "Profile 1").apply();
