@@ -20,14 +20,16 @@ public class MicData {
     private Fft audioFFT = null;
     private boolean norm = true;
     private double scale = 1.0;
+    private boolean db = true;
 
-    public MicData(Handler global_handler, int samples, double scaling, boolean normalize) {
+    public MicData(Handler global_handler, int samples, double scaling, boolean normalize, boolean in_dB) {
         buffer = samples;
         bufferSizeInBytes = buffer * 2;
         mHandler = global_handler;
-        audioFFT = new Fft(samples, mHandler, 2);
+        audioFFT = new Fft(samples, mHandler, 2, normalize, in_dB);
         norm = normalize;
         scale = scaling;
+        db = in_dB;
     }
 
     //Conversion from short to double
@@ -59,7 +61,10 @@ public class MicData {
                         audioFFT.data = mic_data;
                         audioFFT.prepare();
                         audioFFT.transform();
-                        audioFFT.getMagnitudeDB();
+                        if (db)
+                            audioFFT.getMagnitudeDB();
+                        else
+                            audioFFT.getMagnitude();
                         audioFFT.shift();
                         Message done = mHandler.obtainMessage(2, audioFFT.shifted);
                         mHandler.sendMessage(done);

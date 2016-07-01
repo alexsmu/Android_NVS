@@ -15,9 +15,13 @@ public class Fft {
     private int levels;
     private Handler mHandler;
     private int what;
+    private boolean norm;
+    private boolean db;
 
-    public Fft(int samples, Handler global_handler, int code){
+    public Fft(int samples, Handler global_handler, int code, boolean normalize, boolean in_dB){
         N = samples;
+        norm = normalize;
+        db = in_dB;
         mHandler = global_handler;
         what = code;
         cosTable = new double[N / 2];
@@ -47,8 +51,26 @@ public class Fft {
     }
 
     public void getMagnitudeDB(){
-        for (int i = 0; i < N; ++i){
-            mag[i] = 20 * Math.log10(Math.hypot(real[i], imag[i]) / N);
+        if (norm) {
+            for (int i = 0; i < N; ++i) {
+                mag[i] = 20 * Math.log10(Math.hypot(real[i], imag[i]) / N);
+            }
+        } else {
+            for (int i = 0; i < N; ++i) {
+                mag[i] = 20 * Math.log10(Math.hypot(real[i], imag[i]));
+            }
+        }
+    }
+
+    public void getMagnitude(){
+        if (norm) {
+            for (int i = 0; i < N; ++i) {
+                mag[i] = Math.hypot(real[i], imag[i]) / N;
+            }
+        } else {
+            for (int i = 0; i < N; ++i) {
+                mag[i] = Math.hypot(real[i], imag[i]);
+            }
         }
     }
 
@@ -64,7 +86,10 @@ public class Fft {
             public void run() {
                 prepare();
                 transform();
-                getMagnitudeDB();
+                if (db)
+                    getMagnitudeDB();
+                else
+                    getMagnitude();
                 shift();
                 Message done = mHandler.obtainMessage(what, shifted);
                 mHandler.sendMessage(done);

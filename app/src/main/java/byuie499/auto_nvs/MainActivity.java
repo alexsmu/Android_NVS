@@ -47,6 +47,8 @@ import com.jjoe64.graphview.series.Series;
 
 import java.text.DecimalFormat;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
@@ -57,6 +59,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int acc_samples = 512; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
     private static final int peakThresh = -50;
+    private static final boolean normalize = false;
+    private static final boolean in_dB = false;
+    private static final double audio_scaling = 1.0;
+    private static final int acc_dvsr = 1;
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
     private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
     private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
@@ -129,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private Button leftScroll;
     private Button rightScroll;
     private String[] arraySpinner;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -369,19 +374,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (SettingsData.mContext == null) //Check if settings already have context
             settingsData = new SettingsData(getApplicationContext());
         mHandler = new MainHandler(Looper.getMainLooper());
-        rec_acc = new Xlo(this, mHandler, acc_samples, 1);
-        rec_mic = new MicData(mHandler, audio_samples, 4.0, true);
+        rec_acc = new Xlo(this, mHandler, acc_samples, acc_dvsr);
+        rec_mic = new MicData(mHandler, audio_samples, audio_scaling, normalize, in_dB);
 
         //We might want to hand this differently in the future
         if (app.getGlobalBluetoothSocket() == null) {
             obdData = new OBDData(mHandler, acc_samples, true);
         } else {
-            obdData = new OBDData(mHandler,acc_samples,false);
+            obdData = new OBDData(mHandler,acc_samples, false);
         }
 
-        accelFFT[0] = new Fft(acc_samples, mHandler, 4);
-        accelFFT[1] = new Fft(acc_samples, mHandler, 5);
-        accelFFT[2] = new Fft(acc_samples, mHandler, 6);
+        accelFFT[0] = new Fft(acc_samples, mHandler, 4, normalize, in_dB);
+        accelFFT[1] = new Fft(acc_samples, mHandler, 5, normalize, in_dB);
+        accelFFT[2] = new Fft(acc_samples, mHandler, 6, normalize, in_dB);
         Fft.getOmega(audio_omega, audio_Fs);
         Fft.getOmega(accel_omega, acc_Fs);
     }
@@ -990,4 +995,36 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         }
     }
+    
+    private int getFreqIndexCeil (double frequency, double freq_step) {
+        return (int)( Math.ceil(freq_step * frequency) );
+    }
+
+    private int getFreqIndexFloor (double frequency, double freq_step) {
+        return (int)( Math.floor(freq_step * frequency) );
+    }
+
+    private double interpolateMagnitude(double frequency, double freq_step, DataPoint[] datapoints)
+    {
+        int ceil = getFreqIndexCeil(frequency, freq_step);
+        int floor = getFreqIndexFloor(frequency, freq_step);
+        double slope = (datapoints[ceil].getY() - datapoints[floor].getY()) / (datapoints[ceil].getX() - datapoints[floor].getX());
+        double mag = datapoints[floor].getY() + slope * (frequency - datapoints[floor].getX());
+        return mag;
+    }
+
+    private HashMap<String, Integer> count_occurrence(DataPoint[] peaks) {
+        double val = 0;
+        String sval;
+        HashMap<String, Integer> occurrences = new HashMap<>();
+        for (int i = 0; i < peaks.length; i++) {
+            for (int j = i + 1; j < peaks.length; j++) {
+                val = peaks[j].getX() - peaks[i].getX();
+                sval = String.format("%.2f", val);
+                occurrences.put(sval, occurrences.get(sval) + 1);
+            }
+        }
+        return occurrences;
+    }
+
 }
