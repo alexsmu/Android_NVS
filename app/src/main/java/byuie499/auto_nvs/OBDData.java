@@ -56,7 +56,7 @@ public class OBDData {
     public void run(){
 
         //if this is not a test actually get the information from OBDII
-        if (!test) {
+
 
 
 
@@ -116,40 +116,10 @@ public class OBDData {
                 isRunning = false;
 
             }
-        } else {
 
-            //If this is a test, use test data and test methods
-            isRunning = true;
-            Thread obdThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Timer timer = new Timer();
-                    TimerTask accumulate = new TimerTask() {
-                        @Override
-                        public void run() {
 
-                            //Switch these two lines depending of what type of test data we want
-                            rpmFreq = getVaryingTestRPMFreq();
-                            //rpmFreq = getTestRPMFrequency();
-                            imperialTireRPMFreq = getImperialTireRPMFreqTEST();
 
-                            objectToSend[0] = rpmFreq;
-                            objectToSend[1] = imperialTireRPMFreq;
 
-                                Message done = mHandler.obtainMessage(9,objectToSend);
-                                mHandler.sendMessage(done);
-                            }
-
-                    };
-                    timer.schedule(accumulate, 0, n);
-                    while (isRunning);
-                    timer.cancel();
-                    timer.purge();
-                }
-            }, "auto_nvs_fft");
-            obdThread.start();
-
-        }
     }
 
     public void onPause() {

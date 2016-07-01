@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         // then a click is perform to change them to the correct state. This is done in order to
         // trigger the onCheckChanged listener, which better handles the functionality.
         noise.setChecked(!SettingsData.isChecked(noise.getTag().toString(), false)); // retrieve previous state
-        noise.performClick(); // update state
+       // noise.performClick(); // update state
         vibration.setChecked(!SettingsData.isChecked(vibration.getTag().toString(), true));
         vibration.performClick();
         // Bluetooth setup
@@ -625,6 +625,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                graph.removeSeries(audioSeries);
+                graph.removeSeries(audio_peaks);
                 if (isChecked) { // enable mic recording
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                                                     Manifest.permission.RECORD_AUDIO)
@@ -640,14 +642,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         MicData.isEnabled = true; // enable thread
                         rec_mic.run(); // run recording thread
                         graph.addSeries(audioSeries); // graph results
+                        graph.addSeries(audio_peaks);
                     } else {
                         buttonView.setChecked(false); // no permission, undo check
                     }
                 } else {
-                    //rec_mic.onPause();
+                    rec_mic.onPause();
                     graph.removeSeries(audioSeries);
+                    graph.removeSeries(audio_peaks);
                 } // store settings (remember checked state)
-                SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
+               // SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
         });
 
