@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private ToggleButton vibPause;
     private ToggleButton noisePause;
     private Spinner scope;
-    private int xMaxBoundary = 400;
+    private int xMaxBoundary = 100;
     private boolean decreasingZoom=true;
     private Button leftScroll;
     private Button rightScroll;
@@ -403,10 +403,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(-80);
-        graph.getViewport().setMaxY(40);
+        graph.getViewport().setMaxY(500);
+
 
         //Set Scalable and Zoom
-        graph.getViewport().setScalable(true);
+        //graph.getViewport().setScalable(true);
         //graph.getViewport().setScrollable(true);
 
         // Titles

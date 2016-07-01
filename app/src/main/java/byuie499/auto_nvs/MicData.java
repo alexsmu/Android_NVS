@@ -35,12 +35,8 @@ public class MicData {
     //Conversion from short to double
     private double[] short2double(short [] audioData){
         double[] micBufferData = new double[buffer];//size may need to change
-        if (norm)
-            for (int i = 0; i < buffer; ++i)
-                micBufferData[i] = scale * audioData[i] / buffer;
-        else
-            for (int i = 0; i < buffer; ++i)
-                micBufferData[i] = scale * audioData[i];
+        for (int i = 0; i < buffer; ++i)
+            micBufferData[i] = scale * audioData[i] / buffer;
         return micBufferData;
     }
 

@@ -58,25 +58,6 @@ public class Xlo {
             Log.d("Linear Accelerometer: ", "not present");
             accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
-
-        accumulate = new TimerTask() {
-            @Override
-            public synchronized void run() {
-                xAcc0[val] = xc; // store current sensor values
-                yAcc0[val] = yc;
-                zAcc0[val] = zc;
-                val = (val + 1) % N; // increment index
-                if (val % (N / accum) == 0) { // send message to main thread
-                    for (int i = 0; i < N; ++i) {
-                        xAcc[i] = xAcc0[i]; // copy current sensor values
-                        yAcc[i] = yAcc0[i];
-                        zAcc[i] = zAcc0[i];
-                    }
-                    Message done = mHandler.obtainMessage(3);
-                    mHandler.sendMessage(done);
-                }
-            }
-        };
     }
 
     public void run() {
@@ -86,6 +67,24 @@ public class Xlo {
                     accelerometer, //sensor
                     1000); // period in us (NOT PRECISE, USUALLY FASTER)
             timer = new Timer();
+            accumulate = new TimerTask() {
+                @Override
+                public synchronized void run() {
+                    xAcc0[val] = xc; // store current sensor values
+                    yAcc0[val] = yc;
+                    zAcc0[val] = zc;
+                    val = (val + 1) % N; // increment index
+                    if (val % (N / accum) == 0) { // send message to main thread
+                        for (int i = 0; i < N; ++i) {
+                            xAcc[i] = xAcc0[i]; // copy current sensor values
+                            yAcc[i] = yAcc0[i];
+                            zAcc[i] = zAcc0[i];
+                        }
+                        Message done = mHandler.obtainMessage(3);
+                        mHandler.sendMessage(done);
+                    }
+                }
+            };
             timer.schedule(accumulate, // timer task
                     0, // delay
                     1); // period in ms
