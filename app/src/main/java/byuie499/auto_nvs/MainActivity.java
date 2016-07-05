@@ -58,12 +58,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
+    private static final double audio_freq_step = audio_samples / audio_Fs;
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
     private static final int acc_samples = 512; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
-    private static final int peakThresh = -50;
+    private static final double acc_freq_step = acc_samples / acc_Fs;
     private static final boolean normalize = true;
     private static final boolean in_dB = true;
     private static final double audio_scaling = 1.0;
@@ -150,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         setContentView(R.layout.activity_main); // load layout
         settingsData = new SettingsData(getApplicationContext());
         setBluetoothReceiver();
-        checkBluetoothConnection();   // show connection pop-up if necessary
         initMembers(); // initialize containers
         initGraph();   // initialize graph
     }
@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             settingsData = new SettingsData(getApplicationContext());
         setPrefs();
         addDeviceSeries();
+        checkBluetoothConnection();   // show connection pop-up if necessary
         check_record_permissions();
         // Bluetooth setup
         // Register for broadcasts on BluetoothAdapter state change
@@ -185,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onPause();
         rec_acc.onPause(); // stop recordings
         rec_mic.onPause();
+        obdData.onPause();
         graph.removeAllSeries();
         unregisterReceiver(mReceiver); // release bluetooth receiver
     }
@@ -858,6 +860,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         }
                         zSeries.resetData(accel_dpsZ);
                         z_peaks.resetData(correlate.findPeaks(accel_dpsZ));
+                        //code to test interpolating rpm frequenzy
+                        /*double accel_RPM_freqZ = obd_result[0];
+                        double accel_RPM_magZ = correlate.interpolateMagnitude(accel_RPM_freqZ, acc_freq_step, accel_dpsZ);
+                        z_peaks.resetData(new DataPoint[] {
+                            new DataPoint(accel_RPM_freqZ, accel_RPM_magZ)
+                        });*/
                     }
                     break;
                 }
