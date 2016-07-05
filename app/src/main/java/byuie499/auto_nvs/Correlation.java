@@ -59,7 +59,7 @@ public class Correlation {
         return peaks;
     }
 
-    private List<Map.Entry<String, Integer>> count_occurrence(DataPoint[] peaks, String[] mval) {
+    private List<Map.Entry<String, Integer>> count_occurrence(DataPoint[] peaks) {
         double val;
         String sval;
         HashMap<String, Integer> occurrences = new HashMap<>();
