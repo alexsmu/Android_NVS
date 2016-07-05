@@ -28,4 +28,5 @@ dependencies {
     compile 'com.jjoe64:graphview:4.0.1'
     compile 'com.github.pires:obd-java-api:1.0-RC16'
     compile 'com.github.amlcurran.showcaseview:library:5.4.3'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.0-beta1'
 }
