@@ -16,8 +16,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -48,6 +50,9 @@ import com.jjoe64.graphview.series.Series;
 import java.text.DecimalFormat;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
@@ -59,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int acc_samples = 512; // accelerometer samples
     private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
     private static final int peakThresh = -50;
-    private static final boolean normalize = false;
-    private static final boolean in_dB = false;
+    private static final boolean normalize = true;
+    private static final boolean in_dB = true;
     private static final double audio_scaling = 1.0;
     private static final int acc_dvsr = 1;
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
@@ -92,13 +97,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
-    private PointsGraphSeries<DataPoint> obdSeries = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device3_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device5_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device6_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> obdSeriesSpeed = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> x_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> y_peaks = new PointsGraphSeries<>();
@@ -110,8 +113,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     MyApplication app = new MyApplication();              // required for bluetooth socket
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
     private ToggleButton recordButton, noise, vibration; // containers for layout buttons
-    private SharedPreferences prefs;
-    private SharedPreferences settingsPrefs;
     private String spinnerName = "Profile 1";
     private double dev1val;
     private double dev2val;
@@ -130,56 +131,116 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private ToggleButton vibPause;
     private ToggleButton noisePause;
     private Spinner scope;
-    private int xMaxBoundary = 100;
+    private int xMaxBoundary = 300;
     private boolean decreasingZoom=true;
     private Button leftScroll;
     private Button rightScroll;
     private String[] arraySpinner;
+    private BroadcastReceiver mReceiver;
+    private Correlation correlate;
+    private DataPoint[] a_peaks;
+    private List<Map.Entry<String, Integer>> a_occ;
+    private TextView occ_text;
+    private int[] occ_ids = { R.id.occ0a, R.id.occ0b, R.id.occ0c, R.id.occ0d, R.id.occ0e,
+            R.id.occ1a, R.id.occ1b, R.id.occ1c, R.id.occ1d, R.id.occ1e};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
-        handleVibrationChecks();
+        settingsData = new SettingsData(getApplicationContext());
+        setBluetoothReceiver();
         checkBluetoothConnection();   // show connection pop-up if necessary
         initMembers(); // initialize containers
         initGraph();   // initialize graph
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (SettingsData.mContext != getApplicationContext())
+            settingsData = new SettingsData(getApplicationContext());
+        setPrefs();
+        addDeviceSeries();
+        check_record_permissions();
+        // Bluetooth setup
+        // Register for broadcasts on BluetoothAdapter state change
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
+        // Start obd thread
         addListenerToToggleButtons(); // add listeners
+        handleVibrationChecks();
+        obdData.run();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        rec_acc.onPause(); // stop recordings
+        rec_mic.onPause();
+        graph.removeAllSeries();
+        unregisterReceiver(mReceiver); // release bluetooth receiver
+    }
+
+    @Override // Handles whether user granted recording permission (Android 6.0+)
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permission = true;
+            } else {
+                permission = false;
+            }
+        }
+    }
+
+    protected void check_record_permissions() {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) { // check for permission
+            permission = false;
+            ActivityCompat.requestPermissions(MainActivity.this, // request permission
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    1);
+        } else { // we have permission
+            permission = true;
+        }
     }
 
     public void handleVibrationChecks(){
-        xCheck = (CheckBox) findViewById(R.id.xCheck);
-        yCheck = (CheckBox) findViewById(R.id.yCheck);
-        zCheck = (CheckBox) findViewById(R.id.zCheck);
-        rpmFreqText = (TextView) findViewById(R.id.rpmFreq);
-        tireRPMFreqText = (TextView) findViewById(R.id.tireFreq);
-        measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
-        vibPause = (ToggleButton) findViewById(R.id.vibrationPause);
-        noisePause = (ToggleButton) findViewById(R.id.noisePause);
-        scope = (Spinner) findViewById(R.id.zoom);
-        rightScroll = (Button) findViewById(R.id.right);
-        leftScroll = (Button) findViewById(R.id.left);
+        xCheck.setChecked(SettingsData.isChecked(xCheck.getTag().toString(), true));
+        yCheck.setChecked(SettingsData.isChecked(yCheck.getTag().toString(), true));
+        zCheck.setChecked(SettingsData.isChecked(zCheck.getTag().toString(), true));
+        vibPause.setChecked(SettingsData.isChecked(vibPause.getTag().toString(), false));
+        noisePause.setChecked(SettingsData.isChecked(noisePause.getTag().toString(), false));
+
+        if (xCheck.isChecked()) {
+            graph.addSeries(x_peaks);
+            graph.addSeries(xSeries);
+        }
+        if (yCheck.isChecked()) {
+            graph.addSeries(y_peaks);
+            graph.addSeries(ySeries);
+        }
+        if (zCheck.isChecked()) {
+            graph.addSeries(z_peaks);
+            graph.addSeries(zSeries);
+        }
 
         this.arraySpinner = new String[]{
-            "100","200","300","400"
+                "100","200","300","400"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,arraySpinner);
         scope.setAdapter(adapter);
-
-
-
-//        clearButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                graph.removeSeries(xSeries);
-//                graph.removeSeries(ySeries);
-//                graph.removeSeries(zSeries);
-//                graph.removeSeries(x_peaks);
-//                graph.removeSeries(y_peaks);
-//                graph.removeSeries(z_peaks);
-//            }
-//        });
 
         rightScroll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,10 +265,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-
         vibPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if (isChecked){
                     rec_acc.onPause();
                 }else {
@@ -219,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         noisePause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if (isChecked){
                     rec_mic.onPause();
                 } else {
@@ -227,12 +289,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-
         xCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-
+                    graph.removeSeries(x_peaks);
+                    graph.removeSeries(xSeries);
                     graph.addSeries(x_peaks);
                     graph.addSeries(xSeries);
                 }
@@ -247,7 +310,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         yCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
+                    graph.removeSeries(y_peaks);
+                    graph.removeSeries(ySeries);
                     graph.addSeries(y_peaks);
                     graph.addSeries(ySeries);
                 }
@@ -262,7 +328,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         zCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
+                    graph.removeSeries(z_peaks);
+                    graph.removeSeries(zSeries);
                     graph.addSeries(z_peaks);
                     graph.addSeries(zSeries);
                 }
@@ -273,109 +342,37 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
             }
         });
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // NOTE: buttons first set to opposite state than what is retrieved from the settings
-        // then a click is perform to change them to the correct state. This is done in order to
-        // trigger the onCheckChanged listener, which better handles the functionality.
-        noise.setChecked(!SettingsData.isChecked(noise.getTag().toString(), false)); // retrieve previous state
-       // noise.performClick(); // update state
-        vibration.setChecked(!SettingsData.isChecked(vibration.getTag().toString(), true));
-        vibration.performClick();
-        // Bluetooth setup
-        // Register for broadcasts on BluetoothAdapter state change
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mReceiver, filter);
-        // Start obd thread
-        obdData.run();
-
-        setPrefs();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        rec_acc.onPause(); // stop recordings
-        rec_mic.onPause();
-        unregisterReceiver(mReceiver); // release bluetooth receiver
-    }
-
-    @Override // Handles whether user granted recording permission (Android 6.0+)
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        if (requestCode == 1) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permission = true;
-            } else {
-                permission = false;
-            }
-        }
     }
 
     protected void setPrefs(){
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
-        String profile = settingsPrefs.getString("profile", "");
-        settingsPrefs.edit().putString("profile", profile).apply();
-        prefs = getSharedPreferences(profile, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.apply();
-
-        try {
-            dev1val = Double.parseDouble(prefs.getString("ratio1", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev1val = 0; // default ??
-        }
-        try {
-            dev2val = Double.parseDouble(prefs.getString("ratio2", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev2val = 0; // default ??
-        }
-        try {
-            dev3val = Double.parseDouble(prefs.getString("ratio3", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev3val = 0; // default ??
-        }
-        try {
-            dev4val = Double.parseDouble(prefs.getString("ratio4", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev4val = 0; // default ??
-        }
-        try {
-            dev5val = Double.parseDouble(prefs.getString("ratio5", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev5val = 0; // default ??
-        }
-        try {
-            dev6val = Double.parseDouble(prefs.getString("ratio6", ""));
-        }
-        catch(NumberFormatException ex) {
-            dev6val = 0; // default ??
-        }
-
+        dev1val = SettingsData.getFloat("ratio1", 0);
+        dev2val = SettingsData.getFloat("ratio2", 0);
+        dev3val = SettingsData.getFloat("ratio3", 0);
+        dev4val = SettingsData.getFloat("ratio4", 0);
+        dev5val = SettingsData.getFloat("ratio5", 0);
+        dev6val = SettingsData.getFloat("ratio6", 0);
     }
 
     protected void initMembers() { // Initialize member containers
-        if (SettingsData.mContext == null) //Check if settings already have context
-            settingsData = new SettingsData(getApplicationContext());
         mHandler = new MainHandler(Looper.getMainLooper());
         rec_acc = new Xlo(this, mHandler, acc_samples, acc_dvsr);
         rec_mic = new MicData(mHandler, audio_samples, audio_scaling, normalize, in_dB);
+        correlate = new Correlation();
+        xCheck = (CheckBox) findViewById(R.id.xCheck);
+        yCheck = (CheckBox) findViewById(R.id.yCheck);
+        zCheck = (CheckBox) findViewById(R.id.zCheck);
+        rpmFreqText = (TextView) findViewById(R.id.rpmFreq);
+        tireRPMFreqText = (TextView) findViewById(R.id.tireFreq);
+        measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
+        vibPause = (ToggleButton) findViewById(R.id.vibrationPause);
+        noisePause = (ToggleButton) findViewById(R.id.noisePause);
+        scope = (Spinner) findViewById(R.id.zoom);
+        rightScroll = (Button) findViewById(R.id.right);
+        leftScroll = (Button) findViewById(R.id.left);
+        noise = (ToggleButton) findViewById(R.id.toggleNoise);
+        vibration = (ToggleButton) findViewById(R.id.toggleVibration);
+        recordButton = (ToggleButton) findViewById(R.id.startstop);
 
         //We might want to hand this differently in the future
         if (app.getGlobalBluetoothSocket() == null) {
@@ -395,7 +392,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph = (GraphView) findViewById(R.id.fftGraph);
         if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
-        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
+        graph.getLegendRenderer().setWidth(325);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -403,8 +401,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(-80);
-        graph.getViewport().setMaxY(500);
-
+        graph.getViewport().setMaxY(20);
 
         //Set Scalable and Zoom
         //graph.getViewport().setScalable(true);
@@ -415,18 +412,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         xSeries.setTitle("X");
         ySeries.setTitle("Y");
         zSeries.setTitle("Z");
-        obdSeries.setTitle("RPMFreq");
-        obdSeriesSpeed.setTitle("TireFreq");
         audio_peaks.setTitle("APeaks");
         x_peaks.setTitle("XPeaks");
+        y_peaks.setTitle("YPeaks");
+        z_peaks.setTitle("ZPeaks");
 
         // Colors
         audioSeries.setColor(Color.parseColor("#181907"));
         xSeries.setColor(Color.parseColor("#0B3861"));
         ySeries.setColor(Color.parseColor("#0B6138"));
         zSeries.setColor(Color.parseColor("#610B0B"));
-        obdSeries.setColor(Color.parseColor("red"));
-        obdSeriesSpeed.setColor(Color.parseColor("blue"));
         audio_peaks.setColor(Color.parseColor("yellow"));
         x_peaks.setColor(Color.parseColor("yellow"));
         y_peaks.setColor(Color.parseColor("yellow"));
@@ -509,62 +504,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        //puts the line in the graph
-        obdSeries.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(10);
-               // canvas.drawLine(x-20, y-20, x+20, y+20, paint);
-               // canvas.drawLine(x+20, y-20, x-20, y+20, paint);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-
-
-
-        obdSeriesSpeed.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(10);
-               // canvas.drawLine(x-20, y-20, x+20, y+20, paint);
-               // canvas.drawLine(x+20, y-20, x-20, y+20, paint);
-                canvas.drawLine(x,y-500,x,y+1000,paint);
-            }
-        });
-
-        // Add to graph
-        graph.addSeries(audioSeries);
-        graph.addSeries(xSeries);
-        graph.addSeries(ySeries);
-        graph.addSeries(zSeries);
-        graph.addSeries(obdSeries);
-        graph.addSeries(obdSeriesSpeed);
-        graph.addSeries(audio_peaks);
-
-        /*
-        graph.addSeries(x_peaks);
-        graph.addSeries(y_peaks);
-        graph.addSeries(z_peaks);
-        */
-
-        setPrefs();
         addDevices();
     }
 
     void addDevices(){
-        device2_series.setTitle(prefs.getString("name2", ""));
+        device2_series.setTitle(SettingsData.getString("name2", ""));
         device2_series.setColor(Color.parseColor("green"));
 
-        device3_series.setTitle(prefs.getString("name3", ""));
+        device3_series.setTitle(SettingsData.getString("name3", ""));
         device3_series.setColor(Color.parseColor("#FA8258"));
 
-        device4_series.setTitle(prefs.getString("name4", ""));
+        device4_series.setTitle(SettingsData.getString("name4", ""));
         device4_series.setColor(Color.parseColor("#AC58FA"));
 
-        device5_series.setTitle(prefs.getString("name5", ""));
+        device5_series.setTitle(SettingsData.getString("name5", ""));
         device5_series.setColor(Color.parseColor("#81BEF7"));
 
-        device6_series.setTitle(prefs.getString("name6", ""));
+        device6_series.setTitle(SettingsData.getString("name6", ""));
         device6_series.setColor(Color.parseColor("#F781F3"));
 
         device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
@@ -602,31 +558,54 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
             }
         });
+    }
 
-        if (Boolean.valueOf(prefs.getString("check2", ""))){
+    protected void addDeviceSeries() {
+        if (SettingsData.isChecked("check2", false)){
             graph.addSeries(device2_series);
         }
-        if (Boolean.valueOf(prefs.getString("check3", ""))){
+        if (SettingsData.isChecked("check3", false)){
             graph.addSeries(device3_series);
         }
-        if (Boolean.valueOf(prefs.getString("check4", ""))){
+        if (SettingsData.isChecked("check4", false)){
             graph.addSeries(device4_series);
         }
-        if (Boolean.valueOf(prefs.getString("check5", ""))){
+        if (SettingsData.isChecked("check5", false)){
             graph.addSeries(device5_series);
         }
-        if (Boolean.valueOf(prefs.getString("check6", ""))){
+        if (SettingsData.isChecked("check6", false)){
             graph.addSeries(device6_series);
         }
     }
 
     void addListenerToToggleButtons() {
-        noise = (ToggleButton) findViewById(R.id.toggleNoise);
-        vibration = (ToggleButton) findViewById(R.id.toggleVibration);
-        recordButton = (ToggleButton) findViewById(R.id.startstop);
+        noise.setChecked(SettingsData.isChecked(noise.getTag().toString(), false)); // retrieve previous state
+        if (noise.isChecked()) { // enable mic recording
+            if (permission) {
+                MicData.isEnabled = true; // enable thread
+                if (!SettingsData.isChecked(noisePause.getTag().toString(), false))
+                    rec_mic.run(); // run recording thread
+                graph.addSeries(audioSeries); // graph results
+                graph.addSeries(audio_peaks);
+            } else {
+                MicData.isEnabled = false;
+                noise.setChecked(false); // no permission, undo check
+                Toast.makeText(getApplicationContext(), "RECORDING DENIED BY USER", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            MicData.isEnabled = false;
+            rec_mic.onPause();
+        }
 
-        noise.setChecked(false);
-        noise.setChecked(false);
+        vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), true));
+        if  (vibration.isChecked()) {
+            Xlo.isEnabled = true;
+            if (!SettingsData.isChecked(vibPause.getTag().toString(), false))
+                rec_acc.run();
+        } else {
+            Xlo.isEnabled = false;
+            rec_acc.onPause();
+        }
 
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -634,19 +613,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 graph.removeSeries(audioSeries);
                 graph.removeSeries(audio_peaks);
                 if (isChecked) { // enable mic recording
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                                                    Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED) { // check for permission
-                        permission = false;
-                        ActivityCompat.requestPermissions(MainActivity.this, // request permission
-                                new String[]{Manifest.permission.RECORD_AUDIO},
-                                1);
-                    } else { // we have permission
-                        permission = true;
-                    }
+                    check_record_permissions();
                     if (permission) {
                         MicData.isEnabled = true; // enable thread
-                        rec_mic.run(); // run recording thread
+                        if (noisePause.isChecked())
+                            noisePause.setChecked(false);
+                        else
+                            rec_mic.run(); // run recording thread
                         graph.addSeries(audioSeries); // graph results
                         graph.addSeries(audio_peaks);
                     } else {
@@ -654,10 +627,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     }
                 } else {
                     rec_mic.onPause();
-                    graph.removeSeries(audioSeries);
-                    graph.removeSeries(audio_peaks);
                 } // store settings (remember checked state)
-               // SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
+               SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
         });
 
@@ -667,32 +638,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 Xlo.isEnabled = isChecked; // enable/disable thread
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if  (isChecked) {
-                    graph.removeSeries(xSeries); // remove results from graph
-                    graph.removeSeries(ySeries);
-                    graph.removeSeries(zSeries);
-                    rec_acc.run(); // run thread
-                    if(xCheck.isChecked()) {
-                        graph.addSeries(xSeries); // graph results
-                        graph.addSeries(x_peaks);
-                    }
+                    if (vibPause.isChecked())
+                        vibPause.setChecked(false);
+                    else
+                        rec_acc.run(); // run thread
 
-                    if(yCheck.isChecked()) {
-                        graph.addSeries(ySeries);
-                        graph.addSeries(y_peaks);
-                    }
-
-                    if(zCheck.isChecked()) {
-                        graph.addSeries(zSeries);
-                        graph.addSeries(z_peaks);
-                    }
                 } else {
-                   // rec_acc.onPause(); // stop thread
-                    graph.removeSeries(xSeries); // remove results from graph
-                   graph.removeSeries(ySeries);
-                   graph.removeSeries(zSeries);
-                    graph.removeSeries(x_peaks); // remove results from graph
-                    graph.removeSeries(y_peaks);
-                    graph.removeSeries(z_peaks);
+                    rec_acc.onPause(); // stop thread
                 }
             }
         });
@@ -705,50 +657,85 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         });
     }
 
-    void checkBluetoothConnection() {
+    void setBluetoothReceiver() {
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
 
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                            BluetoothAdapter.ERROR);
+                    switch (state) {
+                        case BluetoothAdapter.STATE_OFF:
+                            if (getSupportActionBar() != null) {
+                                getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Off</font><small>"));
+                            }
+                            break;
+                        case BluetoothAdapter.STATE_TURNING_OFF:
+                            //Do something
+                            break;
+                        case BluetoothAdapter.STATE_ON:
+                            if (getSupportActionBar() != null) {
+                                getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth On</font><small>"));
+                            }
+                            new AlertDialog.Builder(context)
+                                    .setTitle("Bluetooth On")
+                                    .setMessage("The Bluetooth on your device is currently on. Please make sure that you are connected " +
+                                            "to the correct device.")
+                                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // continue with delete
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .show();
+                            break;
+                        case BluetoothAdapter.STATE_TURNING_ON:
+                            //Do something
+                            break;
+                    }
+                }
+            }
+        };
+    }
+
+    void checkBluetoothConnection() {
         if (app.getGlobalBluetoothSocket() == null) {
-            android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(this);
             LayoutInflater adbInflater = LayoutInflater.from(this);
             View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
             dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
-            dontShowAgain.setChecked(SettingsData.isChecked(dontShowAgain.getTag().toString(), false));
-            dontShowAgain.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
-                }
-            });
-            alertDialog.setView(eulaLayout);
-            alertDialog.setTitle("Bluetooth Connection Alert");
-            alertDialog.setMessage("In order for this app to work correctly " +
-                    "you need to be connected to an OBDII.");
-            alertDialog.setNegativeButton("Ok", new android.app.AlertDialog.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
-                        getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
-
-                }
-            });
-            alertDialog.setPositiveButton("Bluetooth Settings", new android.app.AlertDialog.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
-                    startActivity(intent);
-                }
-            });
-
-            if (!dontShowAgain.isChecked()){
-                //less annoying popup for now
-                Toast.makeText(this, "bluetooth", Toast.LENGTH_SHORT).show();
-                //alertDialog.show();
+            if (!SettingsData.isChecked(dontShowAgain.getTag().toString(), false)) {
+                android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(this);
+                dontShowAgain.setChecked(false);
+                dontShowAgain.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        SettingsData.setChecked(buttonView.getTag().toString(), isChecked);
+                    }
+                });
+                alertDialog.setView(eulaLayout);
+                alertDialog.setTitle("Bluetooth Connection Alert");
+                alertDialog.setMessage("In order for this app to work correctly " +
+                        "you need to be connected to an OBDII.");
+                alertDialog.setNegativeButton("Ok", new android.app.AlertDialog.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
+                            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
+                    }
+                });
+                alertDialog.setPositiveButton("Bluetooth Settings", new android.app.AlertDialog.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                alertDialog.show();
             }
-
-
         } else {
             if (getSupportActionBar() != null)      // update action bar (must still be set to connected if connected!)
                 getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Connected</font><small>"));
         }
-
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -787,80 +774,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         return false;
     }
 
-    //private variable
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        if (getSupportActionBar() != null) {
-                            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Off</font><small>"));
-                        }
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        //Do something
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        if (getSupportActionBar() != null) {
-                            getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth On</font><small>"));
-                        }
-                        new AlertDialog.Builder(context)
-                                .setTitle("Bluetooth On")
-                                .setMessage("The Bluetooth on your device is currently on. Please make sure that you are connected " +
-                                        "to the correct device.")
-                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        // continue with delete
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .show();
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        //Do something
-                        break;
-                }
-            }
-        }
-    };
-
-    // The part of the function that help detect peaks
-    public DataPoint[] findPeaks(DataPoint[] data){
-
-        int max = 1;
-        int numPeaks = 0 ;
-        int[] indexes = new int[(data.length + 1)/2];
-        DataPoint[] peaks;
-        // Checking for the conditions of the peaks
-        // if the change is ocurring, then graph.
-        for(int i = 1; i < data.length; i++){
-            while(i < data.length && data[i].getY() < data[i-1].getY()){
-                i++;
-            }
-            while(i < data.length && data[i].getY() > data[i-1].getY()){
-                max = i++;
-            }
-            if(i < indexes.length && data[max].getY() > peakThresh)
-                indexes[numPeaks++]= max;
-        }
-
-        if(numPeaks > 0)
-            peaks = new DataPoint[numPeaks];
-        else
-            peaks = new DataPoint[]{};
-        //placing the peaks in the coordinates into peaks so we can see where they are
-        for(int i = 0; i < numPeaks; i++)
-            peaks[i] = data[indexes[i]];
-
-    // make diplayable variable to show us the interval =audio_dps[1] - audio_dps[2];
-        return peaks;
-    }
-
     // separated handler as a class, so the code is more readable, and less things clog onCreate
     private class MainHandler extends Handler {
         MainHandler(Looper looper) {
@@ -875,63 +788,77 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     int j = 0;
                     for (int i = audio_startdps; i < audio_enddps; ++i) {
                         audio_dps[j++] = new DataPoint(audio_omega[i], audio_result[i]);
-
-
-                        // Void intervalSpacing{
-
-                        //if(audio_dps[i] > audio_dps[i+1])
-                          //  aps.appendData(audio_dps[i],false, audio_dps.length);
-
-                        // make diplayable variable to show us the interval =audio_dps[1] - audio_dps[2];
-
                     }
                     audioSeries.resetData(audio_dps);
-                    audio_peaks.resetData(findPeaks(audio_dps));
-                    break;
+                    a_peaks = correlate.findPeaks(audio_dps);
+                    audio_peaks.resetData(a_peaks);
+                    a_occ = correlate.count_occurrence(a_peaks);
+                    j = 0;
+                    for (Map.Entry<String, Integer> entry : a_occ)
+                    {
+                        occ_text = ((TextView) findViewById(occ_ids[j++]));
+                        occ_text.setText(entry.getKey() + ": " + entry.getValue());
+                        if (j == 10)
+                            break;
+                    }
+                    for (int i = j; i < 10; i++) {
+                        occ_text = ((TextView) findViewById(occ_ids[j++]));
+                        occ_text.setText(" ");
+                    }
 
+                    break;
                 }
                 case 3: // Accelerometer data is ready
                 {
                     // begin fft
-                    accelFFT[0].run(Xlo.xAcc, "x");
-                    accelFFT[1].run(Xlo.yAcc, "y");
-                    accelFFT[2].run(Xlo.zAcc, "z");
+                    if (xCheck.isChecked())
+                        accelFFT[0].run(Xlo.xAcc, "x");
+                    if (yCheck.isChecked())
+                        accelFFT[1].run(Xlo.yAcc, "y");
+                    if (zCheck.isChecked())
+                        accelFFT[2].run(Xlo.zAcc, "z");
                     break;
                 }
                 case 4: // Accelerometer x fft is complete
                 {
-                    // add to series
-                    accel_resultX = (double[]) msg.obj;
-                    int j = 0;
-                    for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        accel_dpsX[j++] = new DataPoint(accel_omega[i], accel_resultX[i]);
+                    if (xCheck.isChecked()) {
+                        // add to series
+                        accel_resultX = (double[]) msg.obj;
+                        int j = 0;
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
+                            accel_dpsX[j++] = new DataPoint(accel_omega[i], accel_resultX[i]);
+                        }
+                        xSeries.resetData(accel_dpsX);
+                        x_peaks.resetData(correlate.findPeaks(accel_dpsX));
                     }
-                    xSeries.resetData(accel_dpsX);
-                    x_peaks.resetData(findPeaks(accel_dpsX));
                     break;
                 }
                 case 5: // Accelerometer y fft complete
                 {
-                    // add to series
-                    accel_resultY = (double[]) msg.obj;
-                    int j = 0;
-                    for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        accel_dpsY[j++] = new DataPoint(accel_omega[i], accel_resultY[i]);
+                    if (yCheck.isChecked()) {
+                        // add to series
+                        accel_resultY = (double[]) msg.obj;
+                        int j = 0;
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
+                            accel_dpsY[j++] = new DataPoint(accel_omega[i], accel_resultY[i]);
+                        }
+                        ySeries.resetData(accel_dpsY);
+                        y_peaks.resetData(correlate.findPeaks(accel_dpsY));
                     }
-                    ySeries.resetData(accel_dpsY);
-                    y_peaks.resetData(findPeaks(accel_dpsY));
                     break;
                 }
                 case 6: // Accelerometer z fft complete
                 {
-                    //add to series
-                    accel_resultZ = (double[]) msg.obj;
-                    int j = 0;
-                    for (int i = acc_startdps; i < acc_enddps; ++i) {
-                        accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
+                    if (zCheck.isChecked()) {
+                        //add to series
+                        accel_resultZ = (double[]) msg.obj;
+                        int j = 0;
+                        for (int i = acc_startdps; i < acc_enddps; ++i) {
+                            accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
+                        }
+                        zSeries.resetData(accel_dpsZ);
+                        z_peaks.resetData(correlate.findPeaks(accel_dpsZ));
                     }
-                    zSeries.resetData(accel_dpsZ);
-                    z_peaks.resetData(findPeaks(accel_dpsZ));
                     break;
                 }
                 case 7: // Audio fft correlation complete
@@ -949,7 +876,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     //OBD Data (it is test data for now)
                     obd_result = (double[]) msg.obj;
                     rpm_dps[0] = new DataPoint(obd_result[0],0);
-                    obdSeries.resetData(rpm_dps);
 
                     DecimalFormat df = new DecimalFormat("#.##");
 
@@ -984,7 +910,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     //Tire RPM Frequency
                     tire_dps[0] = new DataPoint(obd_result[1],0);
-                    obdSeriesSpeed.resetData(tire_dps);
                     tireRPMFreqText.setText("TireRPM/Freq: "+ df.format(obd_result[1]));
 
                     break;
@@ -996,36 +921,4 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         }
     }
-    
-    private int getFreqIndexCeil (double frequency, double freq_step) {
-        return (int)( Math.ceil(freq_step * frequency) );
-    }
-
-    private int getFreqIndexFloor (double frequency, double freq_step) {
-        return (int)( Math.floor(freq_step * frequency) );
-    }
-
-    private double interpolateMagnitude(double frequency, double freq_step, DataPoint[] datapoints)
-    {
-        int ceil = getFreqIndexCeil(frequency, freq_step);
-        int floor = getFreqIndexFloor(frequency, freq_step);
-        double slope = (datapoints[ceil].getY() - datapoints[floor].getY()) / (datapoints[ceil].getX() - datapoints[floor].getX());
-        double mag = datapoints[floor].getY() + slope * (frequency - datapoints[floor].getX());
-        return mag;
-    }
-
-    private HashMap<String, Integer> count_occurrence(DataPoint[] peaks) {
-        double val = 0;
-        String sval;
-        HashMap<String, Integer> occurrences = new HashMap<>();
-        for (int i = 0; i < peaks.length; i++) {
-            for (int j = i + 1; j < peaks.length; j++) {
-                val = peaks[j].getX() - peaks[i].getX();
-                sval = String.format("%.2f", val);
-                occurrences.put(sval, occurrences.get(sval) + 1);
-            }
-        }
-        return occurrences;
-    }
-
 }
