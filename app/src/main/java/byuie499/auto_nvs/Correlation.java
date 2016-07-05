@@ -70,9 +70,8 @@ public class Correlation {
                 occurrences.put(sval, occurrences.get(sval) + 1);
             }
         }
-        List<Map.Entry<String, Integer>> sorted_occurrences = sortByComparator(occurrences, DESC);
 
-        return sorted_occurrences;
+        return sortByComparator(occurrences, DESC);
     }
 
     private static List<Map.Entry<String, Integer>> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
