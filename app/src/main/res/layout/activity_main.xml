@@ -45,7 +45,7 @@
 
     <LinearLayout
         android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:orientation="vertical"
         android:id="@+id/occLayout0"
         android:layout_alignTop="@+id/fftGraph"
@@ -280,7 +280,7 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_height="110dp"
             android:layout_alignTop="@+id/fftGraph"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
