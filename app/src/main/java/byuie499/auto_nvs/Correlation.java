@@ -62,12 +62,14 @@ public class Correlation {
     public List<Map.Entry<String, Integer>> count_occurrence(DataPoint[] peaks) {
         double val;
         String sval;
+        int occ;
         HashMap<String, Integer> occurrences = new HashMap<>();
         for (int i = 0; i < peaks.length; i++) {
             for (int j = i + 1; j < peaks.length; j++) {
                 val = peaks[j].getX() - peaks[i].getX();
                 sval = String.format("%.2fHz", val);
-                occurrences.put(sval, occurrences.get(sval) + 1);
+                occ = (occurrences.get(sval) == null ? 1 : occurrences.get(sval) + 1);
+                occurrences.put(sval, occ);
             }
         }
 
