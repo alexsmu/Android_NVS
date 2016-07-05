@@ -31,9 +31,10 @@ public class OBDData {
     private int testImperialSpeed = 65; //MPH
     private boolean testSpeedIncreasing = true;
     boolean test = false;
-    private int n = 100; //100 times per minute?
+    private int Ts = 100; //100 ms?
     private Handler mHandler = null;
     private boolean isRunning = false;
+    private Timer timer;
     public static double rpmFreq;
     public static double imperialTireRPMFreq;
     public double [] objectToSend = new double[2];
@@ -46,20 +47,17 @@ public class OBDData {
      *  Parameter: samples --> number of samples
      *  Parameter: isTest --> If true, sample methods will be called instead of actual OBD data
      */
-    public OBDData(Handler global_handler, int samples, boolean isTest){
+    public OBDData(Handler global_handler, int period, boolean isTest){
         test = isTest;
         mHandler = global_handler;
-        n = samples;
+        Ts = period;
     }
 
     /** Runs OBD Threads and polls for RPM Frequency and Tire RPM Frequency*/
     public void run(){
-
-        //if this is not a test actually get the information from OBDII
-
-
-
-
+        if (!isRunning) {
+            //if this is not a test actually get the information from OBDII
+            isRunning = true;
             try {
                 //Get GLOBAL bluetooth socket
                 socket = app.getGlobalBluetoothSocket();
@@ -70,89 +68,52 @@ public class OBDData {
                 new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
 
                 //Initializing necessary OBDII commands
-                isRunning = true;
                 engineRpmCommand = new RPMCommand();
                 speedCommand = new SpeedCommand();
                 engineCoolantTemperatureCommand = new EngineCoolantTemperatureCommand();
 
                 engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
                 speedCommand.run(socket.getInputStream(), socket.getOutputStream());
-                engineCoolantTemperatureCommand.run(socket.getInputStream(),socket.getOutputStream());
+                engineCoolantTemperatureCommand.run(socket.getInputStream(), socket.getOutputStream());
 
                 //Thread to get necessary RPMs
-                Thread obdThread = new Thread(new Runnable() {
+                timer = new Timer();
+                TimerTask accumulate = new TimerTask() {
                     @Override
                     public void run() {
-                        Timer timer = new Timer();
-                        TimerTask accumulate = new TimerTask() {
-                            @Override
-                            public void run() {
 
+                        //get motor & wheel RPM
+                        rpmFreq = getRPMFrequency();
+                        imperialTireRPMFreq = getImperialTireRPMFreq();
 
+                        //Put into array to be sent to main thread
+                        objectToSend[0] = rpmFreq;
+                        objectToSend[1] = imperialTireRPMFreq;
 
-                                //get motor & wheel RPM
-                                rpmFreq = getRPMFrequency();
-                                imperialTireRPMFreq = getImperialTireRPMFreq();
-
-                                //Put into array to be sent to main thread
-                                objectToSend[0] = rpmFreq;
-                                objectToSend[1] = imperialTireRPMFreq;
-
-                                //Send RPMs to main thread
-                                Message done = mHandler.obtainMessage(9,objectToSend);
-                                mHandler.sendMessage(done);
-                            }
-                        };
-                        timer.schedule(accumulate, 0, n);
-                        while (isRunning);
-                        timer.cancel();
-                        timer.purge();
+                        //Send RPMs to main thread
+                        Message done = mHandler.obtainMessage(9, objectToSend);
+                        mHandler.sendMessage(done);
                     }
-                }, "auto_nvs_fft");
-                obdThread.start();
+                };
+                timer.schedule(accumulate, 0, Ts);
             } catch (Exception ex) {
-
                 //Unable to communicated with OBDII error
                 isRunning = false;
-
             }
-
-
-
-
+        }
     }
 
     public void onPause() {
-        isRunning = false;
+        if (isRunning) {
+            isRunning = false;
+            timer.cancel();
+            timer.purge();
+        }
     }
 
     public int getTestRPM() {
         return testRPM;
     }
-
-    public float getVaryingTestRPMFreq() {
-
-        int rpm = getTestRPM();
-        switch (rpm) {
-            case 3000:
-                testRPM+=1000;
-                return testRPM/60;
-            case 4000:
-                testRPM+=1000;
-                return testRPM/60;
-            case 5000:
-                testRPM+=1000;
-                return testRPM/60;
-            case 6000:
-                testRPM+=1000;
-                return testRPM/60;
-            default:
-                testRPM = 3000;
-                return testRPM/60;
-
-        }
-    }
-
 
     /**
      * getRPM : Will get RPM Example Output: 3000
