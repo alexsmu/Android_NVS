@@ -20,7 +20,6 @@
     tools:context="byuie499.auto_nvs.MainActivity"
     android:orientation="vertical">
 
-
     <TextView
         android:id="@+id/rpmFreq"
         android:layout_width="wrap_content"
@@ -36,17 +35,61 @@
         android:layout_marginLeft="150dp"
         android:text="TireRPM/Freq:"/>
 
-
-
     <com.jjoe64.graphview.GraphView
         android:layout_width="match_parent"
         android:layout_height="475dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/rpmFreq"
-        android:id="@+id/fftGraph"
- />
+        android:id="@+id/fftGraph" />
 
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:orientation="vertical"
+        android:id="@+id/occLayout0"
+        android:layout_alignTop="@+id/fftGraph"
+        android:layout_toLeftOf="@+id/occLayout1"
+        android:layout_toStartOf="@+id/occLayout1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0a" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+
+            android:text=""
+            android:id="@+id/occ0b" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0c" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0d" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0e" />
+
+    </LinearLayout>
 
     <!--<android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
@@ -65,7 +108,6 @@
         android:textOn="@string/noise"
         android:id="@+id/toggleNoise"
         android:tag="noise"
-        android:checked="false"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/fftGraph"/>
 
@@ -77,7 +119,6 @@
         android:textOn="@string/vibration"
         android:id="@+id/toggleVibration"
         android:tag="vibration"
-        android:checked="false"
         android:layout_below="@+id/fftGraph"
         android:layout_toLeftOf="@id/toggleNoise" />
 
@@ -89,10 +130,9 @@
         android:textOn="Measure"
         android:id="@+id/toggleMeasure"
         android:tag="measure"
-        android:checked="true"
+        android:layout_below="@+id/fftGraph"
         android:layout_toRightOf="@+id/toggleNoise"
-        android:layout_below="@id/fftGraph"
-         />
+        android:layout_toEndOf="@+id/toggleNoise" />
 
     <TextView
         android:layout_width="match_parent"
@@ -104,8 +144,6 @@
         android:background="#E0E0E0"
         android:textColor="#000000"/>
 
-
-
         <Spinner
             android:id="@+id/zoom"
             android:layout_width="100dp"
@@ -113,7 +151,6 @@
             android:layout_below="@id/graphOptions"
             android:layout_centerHorizontal="true"
             />  
-
 
         <Button
         android:id="@+id/left"
@@ -147,6 +184,7 @@
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/xCheck"
+        android:tag="xCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/vibOptions"
@@ -155,6 +193,7 @@
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/yCheck"
+        android:tag="yCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/xCheck"
@@ -164,6 +203,7 @@
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/zCheck"
+        android:tag="zCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/yCheck"
@@ -181,6 +221,7 @@
         android:textOff="Pause"
         android:textOn="Play"
         android:id="@+id/vibrationPause"
+        android:tag="vibPause"
         android:background="@drawable/toggle_selector"
         android:layout_below="@id/vibOptions"
         android:checked="false"
@@ -206,6 +247,7 @@
         android:textOff="Pause"
         android:textOn="Play"
         android:id="@+id/noisePause"
+        android:tag="noisePause"
         android:background="@drawable/toggle_selector"
         android:layout_below="@id/noiseOptions"
         android:layout_toRightOf="@id/zCheck"
@@ -235,6 +277,53 @@
         android:layout_centerHorizontal="true"
         />
 
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignTop="@+id/fftGraph"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/occLayout1">
 
-</RelativeLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text=""
+                android:id="@+id/occ1a" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text=""
+                android:id="@+id/occ1b" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text=""
+                android:id="@+id/occ1c" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text=""
+                android:id="@+id/occ1d" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text=""
+                android:id="@+id/occ1e" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
 </ScrollView>
