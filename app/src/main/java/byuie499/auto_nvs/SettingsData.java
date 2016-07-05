@@ -24,8 +24,32 @@ public class SettingsData {
         prefs = mContext.getSharedPreferences(mContext.getString(R.string.preference_file), Context.MODE_PRIVATE);
     }
 
+    public static String getString(String name, String def_val){
+        return (prefs == null ? def_val : prefs.getString(name, def_val));
+    }
+
+    public static void setString(String name, String val) {
+        if (prefs != null) {
+            editor = prefs.edit();
+            editor.putString(name, val);
+            editor.apply();
+        }
+    }
+
+    public static float getFloat(String name, float def_val){
+        return (prefs == null ? def_val : prefs.getFloat(name, def_val));
+    }
+
+    public static void setFloat(String name, float val) {
+        if (prefs != null) {
+            editor = prefs.edit();
+            editor.putFloat(name, val);
+            editor.apply();
+        }
+    }
+
     public static boolean isChecked(String name, boolean def_val){
-        return (prefs == null ? def_val : prefs.getBoolean(name,def_val));
+        return (prefs == null ? def_val : prefs.getBoolean(name, def_val));
     }
 
     public static void setChecked(String name, boolean val) {
