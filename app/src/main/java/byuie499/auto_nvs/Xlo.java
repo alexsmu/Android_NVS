@@ -65,7 +65,7 @@ public class Xlo {
             isRunning = true;
             sm.registerListener(xlo_read, //listener
                     accelerometer, //sensor
-                    1000); // period in us (NOT PRECISE, USUALLY FASTER)
+                    200); // period in us (NOT PRECISE, USUALLY FASTER)
             timer = new Timer();
             accumulate = new TimerTask() {
                 @Override
