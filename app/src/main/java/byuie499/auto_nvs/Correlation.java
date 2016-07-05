@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Correlation {
-    public static int peakThresh = -60;
+    public static int peakThresh = -55;
     public static boolean ASC = true;
     public static boolean DESC = false;
 
