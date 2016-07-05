@@ -14,7 +14,7 @@ public class MicData {
     private int buffer;
     private int bufferSizeInBytes;
     private static Thread recordingThread = null;
-    private static boolean isRecording = false;
+    public static boolean isRecording = false;
     public static boolean isEnabled = false;
     public Handler mHandler = null;
     private Fft audioFFT = null;
@@ -41,7 +41,7 @@ public class MicData {
     }
 
     public void run() {
-        if (isEnabled) {
+        if (isEnabled & !isRecording) {
             isRecording = true;
             recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE,
                     RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, bufferSizeInBytes);
