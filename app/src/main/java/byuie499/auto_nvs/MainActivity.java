@@ -9,9 +9,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -57,6 +59,10 @@ import java.util.Set;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, View.OnClickListener {
@@ -832,6 +838,38 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         "Unknown...",
                         Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.save_screenshot:
+                try {
+                    File imageFile ;
+
+                    Date now = new Date();
+                    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+                    // image naming and path  to include sd card  appending name you choose for file
+                    String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+                    imageFile = new File(mPath);
+
+                    // create bitmap screen capture
+                    View v1 = getWindow().getDecorView().getRootView();
+                    v1.setDrawingCacheEnabled(true);
+                    Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+                    v1.setDrawingCacheEnabled(false);
+
+
+                    FileOutputStream outputStream = new FileOutputStream(imageFile);
+                    int quality = 100;
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+
+
+
+                } catch (Throwable e) {
+                    // Several error may come out with file handling or OOM
+                    e.printStackTrace();
+                }
+                break;
+
         }
         //Return false to allow normal menu processing to proceed,
         //true to consume it here.
