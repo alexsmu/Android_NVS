@@ -54,7 +54,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.Target;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
+
+public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, View.OnClickListener {
     private static final int graph_x_axis_end = 500;  // graph x axis domain limit
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
@@ -145,6 +150,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private int[] occ_ids = { R.id.occ0a, R.id.occ0b, R.id.occ0c, R.id.occ0d, R.id.occ0e,
             R.id.occ1a, R.id.occ1b, R.id.occ1c, R.id.occ1d, R.id.occ1e};
 
+    //These Varibales are for the tutorial
+    private ShowcaseView showcaseView;
+    private int counter = 0;
+    private Target t1, t2, t3, t4;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -153,6 +165,56 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         setBluetoothReceiver();
         initMembers(); // initialize containers
         initGraph();   // initialize graph
+
+        t1 = new ViewTarget(R.id.toggleVibration, this);
+        t2 = new ViewTarget(R.id.toggleNoise, this);
+        t3 = new ViewTarget(R.id.toggleMeasure, this);
+        t4 = new ViewTarget(R.id.vibrationPause, this);
+
+
+        showcaseView = new ShowcaseView.Builder(this)
+                .setTarget(Target.NONE)
+                .setOnClickListener(this)
+                .setContentTitle("Tutorial")
+                .setContentText("In the Center you'll find a graph. This will contain the Information " +
+                        "on the FFT for the noise and vibration.")
+                .singleShot(42)
+                .build();
+        showcaseView.setButtonText("next");
+    }
+
+    @Override
+    public void onClick(View v){
+        switch(counter){
+            case 0:
+                showcaseView.setShowcase(t1, true);
+                showcaseView.setContentTitle("VIBRATION");
+                showcaseView.setContentText("This Button Will enable you to graph the vibrations.");
+                break;
+            case 1:
+                showcaseView.setShowcase(t2, true);
+                showcaseView.setContentTitle("NOISE");
+                showcaseView.setContentText("This button will enable you to graph the noise");
+                break;
+            case 2:
+                showcaseView.setShowcase(t3, true);
+                showcaseView.setContentTitle("MEASURE");
+                showcaseView.setContentText("Finds the distance between two peaks.");
+                showcaseView.setButtonText("close");
+                break;
+            case 3:
+                showcaseView.setShowcase(t4, true);
+                showcaseView.setContentTitle("PAUSE");
+                showcaseView.setContentText("This will pause the graph that's running real time.");
+                showcaseView.setButtonText("close");
+                break;
+            case 4:
+                showcaseView.hide();
+                break;
+
+        }
+        counter++;
+
     }
 
     @Override
