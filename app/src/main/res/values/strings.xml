@@ -9,6 +9,7 @@
     <string name="maps">maps</string>
     <string name="action_settings">Settings</string>
     <string name="bluetooth_settings">Bluetooth</string>
+    <string name="save_screenshot">Save Screen</string>
     <string name="quit">Quit</string>
     <string name="bluetooth_tab_paired">Paired Devices</string>
     <string name="bluetooth_tab_scan">Scan for Devices</string>
