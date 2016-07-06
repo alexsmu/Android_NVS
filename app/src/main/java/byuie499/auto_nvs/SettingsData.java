@@ -18,10 +18,12 @@ public class SettingsData {
     private static SharedPreferences prefs = null;
     private static SharedPreferences.Editor editor = null;
     public static Context mContext = null;
+    public static String currentProfile;
 
     public SettingsData(Context context) {
         mContext = context;
         prefs = mContext.getSharedPreferences(mContext.getString(R.string.preference_file), Context.MODE_PRIVATE);
+        currentProfile = SettingsData.getString("profile", "Profile 1");
     }
 
     public static String getString(String name, String def_val){
