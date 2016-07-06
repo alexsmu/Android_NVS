@@ -416,12 +416,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     protected void setPrefs(){
-        dev1val = SettingsData.getFloat("ratio1", 0);
-        dev2val = SettingsData.getFloat("ratio2", 0);
-        dev3val = SettingsData.getFloat("ratio3", 0);
-        dev4val = SettingsData.getFloat("ratio4", 0);
-        dev5val = SettingsData.getFloat("ratio5", 0);
-        dev6val = SettingsData.getFloat("ratio6", 0);
+        dev1val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio1", "0"));
+        dev2val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
+        dev3val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
+        dev4val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
+        dev5val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio5", "0"));
+        dev6val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio6", "0"));
     }
 
     protected void initMembers() { // Initialize member containers
@@ -989,29 +989,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     rpmFreqText.setText("RPM/Freq: "+ df.format(obd_result[0]));
 
-//                    /*TESTING*/
-//                    obd_result = (double[]) msg.obj;
-//                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
-//                    device2_series.resetData(device2_dps);
-//                    /*TESTING*/
                     /*TESTING*/
-                    obd_result = (double[]) msg.obj;
                     device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
                     device2_series.resetData(device2_dps);
 
-                    obd_result = (double[]) msg.obj;
                     device3_dps[0] = new DataPoint(dev1val*obd_result[0]/dev3val,0);
                     device3_series.resetData(device3_dps);
 
-                    obd_result = (double[]) msg.obj;
                     device4_dps[0] = new DataPoint(dev1val*obd_result[0]/dev4val,0);
                     device4_series.resetData(device4_dps);
 
-                    obd_result = (double[]) msg.obj;
                     device5_dps[0] = new DataPoint(dev1val*obd_result[0]/dev5val,0);
                     device5_series.resetData(device5_dps);
 
-                    obd_result = (double[]) msg.obj;
                     device6_dps[0] = new DataPoint(dev1val*obd_result[0]/dev6val,0);
                     device6_series.resetData(device6_dps);
                     /*TESTING*/

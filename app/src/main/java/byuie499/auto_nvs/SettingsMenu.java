@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class SettingsMenu extends AppCompatActivity {
@@ -45,6 +46,7 @@ class SettingsMenu extends AppCompatActivity {
     private CheckBox check6;
     private CheckBox check7;
     private CheckBox check8;
+    private SettingsData preferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,11 +61,7 @@ class SettingsMenu extends AppCompatActivity {
         //    staticData = new SettingsData(getApplicationContext());
         setContentView(R.layout.settings);
 
-        List<String> testFiles = new ArrayList<>();
-        testFiles.add("Profile 1");
-        testFiles.add("Profile 2");
-        testFiles.add("Profile 3");
-        testFiles.add("Profile 4");
+        List<String> testFiles = new ArrayList<>(Arrays.asList("Profile 1","Profile 2","Profile 3","Profile 4"));
 
         fileSpinner = (Spinner) findViewById(R.id.fileSpinner);
 
@@ -71,6 +69,11 @@ class SettingsMenu extends AppCompatActivity {
         adapter.setDropDownViewResource(R.layout.spinner_item);
         fileSpinner.setAdapter(adapter);
 
+        if (SettingsData.mContext != getApplicationContext()){
+            preferences = new SettingsData(getApplicationContext());
+        }
+
+        //SettingsData.currentProfile = SettingsData.SettingsData.currentProfile;
 
         settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
         if (settingsPrefs.getString("profile", "").length() == 0){
@@ -114,11 +117,14 @@ class SettingsMenu extends AppCompatActivity {
         ratio8  = (EditText) findViewById((R.id.gearval));
     }
 
-    void update(){
-        String profile = fileSpinner.getSelectedItem().toString();
-        prefs = getSharedPreferences(profile, MODE_PRIVATE);
-        settingsPrefs.edit().putString("profile", profile).apply();
+    void setProfile(){
+        //String profile = fileSpinner.getSelectedItem().toString();
+        //prefs = getSharedPreferences(profile, MODE_PRIVATE);
+        //settingsPrefs.edit().putString("profile", profile).apply();
         //Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
+
+        SettingsData.currentProfile = fileSpinner.getSelectedItem().toString();
+        SettingsData.setString("profile", SettingsData.currentProfile);
 
         loadVars();
     }
@@ -135,7 +141,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio1", ratio1.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio1", ratio1.getText().toString());
             }
         });
         ratio2.addTextChangedListener(new TextWatcher() {
@@ -149,7 +155,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio2", ratio2.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio2", ratio2.getText().toString());
             }
         });
         ratio3.addTextChangedListener(new TextWatcher() {
@@ -163,7 +169,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio3", ratio3.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio3", ratio3.getText().toString());
             }
         });
         ratio4.addTextChangedListener(new TextWatcher() {
@@ -177,7 +183,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio4", ratio4.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio4", ratio4.getText().toString());
             }
         });
         ratio5.addTextChangedListener(new TextWatcher() {
@@ -191,7 +197,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio5", ratio5.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio5", ratio5.getText().toString());
             }
         });
         ratio6.addTextChangedListener(new TextWatcher() {
@@ -205,7 +211,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio6", ratio6.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio6", ratio6.getText().toString());
             }
         });
 
@@ -220,7 +226,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("name2", name2.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_name2", name2.getText().toString());
             }
         });
         name3.addTextChangedListener(new TextWatcher() {
@@ -234,7 +240,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("name3", name3.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_name3", name3.getText().toString());
             }
         });
         name4.addTextChangedListener(new TextWatcher() {
@@ -248,7 +254,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("name4", name4.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_name4", name4.getText().toString());
             }
         });
         name5.addTextChangedListener(new TextWatcher() {
@@ -262,7 +268,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("name5", name3.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_name5", name5.getText().toString());
             }
         });
         name6.addTextChangedListener(new TextWatcher() {
@@ -276,7 +282,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("name6", name6.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_name6", name6.getText().toString());
             }
         });
 
@@ -291,7 +297,7 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio7", ratio7.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio7", ratio7.getText().toString());
             }
         });
         ratio8.addTextChangedListener(new TextWatcher() {
@@ -305,40 +311,40 @@ class SettingsMenu extends AppCompatActivity {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                prefs.edit().putString("ratio8", ratio8.getText().toString()).apply();
+                SettingsData.setString(SettingsData.currentProfile + "_ratio8", ratio8.getText().toString());
             }
         });
     }
 
     void loadVars(){
-        ratio1.setText(prefs.getString("ratio1", ""));
-        ratio2.setText(prefs.getString("ratio2", ""));
-        ratio3.setText(prefs.getString("ratio3", ""));
-        ratio4.setText(prefs.getString("ratio4", ""));
-        ratio5.setText(prefs.getString("ratio5", ""));
-        ratio6.setText(prefs.getString("ratio6", ""));
+        ratio1.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio1", "0"));
+        ratio2.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
+        ratio3.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
+        ratio4.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
+        ratio5.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio5", "0"));
+        ratio6.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio6", "0"));
 
-        name2.setText(prefs.getString("name2", ""));
-        name3.setText(prefs.getString("name3", ""));
-        name4.setText(prefs.getString("name4", ""));
-        name5.setText(prefs.getString("name5", ""));
-        name6.setText(prefs.getString("name6", ""));
+        name2.setText(SettingsData.getString(SettingsData.currentProfile + "_name2", ""));
+        name3.setText(SettingsData.getString(SettingsData.currentProfile + "_name3", ""));
+        name4.setText(SettingsData.getString(SettingsData.currentProfile + "_name4", ""));
+        name5.setText(SettingsData.getString(SettingsData.currentProfile + "_name5", ""));
+        name6.setText(SettingsData.getString(SettingsData.currentProfile + "_name6", ""));
 
-        ratio7.setText(prefs.getString("ratio7", ""));
-        ratio8.setText(prefs.getString("ratio8", ""));
+        ratio7.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));
+        ratio8.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio8", "0"));
 
-        check1.setChecked(Boolean.valueOf(prefs.getString("check1", "")));
-        check2.setChecked(Boolean.valueOf(prefs.getString("check2", "")));
-        check3.setChecked(Boolean.valueOf(prefs.getString("check3", "")));
-        check4.setChecked(Boolean.valueOf(prefs.getString("check4", "")));
-        check5.setChecked(Boolean.valueOf(prefs.getString("check5", "")));
-        check6.setChecked(Boolean.valueOf(prefs.getString("check6", "")));
-        check7.setChecked(Boolean.valueOf(prefs.getString("check7", "")));
-        check8.setChecked(Boolean.valueOf(prefs.getString("check8", "")));
+        check1.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check1", false));
+        check2.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check2", false));
+        check3.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check3", false));
+        check4.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check4", false));
+        check5.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check5", false));
+        check6.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check6", false));
+        check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
+        check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
     }
 
     void setSpinner(){
-        String profile = settingsPrefs.getString("profile", "");
+        String profile = SettingsData.getString("profile", "Profile 1");
         String strNum = profile.substring(8,9);
         int num = Integer.parseInt(strNum);
 
@@ -352,7 +358,7 @@ class SettingsMenu extends AppCompatActivity {
                         fileSpinner.setSelection(0);
                     }
                 });
-                update();
+                setProfile();
                 break;
             case 2:
                 fileSpinner.post(new Runnable() {
@@ -361,7 +367,7 @@ class SettingsMenu extends AppCompatActivity {
                         fileSpinner.setSelection(1);
                     }
                 });
-                update();
+                setProfile();
                 break;
             case 3:
                 fileSpinner.post(new Runnable() {
@@ -370,7 +376,7 @@ class SettingsMenu extends AppCompatActivity {
                         fileSpinner.setSelection(2);
                     }
                 });
-                update();
+                setProfile();
                 break;
             case 4:
                 fileSpinner.post(new Runnable() {
@@ -379,7 +385,7 @@ class SettingsMenu extends AppCompatActivity {
                         fileSpinner.setSelection(3);
                     }
                 });
-                update();
+                setProfile();
                 break;
             default:
                 Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
@@ -392,74 +398,54 @@ class SettingsMenu extends AppCompatActivity {
     void addListenerToSpinner(){
         fileSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                update();
+                setProfile();
             }
             public void onNothingSelected(AdapterView<?> parent) {
-                update();
+                setProfile();
             }
         });
     }
 
-    /*void addListenerToButtons(){
-        Button save1 = (Button) findViewById(R.id.save1);
-        Button save2 = (Button) findViewById(R.id.save2);
-        if (save1 != null) {
-            save1.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-        if (save2 != null) {
-            save2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }*/
-
     void addListenersToCheckBoxes(){
         check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check1", String.valueOf(check1.isChecked())).apply();
+                //prefs.edit().putString("check1", String.valueOf(check1.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check1", isChecked);
             }
         });
         check2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check2", String.valueOf(check2.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check2", isChecked);
             }
         });
         check3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check3", String.valueOf(check3.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check3", isChecked);
             }
         });
         check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check4", String.valueOf(check4.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check4", isChecked);
             }
         });
         check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check5", String.valueOf(check5.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check5", isChecked);
             }
         });
         check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check6", String.valueOf(check6.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check6", isChecked);
             }
         });
         check7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check7", String.valueOf(check7.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check7", isChecked);
             }
         });
         check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putString("check8", String.valueOf(check8.isChecked())).apply();
+                SettingsData.setChecked(SettingsData.currentProfile + "_check8", isChecked);
             }
         });
     }
@@ -467,7 +453,7 @@ class SettingsMenu extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-        update();
+        setProfile();
     }
 
     @Override
