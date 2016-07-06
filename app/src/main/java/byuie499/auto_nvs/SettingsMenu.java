@@ -19,7 +19,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SettingsMenu extends AppCompatActivity {
+class SettingsMenu extends AppCompatActivity {
     //private SettingsData staticData = null;
     private Spinner fileSpinner;
     private SharedPreferences prefs;
