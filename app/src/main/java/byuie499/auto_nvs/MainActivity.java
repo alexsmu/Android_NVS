@@ -30,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -167,6 +168,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
+        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", false)){
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+        }
         settingsData = new SettingsData(getApplicationContext());
         setBluetoothReceiver();
         initMembers(); // initialize containers
@@ -233,6 +237,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     public void onResume() {
         super.onResume();
+        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", false)){
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+        }
         if (SettingsData.mContext != getApplicationContext())
             settingsData = new SettingsData(getApplicationContext());
         setPrefs();
@@ -310,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,arraySpinner);
-        scope.setAdapter(adapter);
+/*        scope.setAdapter(adapter);
 
         rightScroll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -334,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             }
         });
-
+*/
         vibPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -437,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
         vibPause = (ToggleButton) findViewById(R.id.vibrationPause);
         noisePause = (ToggleButton) findViewById(R.id.noisePause);
-        scope = (Spinner) findViewById(R.id.zoom);
+        //scope = (Spinner) findViewById(R.id.zoom);
         rightScroll = (Button) findViewById(R.id.right);
         leftScroll = (Button) findViewById(R.id.left);
         noise = (ToggleButton) findViewById(R.id.toggleNoise);
@@ -579,19 +586,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     void addDevices(){
         device2_series.setTitle(SettingsData.getString("name2", ""));
-        device2_series.setColor(Color.parseColor("green"));
+        device2_series.setColor(Color.parseColor("#003366"));
 
         device3_series.setTitle(SettingsData.getString("name3", ""));
-        device3_series.setColor(Color.parseColor("#FA8258"));
+        device3_series.setColor(Color.parseColor("#00aeef"));
 
         device4_series.setTitle(SettingsData.getString("name4", ""));
-        device4_series.setColor(Color.parseColor("#AC58FA"));
+        device4_series.setColor(Color.parseColor("#8eca40"));
 
         device5_series.setTitle(SettingsData.getString("name5", ""));
-        device5_series.setColor(Color.parseColor("#81BEF7"));
+        device5_series.setColor(Color.parseColor("#8c0066"));
 
         device6_series.setTitle(SettingsData.getString("name6", ""));
-        device6_series.setColor(Color.parseColor("#F781F3"));
+        device6_series.setColor(Color.parseColor("#fe6302"));
 
         device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
@@ -718,13 +725,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
             }
         });
-
+/*
         recordButton.setOnClickListener(new View.OnClickListener(){ //to be implemented
             @Override
             public void onClick(View v) {
                 //Toast.makeText(getApplicationContext(), prefs.getString("ratio1", ""), Toast.LENGTH_SHORT).show();
             }
         });
+        */
     }
 
     void setBluetoothReceiver() {

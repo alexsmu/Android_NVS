@@ -488,13 +488,14 @@
                 android:orientation="horizontal">
                 <CheckBox
                     android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"/>
+                    android:layout_height="fill_parent"
+                    android:id="@+id/tutorialOn" />
                 <TextView
                     android:layout_width="0sp"
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:text="Launch tutorial on next app start."
+                    android:text="Re-launch tutorial on next app start."
                     android:textSize="16sp"
                     android:layout_marginLeft="4dp"
                     android:layout_marginStart="4dp" />
@@ -507,13 +508,14 @@
                 android:orientation="horizontal">
                 <CheckBox
                     android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"/>
+                    android:layout_height="fill_parent"
+                    android:id="@+id/screenOn" />
                 <TextView
                     android:layout_width="0sp"
                     android:layout_height="fill_parent"
                     android:layout_weight="10"
                     android:gravity="center_vertical"
-                    android:text="Additional option 1"
+                    android:text="Keep phone from sleeeping."
                     android:layout_marginLeft="4dp"
                     android:layout_marginStart="4dp"
                     android:textSize="16sp" />

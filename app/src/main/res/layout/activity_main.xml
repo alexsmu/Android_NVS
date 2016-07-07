@@ -133,7 +133,7 @@
         android:layout_below="@+id/fftGraph"
         android:layout_toRightOf="@+id/toggleNoise"
         android:layout_toEndOf="@+id/toggleNoise" />
-
+<!--
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -169,14 +169,14 @@
         android:layout_toRightOf="@+id/zoom"
         android:text="Right"
         android:textSize="20sp"/>
-
+-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="Vibration Options"
         android:id="@+id/vibOptions"
-        android:layout_below="@id/zoom"
+        android:layout_below="@id/toggleMeasure"
         android:background="#E0E0E0"
         android:textColor="#000000"/>
 
@@ -252,7 +252,7 @@
         android:layout_below="@id/noiseOptions"
         android:layout_toRightOf="@id/zCheck"
         />
-
+<!--
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -276,7 +276,7 @@
         android:layout_below="@id/saveOptions"
         android:layout_centerHorizontal="true"
         />
-
+-->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="100dp"

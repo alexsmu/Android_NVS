@@ -44,6 +44,7 @@ class SettingsMenu extends AppCompatActivity {
     private CheckBox check6;
     private CheckBox check7;
     private CheckBox check8;
+    private CheckBox screenOn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,6 +107,8 @@ class SettingsMenu extends AppCompatActivity {
 
         ratio7  = (EditText) findViewById((R.id.tire1));
         ratio8  = (EditText) findViewById((R.id.gearval));
+
+        screenOn = (CheckBox) findViewById((R.id.screenOn));
     }
 
     void setProfile(){
@@ -332,6 +335,7 @@ class SettingsMenu extends AppCompatActivity {
         check6.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check6", false));
         check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
         check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
+        screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", false));
     }
 
     void setSpinner(){
@@ -437,6 +441,11 @@ class SettingsMenu extends AppCompatActivity {
         check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check8", isChecked);
+            }
+        });
+        screenOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(SettingsData.currentProfile + "_check9", isChecked);
             }
         });
     }
