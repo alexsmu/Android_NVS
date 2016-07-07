@@ -23,8 +23,6 @@ import java.util.List;
 class SettingsMenu extends AppCompatActivity {
     //private SettingsData staticData = null;
     private Spinner fileSpinner;
-    private SharedPreferences prefs;
-    private SharedPreferences settingsPrefs;
     private EditText ratio1;
     private EditText ratio2;
     private EditText ratio3;
@@ -46,19 +44,17 @@ class SettingsMenu extends AppCompatActivity {
     private CheckBox check6;
     private CheckBox check7;
     private CheckBox check8;
-    private SettingsData preferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        settingsPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences settingsPrefs;
+        PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
 
-        //if (SettingsData.mContext == null)
-        //    staticData = new SettingsData(getApplicationContext());
         setContentView(R.layout.settings);
 
         List<String> testFiles = new ArrayList<>(Arrays.asList("Profile 1","Profile 2","Profile 3","Profile 4"));
@@ -70,10 +66,8 @@ class SettingsMenu extends AppCompatActivity {
         fileSpinner.setAdapter(adapter);
 
         if (SettingsData.mContext != getApplicationContext()){
-            preferences = new SettingsData(getApplicationContext());
+            new SettingsData(getApplicationContext());
         }
-
-        //SettingsData.currentProfile = SettingsData.SettingsData.currentProfile;
 
         settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
         if (settingsPrefs.getString("profile", "").length() == 0){
@@ -85,9 +79,6 @@ class SettingsMenu extends AppCompatActivity {
         addListenerToSpinner();
         addListenersToCheckBoxes();
         addListenersToEditTexts();
-
-        //addListenerToButtons();
-        //setSpinner();
     }
 
     void init(){

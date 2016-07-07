@@ -38,7 +38,7 @@ public class OBDData {
     public static double rpmFreq;
     public static double imperialTireRPMFreq;
     public double [] objectToSend = new double[2];
-
+    private SettingsData settingsData = null;
 
     /**
      * OBDData CONSTRUCTOR : Will setup a connection with bluetooth socket,
@@ -192,8 +192,8 @@ public class OBDData {
         double tireDiameter = 0;
         double tireCircumference = 0;
         try {
-            MyApplication myApp = new MyApplication();
-            tireDiameter = myApp.getTireDiameterInches();
+            //MyApplication myApp = new MyApplication();
+            tireDiameter = SettingsData.getFloat(SettingsData.currentProfile + "_ratio7", 0);//myApp.getTireDiameterInches();
             tireCircumference = Math.PI * tireDiameter;
 
             //Convert to Feet
@@ -215,8 +215,8 @@ public class OBDData {
         double tireDiameter = 0;
         double tireCircumference = 0;
         try {
-            MyApplication myApp = new MyApplication();
-            tireDiameter = myApp.getTireDiameterInches();
+            //MyApplication myApp = new MyApplication();
+            tireDiameter = SettingsData.getFloat(SettingsData.currentProfile + "_ratio7", 0); //myApp.getTireDiameterInches();
             tireCircumference = Math.PI * tireDiameter;
 
             //Convert to Feet
