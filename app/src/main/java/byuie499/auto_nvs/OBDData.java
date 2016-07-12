@@ -1,6 +1,7 @@
 package byuie499.auto_nvs;
 
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.RequiresPermission;
@@ -39,7 +40,6 @@ public class OBDData {
     public static double imperialTireRPMFreq;
     public double [] objectToSend = new double[2];
     private SettingsData settingsData = null;
-
     /**
      * OBDData CONSTRUCTOR : Will setup a connection with bluetooth socket,
      *  and initialize all needed variables
@@ -47,10 +47,13 @@ public class OBDData {
      *  Parameter: samples --> number of samples
      *  Parameter: isTest --> If true, sample methods will be called instead of actual OBD data
      */
-    public OBDData(Handler global_handler, int period, boolean isTest){
+    public OBDData(Handler global_handler, Context mContext,  int period, boolean isTest){
         test = isTest;
         mHandler = global_handler;
         Ts = period;
+
+        if (SettingsData.mContext != mContext)
+            settingsData = new SettingsData(mContext);
     }
 
     /** Runs OBD Threads and polls for RPM Frequency and Tire RPM Frequency*/
