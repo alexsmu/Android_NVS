@@ -40,33 +40,35 @@ public class MicData {
         return micBufferData;
     }
 
+    private Runnable record = new Runnable() {
+        @Override
+        public synchronized void run() {
+            short[] buff = new short[buffer];
+            double[] mic_data;
+            while (isRecording) {
+                recorder.read(buff, 0, buffer);
+                mic_data = short2double(buff);
+                audioFFT.data = mic_data;
+                audioFFT.prepare();
+                audioFFT.transform();
+                if (db)
+                    audioFFT.getMagnitudeDB();
+                else
+                    audioFFT.getMagnitude();
+                audioFFT.shift();
+                Message done = mHandler.obtainMessage(2, audioFFT.shifted);
+                mHandler.sendMessage(done);
+            }
+        }
+    };
+
     public void run() {
         if (isEnabled & !isRecording) {
             isRecording = true;
             recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE,
                     RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, bufferSizeInBytes);
             recorder.startRecording();
-            recordingThread = new Thread(new Runnable() {
-                @Override
-                public synchronized void run() {
-                    short[] buff = new short[buffer];
-                    double[] mic_data;
-                    while (isRecording) {
-                        recorder.read(buff, 0, buffer);
-                        mic_data = short2double(buff);
-                        audioFFT.data = mic_data;
-                        audioFFT.prepare();
-                        audioFFT.transform();
-                        if (db)
-                            audioFFT.getMagnitudeDB();
-                        else
-                            audioFFT.getMagnitude();
-                        audioFFT.shift();
-                        Message done = mHandler.obtainMessage(2, audioFFT.shifted);
-                        mHandler.sendMessage(done);
-                    }
-                }
-            }, "auto_nvs_recording");
+            recordingThread = new Thread(record, "auto_nvs_recording");
             recordingThread.start();
         }
     }
@@ -77,6 +79,11 @@ public class MicData {
             recorder.stop();
             recorder.release();
             recorder = null;
+            try {
+                recordingThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         recordingThread = null;
     }
