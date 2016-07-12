@@ -1,9 +1,6 @@
 package byuie499.auto_nvs;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class SettingsMenu extends AppCompatActivity {
-    //private SettingsData staticData = null;
+public class SettingsMenu extends AppCompatActivity {
+    private SettingsData staticData = null;
     private Spinner fileSpinner;
     private EditText ratio1;
     private EditText ratio2;
@@ -49,13 +46,6 @@ class SettingsMenu extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences settingsPrefs;
-        PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.apply();
-
         setContentView(R.layout.settings);
 
         List<String> testFiles = new ArrayList<>(Arrays.asList("Profile 1","Profile 2","Profile 3","Profile 4"));
@@ -66,14 +56,8 @@ class SettingsMenu extends AppCompatActivity {
         adapter.setDropDownViewResource(R.layout.spinner_item);
         fileSpinner.setAdapter(adapter);
 
-        if (SettingsData.mContext != getApplicationContext()){
-            new SettingsData(getApplicationContext());
-        }
-
-        settingsPrefs = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
-        if (settingsPrefs.getString("profile", "").length() == 0){
-            settingsPrefs.edit().putString("profile", "Profile 1").apply();
-        }
+        if (SettingsData.mContext != getApplicationContext())
+            staticData = new SettingsData(getApplicationContext());
 
         init();
 
@@ -112,10 +96,6 @@ class SettingsMenu extends AppCompatActivity {
     }
 
     void setProfile(){
-        //String profile = fileSpinner.getSelectedItem().toString();
-        //prefs = getSharedPreferences(profile, MODE_PRIVATE);
-        //settingsPrefs.edit().putString("profile", profile).apply();
-        //Toast.makeText(getApplicationContext(), profile, Toast.LENGTH_SHORT).show();
 
         SettingsData.currentProfile = fileSpinner.getSelectedItem().toString();
         SettingsData.setString("profile", SettingsData.currentProfile);
@@ -335,7 +315,7 @@ class SettingsMenu extends AppCompatActivity {
         check6.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check6", false));
         check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
         check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
-        screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", false));
+        screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", true));
     }
 
     void setSpinner(){
@@ -459,7 +439,10 @@ class SettingsMenu extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        if (SettingsData.mContext != getApplicationContext())
+            staticData = new SettingsData(getApplicationContext());
         setSpinner();
+        setProfile();
     }
 
 }
