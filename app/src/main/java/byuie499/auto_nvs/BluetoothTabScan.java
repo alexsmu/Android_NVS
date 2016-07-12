@@ -26,15 +26,15 @@ import java.util.ArrayList;
  */
 @TargetApi(14)
 public class BluetoothTabScan extends Fragment {
-    BluetoothAdapter mBluetoothAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bluetooth_tab_scan, container, false);
 
-//        final BluetoothManager bluetoothManager =
-//                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
-//        mBluetoothAdapter = bluetoothManager.getAdapter();
+        /************************************
+         * We have decided not to implement a scan tab. We will have them pair with the OBD before
+         * they start running the app.
+         */
 
 
         return view;

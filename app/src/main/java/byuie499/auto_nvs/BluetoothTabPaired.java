@@ -72,8 +72,8 @@ public class BluetoothTabPaired extends Fragment {
         }
 
         /***********This code is for testing in the emulator*******************/
-        pDevices.add("OBDII Test" + "\n" + "00:00:00:00");
-        devices.add("00:00:00:00");
+       // pDevices.add("OBDII Test" + "\n" + "00:00:00:00");
+       // devices.add("00:00:00:00");
 
         /*********************************************************************/
 
@@ -91,11 +91,11 @@ public class BluetoothTabPaired extends Fragment {
                 ((MyApplication) getActivity().getApplicationContext()).setBluetoothDeviceAddress(deviceAddress);
 
                 /***********This code is for testing in the emulator*******************/
-                if (deviceAddress == "00:00:00:00") {
-                    Toast.makeText(getActivity().getApplicationContext(),"Bluetooth Connected",Toast.LENGTH_LONG).show();
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth Connected</font><small>"));
-                }
-                else {
+                //if (deviceAddress == "00:00:00:00") {
+                  //  Toast.makeText(getActivity().getApplicationContext(),"Bluetooth Connected",Toast.LENGTH_LONG).show();
+                   // ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth Connected</font><small>"));
+                //}
+               // else {
                     /*********************************************************************/
 
                     BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -116,7 +116,7 @@ public class BluetoothTabPaired extends Fragment {
                     }
                 }
 
-            }
+           // }
         });
 
 

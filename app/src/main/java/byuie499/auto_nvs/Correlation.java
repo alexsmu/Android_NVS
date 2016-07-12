@@ -1,6 +1,7 @@
 package byuie499.auto_nvs;
 
 import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -98,6 +99,28 @@ public class Correlation {
         });
 
         return list;
+    }
+
+    public DataPoint[] findSecOrderPeaks(DataPoint[] series, Double obdFreq){
+
+        double secondOrder = obdFreq * 2;
+        double threshold = 4;
+        DataPoint[] temp = new DataPoint[3];
+        int j=0;
+
+        for(int i = 0; i < series.length; i++){
+            if (series[i].getX() > (secondOrder - threshold) && series[i].getX() < (secondOrder + threshold)) {
+
+                if(j > 2){
+                    break;
+                }else {
+                    temp[j] = series[i];
+                    j++;
+                }
+            }
+
+        }
+        return temp;
     }
 
 }

@@ -2,25 +2,53 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <ListView
-        android:id="@+id/devicesfound"
-        android:layout_width="fill_parent"
-        android:layout_height="450dp"
-        />
-
-    <ToggleButton
-        android:layout_width="140dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
+    <TextView
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textOff="@string/Scan"
-        android:textOn="@string/Scanning"
-        android:id="@+id/scanButton"
-        android:background="@drawable/toggle_selector"
-        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:id="@+id/ScanTitle"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
+        android:text="In Order to Pair an OBDII:"
+        android:textSize="25sp"
         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ScanTitle"
+        android:id="@+id/ScanInstructions1"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:text="\n1. Go to your phone's Bluetooth Settings\n"
+/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ScanInstructions1"
+        android:id="@+id/ScanInstructions2"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:text="2. Search for OBDII and pair with it\n"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ScanInstructions2"
+        android:id="@+id/ScanInstructions3"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:text="3. Return to the 'Paired Devices' in this app\n"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ScanInstructions3"
+        android:id="@+id/ScanInstructions4"
+        android:layout_centerHorizontal="true"
+        android:textSize="15sp"
+        android:text="3. Select OBDII to pair with it"/>
+
+
 
 </RelativeLayout>

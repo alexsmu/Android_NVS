@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
     private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
+    private DataPoint[] tempZPeaks;
     private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device3_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
@@ -119,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private PointsGraphSeries<DataPoint> x_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> y_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> z_peaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> secondOrderPeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> thirdOrderPeaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
@@ -318,7 +321,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,arraySpinner);
 /*        scope.setAdapter(adapter);
-
         rightScroll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -334,11 +336,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
             }
         });
-
         leftScroll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
             }
         });
 */
@@ -474,7 +474,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(xMaxBoundary);
+        graph.getViewport().setMaxX(100/*xMaxBoundary*/);
 
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(-80);
@@ -493,6 +493,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         x_peaks.setTitle("XPeaks");
         y_peaks.setTitle("YPeaks");
         z_peaks.setTitle("ZPeaks");
+        secondOrderPeaks.setTitle("2ndOrder");
+        thirdOrderPeaks.setTitle("3rdOrder");
 
         // Colors
         audioSeries.setColor(Color.parseColor("#181907"));
@@ -503,8 +505,26 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         x_peaks.setColor(Color.parseColor("yellow"));
         y_peaks.setColor(Color.parseColor("yellow"));
         z_peaks.setColor(Color.parseColor("yellow"));
+        secondOrderPeaks.setColor(Color.parseColor("blue"));
+        thirdOrderPeaks.setColor(Color.parseColor("blue"));
 
         // Shapes
+        secondOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(6);
+                canvas.drawCircle(x,y,5,paint);
+            }
+        });
+
+        thirdOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(6);
+                canvas.drawCircle(x,y,5,paint);
+            }
+        });
+
         audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
@@ -582,6 +602,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         });
 
         addDevices();
+        graph.addSeries(secondOrderPeaks);
     }
 
     void addDevices(){
@@ -705,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 } else {
                     rec_mic.onPause();
                 } // store settings (remember checked state)
-               SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
+                SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
             }
         });
 
@@ -966,8 +987,21 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         for (int i = acc_startdps; i < acc_enddps; ++i) {
                             accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
                         }
-                        zSeries.resetData(accel_dpsZ);
-                        z_peaks.resetData(correlate.findPeaks(accel_dpsZ));
+
+                        try {
+                            //****** There are some issues happening here ******* Null Exception
+                            zSeries.resetData(accel_dpsZ);
+                            tempZPeaks = correlate.findPeaks(accel_dpsZ);
+                            z_peaks.resetData(tempZPeaks);
+
+                            try {
+                                secondOrderPeaks.resetData(correlate.findSecOrderPeaks(tempZPeaks, obd_result[0]));
+                            } catch (Exception ex) {
+                                //do nothing for now
+                            }
+                        } catch (Exception ex){
+                            //do nothing for now
+                        }
                         //code to test interpolating rpm frequenzy
                         /*double accel_RPM_freqZ = obd_result[0];
                         double accel_RPM_magZ = correlate.interpolateMagnitude(accel_RPM_freqZ, acc_freq_step, accel_dpsZ);
