@@ -321,7 +321,7 @@ public class SettingsMenu extends AppCompatActivity {
         check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
         //check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
         screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", true));
-        tutorialOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check10", false));
+        tutorialOn.setChecked(SettingsData.isFirstRun());
     }
 
     void setSpinner(){
@@ -436,10 +436,9 @@ public class SettingsMenu extends AppCompatActivity {
         });
         tutorialOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setFirstRun(true);
+                SettingsData.setFirstRun(isChecked);
             }
         });
-
     }
 
     @Override
