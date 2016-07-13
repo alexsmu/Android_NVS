@@ -25,9 +25,6 @@ import java.util.UUID;
  * Created by marlonvilorio on 5/5/16.
  */
 public class BluetoothActivity extends AppCompatActivity {
-
-    private View view = null;
-    private ArrayAdapter<String> listAdapter;
     ListView pairedDevicesList;
 
     @Override
@@ -38,18 +35,12 @@ public class BluetoothActivity extends AppCompatActivity {
         //Set Global Bluetooth Adapter to be used by both bluetooth tabs
         ((MyApplication) getApplicationContext()).setGlobalBluetoothAdapter(BluetoothAdapter.getDefaultAdapter());
 
+        //Set Support action bar to change color according our connection to the bluetooth
         getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#FF0000' >Bluetooth Disconnected</font><small>"));
         getSupportActionBar().setTitle("Bluetooth Settings");
-/*
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.bluetoothtab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.bluetooth_tab_paired));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.bluetooth_tab_scan));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);*/
 
-
-        //assign neccesarry
+        //assign necessary
         pairedDevicesList = (ListView) findViewById(R.id.listView);
-
 
         //Check to see if user has Bluetooth, if bluetooth is off turn it on
         BluetoothAdapter mBluetoothAdapter = ((MyApplication) getApplicationContext()).getGlobalBluetoothAdapter();
@@ -61,11 +52,9 @@ public class BluetoothActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent,1);
         }
 
-
         //We need these for our devices
         final ArrayList pDevices = new ArrayList();
         final ArrayList devices = new ArrayList();
-
 
         //Wait till bluetooth is on
         while (true) {
@@ -85,12 +74,6 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         }
 
-        /***********This code is for testing in the emulator*******************/
-        // pDevices.add("OBDII Test" + "\n" + "00:00:00:00");
-        // devices.add("00:00:00:00");
-
-        /*********************************************************************/
-
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 pDevices.toArray(new String[pDevices.size()]));
         pairedDevicesList.setAdapter(adapter);
@@ -103,14 +86,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 String deviceAddress = devices.get(position).toString();
                 ((MyApplication) getApplicationContext()).setBluetoothDeviceAddress(deviceAddress);
-
-                /***********This code is for testing in the emulator*******************/
-                //if (deviceAddress == "00:00:00:00") {
-                //  Toast.makeText(getActivity().getApplicationContext(),"Bluetooth Connected",Toast.LENGTH_LONG).show();
-                // ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(Html.fromHtml("<font color='#008000' >Bluetooth Connected</font><small>"));
-                //}
-                // else {
-                /*********************************************************************/
 
                 BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -133,31 +108,5 @@ public class BluetoothActivity extends AppCompatActivity {
             // }
         });
 
-
-
-        /**
-         * Removing Tabs, commenting out for now, will need to be removed in the final product
-         */
-/*        final ViewPager viewPager = (ViewPager) findViewById(R.id.pagerb);
-        final BluetoothPagerAdapter adapter = new BluetoothPagerAdapter
-                (getSupportFragmentManager(), tabLayout.getTabCount());
-        viewPager.setAdapter(adapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });*/
     }
 }
