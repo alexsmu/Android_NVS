@@ -598,6 +598,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
             dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
             if (!SettingsData.isChecked(dontShowAgain.getTag().toString(), false)) {
+                SettingsData.setChecked(dontShowAgain.getTag().toString(), true);
                 android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(this);
                 dontShowAgain.setChecked(true);
                 dontShowAgain.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
