@@ -85,8 +85,8 @@ android:orientation="vertical">
     </LinearLayout>
 
     <ToggleButton
-        android:layout_width="40dp"
-        android:layout_height="28dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
         android:id="@+id/toggleNoise"
         android:tag="noise"
@@ -137,8 +137,8 @@ android:orientation="vertical">
         android:layout_toStartOf="@+id/toggleNoise" />
 
     <ToggleButton
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
         android:textOff=""
         android:textOn=""
