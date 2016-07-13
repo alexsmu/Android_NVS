@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--xmlns:android="http://schemas.android.com/apk/res/android">-->
-
-    <RelativeLayout
-    android:id="@+id/main_layout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="byuie499.auto_nvs.MainActivity"
-    android:orientation="vertical">
+<RelativeLayout
+android:id="@+id/main_layout"
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:paddingBottom="@dimen/activity_vertical_margin"
+android:paddingLeft="@dimen/activity_horizontal_margin"
+android:paddingRight="@dimen/activity_horizontal_margin"
+android:paddingTop="@dimen/activity_vertical_margin"
+tools:context="byuie499.auto_nvs.MainActivity"
+android:orientation="vertical">
 
     <TextView
         android:id="@+id/rpmFreq"
@@ -37,11 +29,12 @@
 
     <com.jjoe64.graphview.GraphView
         android:layout_width="match_parent"
-        android:layout_height="475dp"
+        android:layout_height="420dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/rpmFreq"
-        android:id="@+id/fftGraph" />
+        android:id="@+id/fftGraph"
+        android:layout_above="@+id/vibCheck" />
 
     <LinearLayout
         android:layout_width="100dp"
@@ -91,192 +84,75 @@
 
     </LinearLayout>
 
-    <!--<android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/startstop"
-        android:id="@+id/graph_toolbar"
-        android:background="#AAAAAA"
-        >
-    </android.support.v7.widget.Toolbar>-->
-
     <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="30dp"
         android:textSize="14sp"
-        android:textOff="@string/noise"
-        android:textOn="@string/noise"
         android:id="@+id/toggleNoise"
         android:tag="noise"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/fftGraph"/>
+        android:textOff=""
+        android:textOn=""
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/toggle_mic"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
-        android:textOff="@string/vibration"
-        android:textOn="@string/vibration"
+        android:textOff=""
+        android:textOn=""
+        android:background="@drawable/toggle_vib"
         android:id="@+id/toggleVibration"
         android:tag="vibration"
-        android:layout_below="@+id/fftGraph"
-        android:layout_toLeftOf="@id/toggleNoise" />
+        android:layout_marginBottom="5dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
-        android:textOff="Measure"
-        android:textOn="Measure"
-        android:id="@+id/toggleMeasure"
-        android:tag="measure"
-        android:layout_below="@+id/fftGraph"
-        android:layout_toRightOf="@+id/toggleNoise"
-        android:layout_toEndOf="@+id/toggleNoise" />
-<!--
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Graph Options"
-        android:id="@+id/graphOptions"
-        android:layout_below="@id/toggleVibration"
-        android:background="#E0E0E0"
-        android:textColor="#000000"/>
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/vibCheck"
+        android:tag="vibCheck"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/toggle_visible"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/toggleVibration"
+        android:layout_toEndOf="@+id/toggleVibration" />
 
-        <Spinner
-            android:id="@+id/zoom"
-            android:layout_width="100dp"
-            android:layout_height="40dp"
-            android:layout_below="@id/graphOptions"
-            android:layout_centerHorizontal="true"
-            />  
-
-        <Button
-        android:id="@+id/left"
-        android:layout_width="60dp"
+    <ToggleButton
+        android:layout_width="45dp"
         android:layout_height="40dp"
-        android:layout_below="@id/graphOptions"
-        android:layout_toLeftOf="@+id/zoom"
-        android:text="Left"
-        android:textSize="20sp"/>  
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/micCheck"
+        android:tag="micCheck"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/toggle_visible"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/toggleNoise"
+        android:layout_toStartOf="@+id/toggleNoise" />
 
-        <Button
-        android:id="@+id/right"
-        android:layout_width="60dp"
+    <ToggleButton
+        android:layout_width="45dp"
         android:layout_height="40dp"
-        android:layout_below="@id/graphOptions"
-        android:layout_toRightOf="@+id/zoom"
-        android:text="Right"
-        android:textSize="20sp"/>
--->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Vibration Options"
-        android:id="@+id/vibOptions"
-        android:layout_below="@id/toggleMeasure"
-        android:background="#E0E0E0"
-        android:textColor="#000000"/>
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/graphPause"
+        android:tag="graphPause"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/toggle_pause"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"  />
 
-
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/xCheck"
-        android:tag="xCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/vibOptions"
-        android:text="X"
-        />
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/yCheck"
-        android:tag="yCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/xCheck"
-        android:layout_below="@id/vibOptions"
-        android:text="Y"
-        />
-
-    <android.support.v7.widget.AppCompatCheckBox
-        android:id="@+id/zCheck"
-        android:tag="zCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/yCheck"
-        android:layout_below="@id/vibOptions"
-        android:checked="true"
-        android:text="Z"
-        />
-
-    <ToggleButton
-        android:layout_width="70dp"
-        android:layout_marginLeft="10dp"
-        android:layout_height="27dp"
-        android:textSize="13sp"
-        android:layout_marginTop="3dp"
-        android:textOff="Pause"
-        android:textOn="Play"
-        android:id="@+id/vibrationPause"
-        android:tag="vibPause"
-        android:background="@drawable/toggle_selector"
-        android:layout_below="@id/vibOptions"
-        android:checked="false"
-        android:layout_toRightOf="@id/zCheck"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Noise Options"
-        android:id="@+id/noiseOptions"
-        android:layout_below="@id/xCheck"
-        android:background="#E0E0E0"
-        android:textColor="#000000"/>
-
-    <ToggleButton
-        android:layout_width="70dp"
-        android:layout_marginLeft="10dp"
-        android:layout_height="27dp"
-        android:textSize="13sp"
-        android:layout_marginTop="3dp"
-        android:textOff="Pause"
-        android:textOn="Play"
-        android:id="@+id/noisePause"
-        android:tag="noisePause"
-        android:background="@drawable/toggle_selector"
-        android:layout_below="@id/noiseOptions"
-        android:layout_toRightOf="@id/zCheck"
-        />
-<!--
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Save Options"
-        android:id="@+id/saveOptions"
-        android:layout_below="@id/noisePause"
-        android:background="#E0E0E0"
-        android:textColor="#000000"/>
-
-    <ToggleButton
-        android:layout_width="140dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textOff="@string/record"
-        android:textOn="@string/stop"
-        android:id="@+id/startstop"
-        android:background="@drawable/toggle_selector"
-        android:layout_below="@id/saveOptions"
-        android:layout_centerHorizontal="true"
-        />
--->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="100dp"
@@ -325,5 +201,4 @@
         </LinearLayout>
 
 
-    </RelativeLayout>
-</ScrollView>
+</RelativeLayout>

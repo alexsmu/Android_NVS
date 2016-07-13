@@ -12,48 +12,185 @@
         android:layout_height="240dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/rpmFreq"
         android:id="@+id/fftGraph"
-        android:layout_above="@+id/toggleNoise" />
+        android:layout_above="@+id/vibCheck"  />
 
-    <ToggleButton
+    <TextView
+        android:id="@+id/rpmFreq"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="RPM/Freq:"/>
+
+    <TextView
+        android:id="@+id/tireFreq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="150dp"
+        android:text="TireRPM/Freq:"/>
+
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="110dp"
+        android:orientation="vertical"
+        android:id="@+id/occLayout0"
+        android:layout_alignTop="@+id/fftGraph"
+        android:layout_toLeftOf="@+id/occLayout1"
+        android:layout_toStartOf="@+id/occLayout1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0a" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+
+            android:text=""
+            android:id="@+id/occ0b" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0c" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0d" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ0e" />
+
+    </LinearLayout>
+
+    <ToggleButton
+        android:layout_width="40dp"
+        android:layout_height="30dp"
         android:textSize="14sp"
-        android:textOff="@string/noise"
-        android:textOn="@string/noise"
         android:id="@+id/toggleNoise"
         android:tag="noise"
+        android:textOff=""
+        android:textOn=""
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/toggle_mic"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <ToggleButton
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:background="@drawable/toggle_vib"
+        android:id="@+id/toggleVibration"
+        android:tag="vibration"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
-        android:textOff="@string/vibration"
-        android:textOn="@string/vibration"
-        android:id="@+id/toggleVibration"
-        android:tag="vibration"
-        android:checked="true"
-        android:layout_alignTop="@+id/toggleNoise"
-        android:layout_toRightOf="@+id/toggleNoise"
-        android:layout_toEndOf="@+id/toggleNoise" />
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/vibCheck"
+        android:tag="vibCheck"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/toggle_visible"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/toggleVibration"
+        android:layout_toEndOf="@+id/toggleVibration" />
 
     <ToggleButton
-        android:layout_width="140dp"
-        android:layout_height="80dp"
-        android:textSize="20sp"
-        android:textOff="@string/record"
-        android:textOn="@string/stop"
-        android:id="@+id/startstop"
-        android:background="@drawable/toggle_selector"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/micCheck"
+        android:tag="micCheck"
+        android:background="@drawable/toggle_visible"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/fftGraph"
-        android:layout_alignEnd="@+id/fftGraph"
-        android:layout_alignTop="@+id/toggleVibration"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp" />
+        android:layout_toLeftOf="@+id/toggleNoise"
+        android:layout_toStartOf="@+id/toggleNoise" />
+
+    <ToggleButton
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/graphPause"
+        android:tag="graphPause"
+        android:layout_marginBottom="5dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/toggle_pause"
+        android:layout_alignParentBottom="true" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="100dp"
+        android:layout_height="110dp"
+        android:layout_alignTop="@+id/fftGraph"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/occLayout1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ1a" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ1b" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ1c" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ1d" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/occ1e" />
+
+    </LinearLayout>
 
 </RelativeLayout>
