@@ -2,10 +2,12 @@ package byuie499.auto_nvs;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -109,4 +111,34 @@ public class BluetoothActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_bluetooth, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog alertDialog = new AlertDialog.Builder(BluetoothActivity.this).create();
+        switch (item.getItemId()) {
+            case R.id.bluetooth_scan:
+                alertDialog.setTitle("Bluetooth Scan");
+                alertDialog.setMessage("Insert bluetooth scan info here.");
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+                break;
+            default:
+                break;
+        }
+
+        return false;
+    }
+
+
 }
