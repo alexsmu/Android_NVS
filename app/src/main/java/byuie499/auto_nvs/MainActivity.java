@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -17,11 +16,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,9 +27,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -52,10 +45,8 @@ import com.jjoe64.graphview.series.Series;
 
 import java.text.DecimalFormat;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
@@ -66,16 +57,16 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, View.OnClickListener {
-    private static final int graph_x_axis_end = 500;  // graph x axis domain limit
+public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+    private static final int graph_x_axis_end = 125;  // graph x axis domain limit
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
     private static final double audio_freq_step = audio_samples / audio_Fs;
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
-    private static final int acc_samples = 512; // accelerometer samples
-    private static final double acc_Fs = 1000;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
+    private static final int acc_samples = 128; // accelerometer samples
+    private static final double acc_Fs = 250;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
     private static final double acc_freq_step = acc_samples / acc_Fs;
     private static final boolean normalize = true;
     private static final boolean in_dB = true;
@@ -147,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private ToggleButton vibPause;
     private ToggleButton noisePause;
     private Spinner scope;
-    private int xMaxBoundary = 300;
     private boolean decreasingZoom=true;
     private Button leftScroll;
     private Button rightScroll;
@@ -165,16 +155,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private int counter = 0;
     private Target t1, t2, t3, t4;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
-        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", false)){
+        settingsData = new SettingsData(getApplicationContext());
+        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
         }
-        settingsData = new SettingsData(getApplicationContext());
         setBluetoothReceiver();
         initMembers(); // initialize containers
         initGraph();   // initialize graph
@@ -187,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         showcaseView = new ShowcaseView.Builder(this)
                 .setTarget(Target.NONE)
-                .setOnClickListener(this)
+                .setOnClickListener(showcaseClickListener)
                 .setContentTitle("Tutorial")
                 .setContentText("In the Center you'll find a graph. This will contain the Information " +
                         "on the FFT for the noise and vibration.")
@@ -196,39 +184,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         showcaseView.setButtonText("next");
     }
 
-    @Override
-    public void onClick(View v){
-        switch(counter){
-            case 0:
-                showcaseView.setShowcase(t1, true);
-                showcaseView.setContentTitle("VIBRATION");
-                showcaseView.setContentText("This Button Will enable you to graph the vibrations.");
-                break;
-            case 1:
-                showcaseView.setShowcase(t2, true);
-                showcaseView.setContentTitle("NOISE");
-                showcaseView.setContentText("This button will enable you to graph the noise");
-                break;
-            case 2:
-                showcaseView.setShowcase(t3, true);
-                showcaseView.setContentTitle("MEASURE");
-                showcaseView.setContentText("Finds the distance between two peaks.");
-                showcaseView.setButtonText("close");
-                break;
-            case 3:
-                showcaseView.setShowcase(t4, true);
-                showcaseView.setContentTitle("PAUSE");
-                showcaseView.setContentText("This will pause the graph that's running real time.");
-                showcaseView.setButtonText("close");
-                break;
-            case 4:
-                showcaseView.hide();
-                break;
-
-        }
-        counter++;
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -240,11 +195,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override
     public void onResume() {
         super.onResume();
-        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", false)){
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
-        }
         if (SettingsData.mContext != getApplicationContext())
             settingsData = new SettingsData(getApplicationContext());
+        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+        }
         setPrefs();
         addDeviceSeries();
         checkBluetoothConnection();   // show connection pop-up if necessary
@@ -319,29 +274,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 "100","200","300","400"
         };
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,arraySpinner);
-/*        scope.setAdapter(adapter);
-        rightScroll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(xMaxBoundary == 300) {
-                    graph.getViewport().setMinX(100);
-                    graph.getViewport().setMaxX(400);
-                } else if (xMaxBoundary == 200){
-                    graph.getViewport().setMinX(200);
-                    graph.getViewport().setMaxX(300);
-                } else if (xMaxBoundary == 100) {
-                    graph.getViewport().setMinX(100);
-                    graph.getViewport().setMaxX(200);
-                }
-            }
-        });
-        leftScroll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
-*/
         vibPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -453,9 +385,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         //We might want to hand this differently in the future
         if (app.getGlobalBluetoothSocket() == null) {
-            obdData = new OBDData(mHandler, acc_samples, true);
+            obdData = new OBDData(mHandler, getApplicationContext(), acc_samples, true);
         } else {
-            obdData = new OBDData(mHandler,acc_samples, false);
+            obdData = new OBDData(mHandler,getApplicationContext(), acc_samples, false);
         }
 
         accelFFT[0] = new Fft(acc_samples, mHandler, 4, normalize, in_dB);
@@ -470,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
-        graph.getLegendRenderer().setWidth(325);
+        graph.getLegendRenderer().setWidth(graph_x_axis_end);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -695,7 +627,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             rec_mic.onPause();
         }
 
-        vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), true));
+        vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), false));
         if  (vibration.isChecked()) {
             Xlo.isEnabled = true;
             if (!SettingsData.isChecked(vibPause.getTag().toString(), false))
@@ -946,6 +878,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         accelFFT[0].run(Xlo.xAcc, "x");
                     if (yCheck.isChecked())
                         accelFFT[1].run(Xlo.yAcc, "y");
+                    if (yCheck.isChecked())
+                        accelFFT[1].run(Xlo.rAcc, "r");
                     if (zCheck.isChecked())
                         accelFFT[2].run(Xlo.zAcc, "z");
                     break;
@@ -975,6 +909,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         }
                         ySeries.resetData(accel_dpsY);
                         y_peaks.resetData(correlate.findPeaks(accel_dpsY));
+                        //occ_text = ((TextView) findViewById(occ_ids[0]));
+                        //occ_text.setText(String.format("%.2f ms", Xlo.avg_sample_Ts));
                     }
                     break;
                 }
@@ -1061,4 +997,39 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         }
     }
+
+    public View.OnClickListener showcaseClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch(counter){
+                case 0:
+                    showcaseView.setShowcase(t1, true);
+                    showcaseView.setContentTitle("VIBRATION");
+                    showcaseView.setContentText("This Button Will enable you to graph the vibrations.");
+                    break;
+                case 1:
+                    showcaseView.setShowcase(t2, true);
+                    showcaseView.setContentTitle("NOISE");
+                    showcaseView.setContentText("This button will enable you to graph the noise");
+                    break;
+                case 2:
+                    showcaseView.setShowcase(t3, true);
+                    showcaseView.setContentTitle("MEASURE");
+                    showcaseView.setContentText("Finds the distance between two peaks.");
+                    showcaseView.setButtonText("close");
+                    break;
+                case 3:
+                    showcaseView.setShowcase(t4, true);
+                    showcaseView.setContentTitle("PAUSE");
+                    showcaseView.setContentText("This will pause the graph that's running real time.");
+                    showcaseView.setButtonText("close");
+                    break;
+                case 4:
+                    showcaseView.hide();
+                    break;
+
+            }
+            counter++;
+        }
+    };
 }
