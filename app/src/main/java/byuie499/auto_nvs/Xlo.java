@@ -22,25 +22,12 @@ public class Xlo {
     public static double yc = 0;
     public static double zc = 0;
     public static double rc = 0; // current radius (polar coordinates)
-    public static double totalX = 0;  //
-    public static double totalY = 0;
-    public static double totalZ = 0;
     public static double totalR = 0;
-    public static double avgX = 0;  //
-    public static double avgY = 0;
-    public static double avgZ = 0;
     public static double avgR = 0;
     public static long current_time;
     public static long last_time;
-    public static double[] xAcc; // accumulator for values
-    public static double[] yAcc;
-    public static double[] zAcc;
     public static double[] rAcc;
-    public static double[] xAcc0; // accumulator for values
-    public static double[] yAcc0;
-    public static double[] zAcc0;
     public static double[] rAcc0;
-    public static boolean fftInprogress;
     public static boolean isRunning = false; // continue thread flag
     public static boolean isEnabled = true;  // vibration selected flag
     private boolean isSampling = false;
@@ -61,26 +48,10 @@ public class Xlo {
         mHandler = global_handler;
         N = samples;
         accum = dvsr;
-        xAcc = new double[samples];
-        yAcc = new double[samples];
-        zAcc = new double[samples];
         rAcc = new double[samples];
-        xAcc0 = new double[samples];
-        yAcc0 = new double[samples];
-        zAcc0 = new double[samples];
         rAcc0 = new double[samples];
         sm = (SensorManager) mMain.getSystemService(Activity.SENSOR_SERVICE);
-
-        /*Check for Linear Acceleration Sensor*/
-        /*If no Linear Accelerometer is present assign Accelerometer*/
-//        if (sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null){
-//            Log.d("Linear Accelerometer: ", "present");
-//            accelerometer = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-//        }
-//        else {
-//            Log.d("Linear Accelerometer: ", "not present");
-            accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-//        }
+        accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
     public void run() {
@@ -98,21 +69,15 @@ public class Xlo {
                     current_time = System.currentTimeMillis();
                     avg_sampling += (current_time - last_time);
                     while(sensorEvent);
-                    xAcc0[val] = xc - avgX; // store current sensor values
-                    yAcc0[val] = yc - avgY;
-                    zAcc0[val] = zc - avgZ;
                     rAcc0[val] = rc - avgR;
                     val = (val + 1) % N; // increment index
                     if (val % (N / accum) == 0) { // send message to main thread
                         avg_sample_Ts = avg_sampling / (N / accum);
                         avg_sampling = 0;
                         for (int i = 0; i < N; ++i) {
-                            xAcc[i] = xAcc0[i]; // copy current sensor values
-                            yAcc[i] = yAcc0[i];
-                            zAcc[i] = zAcc0[i];
                             rAcc[i] = rAcc0[i];
                         }
-                        Message done = mHandler.obtainMessage(3);
+                        Message done = mHandler.obtainMessage(1);
                         mHandler.sendMessage(done);
                     }
                     isSampling = false;
@@ -143,21 +108,12 @@ public class Xlo {
                 yc = event.values[1];
                 zc = event.values[2];
                 rc = Math.sqrt(xc * xc + yc * yc + zc * zc);
-                totalX += xc;
-                totalY += yc;
-                totalZ += zc;
                 totalR += rc;
                 readCount++;
-                avgX = totalX / readCount;
-                avgY = totalY / readCount;
-                avgZ = totalZ / readCount;
                 avgR = totalR / readCount;
                 sensorEvent = false;
             } else {
                 readCount = 0;
-                totalX = 0;  //
-                totalY = 0;
-                totalZ = 0;
                 totalR = 0;
             }
         }
