@@ -46,7 +46,7 @@ public class Correlation {
             while(i < data.length && data[i].getY() > data[i-1].getY()){
                 max = i++;
             }
-            if(i < indexes.length && data[max].getY() > peakThresh)
+            if(numPeaks < indexes.length && data[max].getY() > peakThresh)
                 indexes[numPeaks++]= max;
         }
 
