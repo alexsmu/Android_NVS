@@ -136,9 +136,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
         settingsData = new SettingsData(getApplicationContext());
-        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
-        }
+
         setBluetoothReceiver();
         initMembers(); // initialize containers
         initGraph();   // initialize graph
@@ -175,6 +173,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             settingsData = new SettingsData(getApplicationContext());
         if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+        }else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+
         }
         setPrefs();
         addDeviceSeries();
