@@ -443,8 +443,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         secondOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(6);
-                canvas.drawCircle(x,y,5,paint);
+                paint.setStrokeWidth(15);
+                canvas.drawCircle(x,y,15,paint);
             }
         });
 

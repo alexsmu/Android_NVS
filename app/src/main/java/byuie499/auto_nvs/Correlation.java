@@ -106,7 +106,7 @@ public class Correlation {
         double secondOrder = obdFreq * 2;
         double threshold = 2;
         DataPoint[] temp = new DataPoint[1];
-        temp[0] = new DataPoint(-1,-1);
+        temp[0] = new DataPoint(75,-55);
 
         for(int i = 0; i < series.length; i++){
             if (series[i].getX() > (secondOrder - threshold) && series[i].getX() < (secondOrder + threshold)) {
