@@ -122,16 +122,14 @@ public class Fft {
      *   Software.
      */
     public void transform() {
+        double temp;
         // Bit-reversed addressing permutation
         for (int i = 0; i < N; i++) {
             int j = Integer.reverse(i) >>> (32 - levels);
             if (j > i) {
-                double temp = real[i];
+                temp = real[i];
                 real[i] = real[j];
                 real[j] = temp;
-                temp = imag[i];
-                imag[i] = imag[j];
-                imag[j] = temp;
             }
         }
 
@@ -139,10 +137,12 @@ public class Fft {
         for (int size = 2; size <= N; size *= 2) {
             int halfsize = size / 2;
             int tablestep = N / size;
+            double tpre;
+            double tpim;
             for (int i = 0; i < N; i += size) {
                 for (int j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
-                    double tpre =  real[j+halfsize] * cosTable[k] + imag[j+halfsize] * sinTable[k];
-                    double tpim = -real[j+halfsize] * sinTable[k] + imag[j+halfsize] * cosTable[k];
+                    tpre =  real[j+halfsize] * cosTable[k] + imag[j+halfsize] * sinTable[k];
+                    tpim = -real[j+halfsize] * sinTable[k] + imag[j+halfsize] * cosTable[k];
                     real[j + halfsize] = real[j] - tpre;
                     imag[j + halfsize] = imag[j] - tpim;
                     real[j] += tpre;
