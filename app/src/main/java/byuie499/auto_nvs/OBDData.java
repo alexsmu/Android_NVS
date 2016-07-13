@@ -94,7 +94,7 @@ public class OBDData {
                         objectToSend[1] = imperialTireRPMFreq;
 
                         //Send RPMs to main thread
-                        Message done = mHandler.obtainMessage(9, objectToSend);
+                        Message done = mHandler.obtainMessage(3, objectToSend);
                         mHandler.sendMessage(done);
                     }
                 };
