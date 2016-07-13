@@ -146,16 +146,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         t3 = new ViewTarget(R.id.graphPause, this);
         t4 = new ViewTarget(R.id.toggleNoise, this);
 
-
-        showcaseView = new ShowcaseView.Builder(this)
-                .setTarget(Target.NONE)
-                .setOnClickListener(showcaseClickListener)
-                .setContentTitle("Tutorial")
-                .setContentText("In the Center you'll find a graph. This will contain the Information " +
-                        "on the FFT for the noise and vibration.")
-                .singleShot(42)
-                .build();
-        showcaseView.setButtonText("next");
+        if(SettingsData.isFirstRun()) {
+            showcaseView = new ShowcaseView.Builder(this)
+                    .setTarget(Target.NONE)
+                    .setOnClickListener(showcaseClickListener)
+                    .setContentTitle("Tutorial")
+                    .setContentText("In the Center you'll find a graph. This will contain the Information " +
+                            "on the FFT for the noise and vibration.")
+                    //.singleShot(42)
+                    .build();
+            showcaseView.setButtonText("next");
+            SettingsData.setFirstRun(false);
+            counter = 0;
+        }
     }
 
 
@@ -206,12 +209,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         if (requestCode == 1) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permission = true;
-            } else {
-                permission = false;
-            }
+            permission = grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -638,7 +637,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 startActivity(intent1);
                 break;
             case R.id.two:
-
+                showcaseView = new ShowcaseView.Builder(this)
+                        .setTarget(Target.NONE)
+                        .setOnClickListener(showcaseClickListener)
+                        .setContentTitle("Tutorial")
+                        .setContentText("In the Center you'll find a graph. This will contain the Information " +
+                                "on the FFT for the noise and vibration.")
+                        //.singleShot(42)
+                        .build();
+                showcaseView.setButtonText("next");
                 break;
             case R.id.three:
                 alertDialog.setTitle("About");
@@ -661,35 +668,49 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         Toast.LENGTH_SHORT).show();
                 break;
             case R.id.save_screenshot:
-                try {
-                    File imageFile ;
+                    alertDialog.setTitle("About");
+                    alertDialog.setMessage("Would you like to save a screenshot of the graph?");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Save",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
+                                        File imageFile ;
 
-                    Date now = new Date();
-                    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+                                        Date now = new Date();
+                                        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
 
-                    // image naming and path  to include sd card  appending name you choose for file
-                    String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-                    imageFile = new File(mPath);
+                                        // image naming and path  to include sd card  appending name you choose for file
+                                        String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+                                        imageFile = new File(mPath);
 
-                    // create bitmap screen capture
-                    View v1 = getWindow().getDecorView().getRootView();
-                    v1.setDrawingCacheEnabled(true);
-                    Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-                    v1.setDrawingCacheEnabled(false);
-
-
-                    FileOutputStream outputStream = new FileOutputStream(imageFile);
-                    int quality = 100;
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-                    outputStream.flush();
-                    outputStream.close();
+                                        // create bitmap screen capture
+                                        View v1 = getWindow().getDecorView().getRootView();
+                                        v1.setDrawingCacheEnabled(true);
+                                        Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+                                        v1.setDrawingCacheEnabled(false);
 
 
+                                        FileOutputStream outputStream = new FileOutputStream(imageFile);
+                                        int quality = 100;
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+                                        outputStream.flush();
+                                        outputStream.close();
+                                        
+                                    } catch (Throwable e) {
+                                        // Several error may come out with file handling or OOM
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Close",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
 
-                } catch (Throwable e) {
-                    // Several error may come out with file handling or OOM
-                    e.printStackTrace();
-                }
+
                 break;
 
         }
