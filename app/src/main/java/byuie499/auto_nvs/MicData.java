@@ -26,7 +26,7 @@ public class MicData {
         buffer = samples;
         bufferSizeInBytes = buffer * 2;
         mHandler = global_handler;
-        audioFFT = new Fft(samples, mHandler, 2, normalize, in_dB);
+        audioFFT = new Fft(samples, mHandler, 0, normalize, in_dB);
         norm = normalize;
         scale = scaling;
         db = in_dB;
@@ -56,7 +56,7 @@ public class MicData {
                 else
                     audioFFT.getMagnitude();
                 audioFFT.shift();
-                Message done = mHandler.obtainMessage(2, audioFFT.shifted);
+                Message done = mHandler.obtainMessage(0, audioFFT.shifted);
                 mHandler.sendMessage(done);
             }
         }
