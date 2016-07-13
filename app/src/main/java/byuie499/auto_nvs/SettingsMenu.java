@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SettingsMenu extends AppCompatActivity {
+    private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     private SettingsData staticData = null;
     private Spinner fileSpinner;
     private EditText ratio1;
@@ -42,6 +44,7 @@ public class SettingsMenu extends AppCompatActivity {
     private CheckBox check7;
     private CheckBox check8;
     private CheckBox screenOn;
+    private CheckBox tutorialOn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,7 @@ public class SettingsMenu extends AppCompatActivity {
         check5 = (CheckBox) findViewById(R.id.check5);
         check6 = (CheckBox) findViewById(R.id.check6);
         check7 = (CheckBox) findViewById(R.id.check7);
-        check8 = (CheckBox) findViewById(R.id.check8);
+        //check8 = (CheckBox) findViewById(R.id.check8);
 
         name2  = (EditText) findViewById((R.id.name2));
         name3  = (EditText) findViewById((R.id.name3));
@@ -90,9 +93,11 @@ public class SettingsMenu extends AppCompatActivity {
         name6  = (EditText) findViewById((R.id.name6));
 
         ratio7  = (EditText) findViewById((R.id.tire1));
-        ratio8  = (EditText) findViewById((R.id.gearval));
+        //ratio8  = (EditText) findViewById((R.id.gearval));
 
         screenOn = (CheckBox) findViewById((R.id.screenOn));
+        tutorialOn = (CheckBox) findViewById((R.id.tutorialOn));
+
     }
 
     void setProfile(){
@@ -274,7 +279,7 @@ public class SettingsMenu extends AppCompatActivity {
                 SettingsData.setString(SettingsData.currentProfile + "_ratio7", ratio7.getText().toString());
             }
         });
-        ratio8.addTextChangedListener(new TextWatcher() {
+/*        ratio8.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
 
@@ -287,7 +292,7 @@ public class SettingsMenu extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 SettingsData.setString(SettingsData.currentProfile + "_ratio8", ratio8.getText().toString());
             }
-        });
+        });*/
     }
 
     void loadVars(){
@@ -305,7 +310,7 @@ public class SettingsMenu extends AppCompatActivity {
         name6.setText(SettingsData.getString(SettingsData.currentProfile + "_name6", ""));
 
         ratio7.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));
-        ratio8.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio8", "0"));
+//        ratio8.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio8", "0"));
 
         check1.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check1", false));
         check2.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check2", false));
@@ -314,8 +319,9 @@ public class SettingsMenu extends AppCompatActivity {
         check5.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check5", false));
         check6.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check6", false));
         check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
-        check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
+        //check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
         screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", true));
+        tutorialOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check10", false));
     }
 
     void setSpinner(){
@@ -418,16 +424,22 @@ public class SettingsMenu extends AppCompatActivity {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check7", isChecked);
             }
         });
-        check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+/*        check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check8", isChecked);
             }
-        });
+        });*/
         screenOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check9", isChecked);
             }
         });
+        tutorialOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setFirstRun(true);
+            }
+        });
+
     }
 
     @Override
@@ -440,9 +452,17 @@ public class SettingsMenu extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         if (SettingsData.mContext != getApplicationContext())
+            settingsData = new SettingsData(getApplicationContext());
+        if (SettingsData.mContext != getApplicationContext())
             staticData = new SettingsData(getApplicationContext());
         setSpinner();
         setProfile();
+
+        if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
+        }else {
+            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
 }

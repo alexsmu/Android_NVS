@@ -171,12 +171,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onResume();
         if (SettingsData.mContext != getApplicationContext())
             settingsData = new SettingsData(getApplicationContext());
+
         if (SettingsData.isChecked(SettingsData.currentProfile + "_check9", true)){
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
         }else {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //Keep screen on
-
+            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+
         setPrefs();
         addDeviceSeries();
         checkBluetoothConnection();   // show connection pop-up if necessary
