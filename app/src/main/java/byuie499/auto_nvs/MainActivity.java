@@ -27,10 +27,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -42,16 +40,12 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 import com.jjoe64.graphview.series.Series;
-
 import java.text.DecimalFormat;
-
 import java.util.List;
 import java.util.Map;
-
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
@@ -70,15 +64,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final double acc_freq_step = acc_samples / acc_Fs;
     private static final boolean normalize = true;
     private static final boolean in_dB = true;
-    private static final double audio_scaling = 1.0;
+    private static final double audio_scaling = 4.0;
     private static final int acc_dvsr = 1;
     private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
     private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
     private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
     private static DataPoint[] audio_dps = new DataPoint[audio_numdps];
-    private static DataPoint[] accel_dpsX = new DataPoint[acc_numdps];
-    private static DataPoint[] accel_dpsY = new DataPoint[acc_numdps];
-    private static DataPoint[] accel_dpsZ = new DataPoint[acc_numdps];
+    private static DataPoint[] xlo_dps = new DataPoint[acc_numdps];
     private static DataPoint[] tire_dps = new DataPoint[1];
     private static DataPoint[] rpm_dps = new DataPoint[1];
     private static DataPoint[] device2_dps = new DataPoint[1];
@@ -87,30 +79,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static DataPoint[] device5_dps = new DataPoint[1];
     private static DataPoint[] device6_dps = new DataPoint[1];
     private static double[] audio_result = null;
-    private static double[] accel_resultX = null;
-    private static double[] accel_resultY = null;
-    private static double[] accel_resultZ = null;
+    private static double[] xlo_result = null;
     private static double[] obd_result = null;
     private static boolean permission = false; // RECORD_AUDIO permission granted?
     private double[] audio_omega = new double[audio_samples]; // omega container for audio FFT
     private double[] accel_omega = new double[acc_samples];   // omega container for accel FFT
-    private Fft[] accelFFT = new Fft[3]; // containers for each accelerometer axis FFT results
+    private Fft accelFFT; // containers for each accelerometer axis FFT results
     private MicData rec_mic = null;      // container for audio recording thread object
     private Xlo rec_acc = null;          // container for accelerometer recording thread object
     private LineGraphSeries<DataPoint> audioSeries = new LineGraphSeries<>();       // graph series
-    private LineGraphSeries<DataPoint> xSeries = new LineGraphSeries<>();
-    private LineGraphSeries<DataPoint> ySeries = new LineGraphSeries<>();
-    private LineGraphSeries<DataPoint> zSeries = new LineGraphSeries<>();
-    private DataPoint[] tempZPeaks;
+    private LineGraphSeries<DataPoint> xloSeries = new LineGraphSeries<>();
     private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device3_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device5_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device6_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> x_peaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> y_peaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> z_peaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> xlo_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> secondOrderPeaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> thirdOrderPeaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
@@ -119,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public OBDData obdData;         // container for OBD recording thread object
     MyApplication app = new MyApplication();              // required for bluetooth socket
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
-    private ToggleButton recordButton, noise, vibration; // containers for layout buttons
+    private ToggleButton noise, vibration; // containers for layout buttons
     private String spinnerName = "Profile 1";
     private double dev1val;
     private double dev2val;
@@ -127,24 +112,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private double dev4val;
     private double dev5val;
     private double dev6val;
-    private CheckBox xCheck;
-    private CheckBox yCheck;
-    private CheckBox zCheck;
     private TextView rpmFreqText;
     private TextView tireRPMFreqText;
-    private ToggleButton measureButton;
-    private double measureX1 = 0;
-    private double measureX2 = 0;
-    private ToggleButton vibPause;
-    private ToggleButton noisePause;
-    private Spinner scope;
-    private boolean decreasingZoom=true;
-    private Button leftScroll;
-    private Button rightScroll;
-    private String[] arraySpinner;
+    private ToggleButton graphPause;
+    private ToggleButton vibCheck;
+    private ToggleButton micCheck;
     private BroadcastReceiver mReceiver;
     private Correlation correlate;
     private DataPoint[] a_peaks;
+    private DataPoint[] x_peaks;
     private List<Map.Entry<String, Integer>> a_occ;
     private TextView occ_text;
     private int[] occ_ids = { R.id.occ0a, R.id.occ0b, R.id.occ0c, R.id.occ0d, R.id.occ0e,
@@ -168,9 +144,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         initGraph();   // initialize graph
 
         t1 = new ViewTarget(R.id.toggleVibration, this);
-        t2 = new ViewTarget(R.id.toggleNoise, this);
-        t3 = new ViewTarget(R.id.toggleMeasure, this);
-        t4 = new ViewTarget(R.id.vibrationPause, this);
+        t2 = new ViewTarget(R.id.vibCheck, this);
+        t3 = new ViewTarget(R.id.graphPause, this);
+        t4 = new ViewTarget(R.id.toggleNoise, this);
 
 
         showcaseView = new ShowcaseView.Builder(this)
@@ -251,107 +227,68 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     public void handleVibrationChecks(){
-        xCheck.setChecked(SettingsData.isChecked(xCheck.getTag().toString(), true));
-        yCheck.setChecked(SettingsData.isChecked(yCheck.getTag().toString(), true));
-        zCheck.setChecked(SettingsData.isChecked(zCheck.getTag().toString(), true));
-        vibPause.setChecked(SettingsData.isChecked(vibPause.getTag().toString(), false));
-        noisePause.setChecked(SettingsData.isChecked(noisePause.getTag().toString(), false));
+        vibCheck.setChecked(SettingsData.isChecked(vibCheck.getTag().toString(), true));
+        micCheck.setChecked(SettingsData.isChecked(micCheck.getTag().toString(), true));
+        graphPause.setChecked(SettingsData.isChecked(graphPause.getTag().toString(), false));
 
-        if (xCheck.isChecked()) {
-            graph.addSeries(x_peaks);
-            graph.addSeries(xSeries);
+        if (vibCheck.isChecked()) {
+            graph.addSeries(xlo_peaks);
+            graph.addSeries(xloSeries);
         }
-        if (yCheck.isChecked()) {
-            graph.addSeries(y_peaks);
-            graph.addSeries(ySeries);
-        }
-        if (zCheck.isChecked()) {
-            graph.addSeries(z_peaks);
-            graph.addSeries(zSeries);
+        if (micCheck.isChecked()) {
+            graph.addSeries(audio_peaks);
+            graph.addSeries(audioSeries);
         }
 
-        this.arraySpinner = new String[]{
-                "100","200","300","400"
-        };
-
-        vibPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        graphPause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if (isChecked){
                     rec_acc.onPause();
-                }else {
-                    rec_acc.run();
-                }
-            }
-        });
-
-        noisePause.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
-                if (isChecked){
                     rec_mic.onPause();
                 } else {
+                    rec_acc.run();
                     rec_mic.run();
                 }
             }
         });
 
-        xCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        vibCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(x_peaks);
-                    graph.removeSeries(xSeries);
-                    graph.addSeries(x_peaks);
-                    graph.addSeries(xSeries);
+                    graph.removeSeries(xlo_peaks);
+                    graph.removeSeries(xloSeries);
+                    graph.addSeries(xlo_peaks);
+                    graph.addSeries(xloSeries);
                 }
                 else
                 {
-                    graph.removeSeries(x_peaks);
-                    graph.removeSeries(xSeries);
+                    graph.removeSeries(xlo_peaks);
+                    graph.removeSeries(xloSeries);
                 }
             }
         });
 
-        yCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        micCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(y_peaks);
-                    graph.removeSeries(ySeries);
-                    graph.addSeries(y_peaks);
-                    graph.addSeries(ySeries);
+                    graph.removeSeries(audio_peaks);
+                    graph.removeSeries(audioSeries);
+                    graph.addSeries(audio_peaks);
+                    graph.addSeries(audioSeries);
                 }
                 else
                 {
-                    graph.removeSeries(y_peaks);
-                    graph.removeSeries(ySeries);
+                    graph.removeSeries(audio_peaks);
+                    graph.removeSeries(audioSeries);
                 }
             }
         });
-
-        zCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
-                if(isChecked) {
-                    graph.removeSeries(z_peaks);
-                    graph.removeSeries(zSeries);
-                    graph.addSeries(z_peaks);
-                    graph.addSeries(zSeries);
-                }
-                else
-                {
-                    graph.removeSeries(z_peaks);
-                    graph.removeSeries(zSeries);
-                }
-            }
-        });
-
     }
 
     protected void setPrefs(){
@@ -368,20 +305,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         rec_acc = new Xlo(this, mHandler, acc_samples, acc_dvsr);
         rec_mic = new MicData(mHandler, audio_samples, audio_scaling, normalize, in_dB);
         correlate = new Correlation();
-        xCheck = (CheckBox) findViewById(R.id.xCheck);
-        yCheck = (CheckBox) findViewById(R.id.yCheck);
-        zCheck = (CheckBox) findViewById(R.id.zCheck);
+        vibCheck = (ToggleButton) findViewById(R.id.vibCheck);
+        micCheck = (ToggleButton) findViewById(R.id.micCheck);
         rpmFreqText = (TextView) findViewById(R.id.rpmFreq);
         tireRPMFreqText = (TextView) findViewById(R.id.tireFreq);
-        measureButton = (ToggleButton) findViewById(R.id.toggleMeasure);
-        vibPause = (ToggleButton) findViewById(R.id.vibrationPause);
-        noisePause = (ToggleButton) findViewById(R.id.noisePause);
-        //scope = (Spinner) findViewById(R.id.zoom);
-        rightScroll = (Button) findViewById(R.id.right);
-        leftScroll = (Button) findViewById(R.id.left);
+        graphPause = (ToggleButton) findViewById(R.id.graphPause);
         noise = (ToggleButton) findViewById(R.id.toggleNoise);
         vibration = (ToggleButton) findViewById(R.id.toggleVibration);
-        recordButton = (ToggleButton) findViewById(R.id.startstop);
+        //scope = (Spinner) findViewById(R.id.zoom);
 
         //We might want to hand this differently in the future
         if (app.getGlobalBluetoothSocket() == null) {
@@ -390,9 +321,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             obdData = new OBDData(mHandler,getApplicationContext(), acc_samples, false);
         }
 
-        accelFFT[0] = new Fft(acc_samples, mHandler, 4, normalize, in_dB);
-        accelFFT[1] = new Fft(acc_samples, mHandler, 5, normalize, in_dB);
-        accelFFT[2] = new Fft(acc_samples, mHandler, 6, normalize, in_dB);
+        accelFFT = new Fft(acc_samples, mHandler, 2, normalize, in_dB);
         Fft.getOmega(audio_omega, audio_Fs);
     }
 
@@ -401,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
-        graph.getLegendRenderer().setWidth(graph_x_axis_end);
+        graph.getLegendRenderer().setWidth(300);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -416,26 +345,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         //graph.getViewport().setScrollable(true);
 
         // Titles
-        audioSeries.setTitle("Mic");
-        xSeries.setTitle("X");
-        ySeries.setTitle("Y");
-        zSeries.setTitle("Z");
-        audio_peaks.setTitle("APeaks");
-        x_peaks.setTitle("XPeaks");
-        y_peaks.setTitle("YPeaks");
-        z_peaks.setTitle("ZPeaks");
+        audioSeries.setTitle("Audio");
+        xloSeries.setTitle("Accel");
+        audio_peaks.setTitle("AudioPeaks");
+        xlo_peaks.setTitle("AccelPeaks");
         secondOrderPeaks.setTitle("2ndOrder");
         thirdOrderPeaks.setTitle("3rdOrder");
 
         // Colors
-        audioSeries.setColor(Color.parseColor("#181907"));
-        xSeries.setColor(Color.parseColor("#0B3861"));
-        ySeries.setColor(Color.parseColor("#0B6138"));
-        zSeries.setColor(Color.parseColor("#610B0B"));
+
+        audioSeries.setColor(Color.parseColor("#0B6138"));
+        xloSeries.setColor(Color.parseColor("#610B0B"));
         audio_peaks.setColor(Color.parseColor("yellow"));
-        x_peaks.setColor(Color.parseColor("yellow"));
-        y_peaks.setColor(Color.parseColor("yellow"));
-        z_peaks.setColor(Color.parseColor("yellow"));
+        xlo_peaks.setColor(Color.parseColor("yellow"));
         secondOrderPeaks.setColor(Color.parseColor("blue"));
         thirdOrderPeaks.setColor(Color.parseColor("blue"));
 
@@ -465,25 +387,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        x_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(4);
-                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
-                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
-            }
-        });
-
-        y_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(4);
-                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
-                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
-            }
-        });
-
-        z_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+        xlo_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(4);
@@ -495,40 +399,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         audio_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                if(measureButton.isChecked()){
-                    if (measureX1 == 0){
-                        measureX1 = dataPoint.getX();
-                    } else if (measureX2 == 0) {
-                        measureX2 = dataPoint.getX();
-                        double result = measureX2 - measureX1;
-                        Toast.makeText(MainActivity.this,"Distance: "+ Double.toString(result),Toast.LENGTH_SHORT).show();
-                        measureX2 =0;
-                        measureX1 = 0;
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, "Ap: " + dataPoint, Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(MainActivity.this, "Audio Peak: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
-        x_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+        xlo_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        y_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        z_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(MainActivity.this, "Ap: "+dataPoint, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Accel Peak: "+dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -612,10 +490,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (noise.isChecked()) { // enable mic recording
             if (permission) {
                 MicData.isEnabled = true; // enable thread
-                if (!SettingsData.isChecked(noisePause.getTag().toString(), false))
+                if (!SettingsData.isChecked(graphPause.getTag().toString(), false))
                     rec_mic.run(); // run recording thread
-                graph.addSeries(audioSeries); // graph results
-                graph.addSeries(audio_peaks);
             } else {
                 MicData.isEnabled = false;
                 noise.setChecked(false); // no permission, undo check
@@ -629,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         vibration.setChecked(SettingsData.isChecked(vibration.getTag().toString(), false));
         if  (vibration.isChecked()) {
             Xlo.isEnabled = true;
-            if (!SettingsData.isChecked(vibPause.getTag().toString(), false))
+            if (!SettingsData.isChecked(graphPause.getTag().toString(), false))
                 rec_acc.run();
         } else {
             Xlo.isEnabled = false;
@@ -639,22 +515,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         noise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                graph.removeSeries(audioSeries);
-                graph.removeSeries(audio_peaks);
                 if (isChecked) { // enable mic recording
                     check_record_permissions();
                     if (permission) {
                         MicData.isEnabled = true; // enable thread
-                        if (noisePause.isChecked())
-                            noisePause.setChecked(false);
-                        else
+                        if (!graphPause.isChecked())
                             rec_mic.run(); // run recording thread
-                        graph.addSeries(audioSeries); // graph results
-                        graph.addSeries(audio_peaks);
                     } else {
                         buttonView.setChecked(false); // no permission, undo check
                     }
                 } else {
+                    MicData.isEnabled = false;
                     rec_mic.onPause();
                 } // store settings (remember checked state)
                 SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked());
@@ -665,26 +536,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Xlo.isEnabled = isChecked; // enable/disable thread
-                SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if  (isChecked) {
-                    if (vibPause.isChecked())
-                        vibPause.setChecked(false);
-                    else
+                    if (!graphPause.isChecked())
                         rec_acc.run(); // run thread
-
                 } else {
                     rec_acc.onPause(); // stop thread
                 }
+                SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked()); // store state
             }
         });
-/*
-        recordButton.setOnClickListener(new View.OnClickListener(){ //to be implemented
-            @Override
-            public void onClick(View v) {
-                //Toast.makeText(getApplicationContext(), prefs.getString("ratio1", ""), Toast.LENGTH_SHORT).show();
-            }
-        });
-        */
     }
 
     void setBluetoothReceiver() {
@@ -843,7 +703,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }
         public void handleMessage(Message msg) {
             switch(msg.what) {
-                case 2: // Audio fft is complete
+                case 0: // Audio fft is complete
                 {
                     // add to series
                     audio_result = (double[]) msg.obj;
@@ -870,94 +730,35 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     break;
                 }
-                case 3: // Accelerometer data is ready
+                case 1: // Accelerometer data is ready
                 {
                     Fft.getOmega(accel_omega, 1000 / Xlo.avg_sample_Ts);
                     // begin fft
-                    if (xCheck.isChecked())
-                        accelFFT[0].run(Xlo.xAcc, "x");
-                    if (yCheck.isChecked())
-                        accelFFT[1].run(Xlo.yAcc, "y");
-                    //if (yCheck.isChecked())
-                        //accelFFT[1].run(Xlo.rAcc, "r");
-                    if (zCheck.isChecked())
-                        accelFFT[2].run(Xlo.zAcc, "z");
+                    if (vibCheck.isChecked())
+                        accelFFT.run(Xlo.rAcc, "Accel");
                     break;
                 }
-                case 4: // Accelerometer x fft is complete
+                case 2: // Accelerometer fft is complete
                 {
-                    if (xCheck.isChecked()) {
+                    if (vibCheck.isChecked()) {
                         // add to series
-                        accel_resultX = (double[]) msg.obj;
+                        xlo_result = (double[]) msg.obj;
                         int j = 0;
                         for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            accel_dpsX[j++] = new DataPoint(accel_omega[i], accel_resultX[i]);
+                            xlo_dps[j++] = new DataPoint(accel_omega[i], xlo_result[i]);
                         }
-                        xSeries.resetData(accel_dpsX);
-                        x_peaks.resetData(correlate.findPeaks(accel_dpsX));
-                    }
-                    break;
-                }
-                case 5: // Accelerometer y fft complete
-                {
-                    if (yCheck.isChecked()) {
-                        // add to series
-                        accel_resultY = (double[]) msg.obj;
-                        int j = 0;
-                        for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            accel_dpsY[j++] = new DataPoint(accel_omega[i], accel_resultY[i]);
-                        }
-                        ySeries.resetData(accel_dpsY);
-                        y_peaks.resetData(correlate.findPeaks(accel_dpsY));
-                        occ_text = ((TextView) findViewById(occ_ids[0]));
-                        occ_text.setText(String.format("%.2f ms", Xlo.avg_sample_Ts));
-                    }
-                    break;
-                }
-                case 6: // Accelerometer z fft complete
-                {
-                    if (zCheck.isChecked()) {
-                        //add to series
-                        accel_resultZ = (double[]) msg.obj;
-                        int j = 0;
-                        for (int i = acc_startdps; i < acc_enddps; ++i) {
-                            accel_dpsZ[j++] = new DataPoint(accel_omega[i], accel_resultZ[i]);
-                        }
-
+                        x_peaks = correlate.findPeaks(xlo_dps);
+                        xloSeries.resetData(xlo_dps);
+                        xlo_peaks.resetData(x_peaks);
                         try {
-                            //****** There are some issues happening here ******* Null Exception
-                            zSeries.resetData(accel_dpsZ);
-                            tempZPeaks = correlate.findPeaks(accel_dpsZ);
-                            z_peaks.resetData(tempZPeaks);
-
-                            try {
-                                secondOrderPeaks.resetData(correlate.findSecOrderPeaks(tempZPeaks, obd_result[0]));
-                            } catch (Exception ex) {
-                                //do nothing for now
-                            }
-                        } catch (Exception ex){
+                            secondOrderPeaks.resetData(correlate.findSecOrderPeaks(x_peaks, obd_result[0]));
+                        } catch (Exception ex) {
                             //do nothing for now
                         }
-                        //code to test interpolating rpm frequenzy
-                        /*double accel_RPM_freqZ = obd_result[0];
-                        double accel_RPM_magZ = correlate.interpolateMagnitude(accel_RPM_freqZ, acc_freq_step, accel_dpsZ);
-                        z_peaks.resetData(new DataPoint[] {
-                            new DataPoint(accel_RPM_freqZ, accel_RPM_magZ)
-                        });*/
                     }
                     break;
                 }
-                case 7: // Audio fft correlation complete
-                {
-                    // add to series
-                    break;
-                }
-                case 8: // Accelerometer fft correlation complete
-                {
-                    //add to series
-                    break;
-                }
-                case 9:
+                case 3: // OBD data is ready
                 {
                     //OBD Data (it is test data for now)
                     obd_result = (double[]) msg.obj;
