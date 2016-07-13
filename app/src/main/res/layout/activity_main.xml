@@ -86,15 +86,14 @@ android:orientation="vertical">
 
     <ToggleButton
         android:layout_width="40dp"
-        android:layout_height="30dp"
+        android:layout_height="28dp"
         android:textSize="14sp"
         android:id="@+id/toggleNoise"
         android:tag="noise"
         android:textOff=""
         android:textOn=""
-        android:layout_marginBottom="5dp"
         android:background="@drawable/toggle_mic"
-        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/graphPause"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
