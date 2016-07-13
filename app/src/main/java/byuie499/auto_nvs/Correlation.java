@@ -35,7 +35,7 @@ public class Correlation {
     public DataPoint[] findPeaks(DataPoint[] data) {
         int max = 0;
         int numPeaks = 0 ;
-        int[] indexes = new int[(data.length + 1)/2];
+        int[] indexes = new int[(data.length + 1)];
         DataPoint[] peaks;
         // Checking for the conditions of the peaks
         // if the change is ocurring, then graph.
@@ -46,7 +46,7 @@ public class Correlation {
             while(i < data.length && data[i].getY() > data[i-1].getY()){
                 max = i++;
             }
-            if(i < indexes.length && data[max].getY() > peakThresh)
+            if(numPeaks < indexes.length && data[max].getY() > peakThresh)
                 indexes[numPeaks++]= max;
         }
 
@@ -104,18 +104,20 @@ public class Correlation {
     public DataPoint[] findSecOrderPeaks(DataPoint[] series, Double obdFreq){
 
         double secondOrder = obdFreq * 2;
-        double threshold = 4;
-        DataPoint[] temp = new DataPoint[3];
-        int j=0;
+        double threshold = 2;
+        DataPoint[] temp = new DataPoint[1];
+        temp[0] = new DataPoint(-1,-1);
 
         for(int i = 0; i < series.length; i++){
             if (series[i].getX() > (secondOrder - threshold) && series[i].getX() < (secondOrder + threshold)) {
 
-                if(j > 2){
-                    break;
+                if(temp != null){
+                    if (series[i].getY() > temp[0].getY()){
+                        temp[0] = series[i];
+                    }
                 }else {
-                    temp[j] = series[i];
-                    j++;
+
+                    temp[0] = series[i];
                 }
             }
 
