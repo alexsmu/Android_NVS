@@ -394,7 +394,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         accelFFT[1] = new Fft(acc_samples, mHandler, 5, normalize, in_dB);
         accelFFT[2] = new Fft(acc_samples, mHandler, 6, normalize, in_dB);
         Fft.getOmega(audio_omega, audio_Fs);
-        Fft.getOmega(accel_omega, acc_Fs);
     }
 
     protected void initGraph() {
@@ -873,13 +872,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 }
                 case 3: // Accelerometer data is ready
                 {
+                    Fft.getOmega(accel_omega, 1000 / Xlo.avg_sample_Ts);
                     // begin fft
                     if (xCheck.isChecked())
                         accelFFT[0].run(Xlo.xAcc, "x");
                     if (yCheck.isChecked())
                         accelFFT[1].run(Xlo.yAcc, "y");
-                    if (yCheck.isChecked())
-                        accelFFT[1].run(Xlo.rAcc, "r");
+                    //if (yCheck.isChecked())
+                        //accelFFT[1].run(Xlo.rAcc, "r");
                     if (zCheck.isChecked())
                         accelFFT[2].run(Xlo.zAcc, "z");
                     break;
@@ -909,8 +909,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         }
                         ySeries.resetData(accel_dpsY);
                         y_peaks.resetData(correlate.findPeaks(accel_dpsY));
-                        //occ_text = ((TextView) findViewById(occ_ids[0]));
-                        //occ_text.setText(String.format("%.2f ms", Xlo.avg_sample_Ts));
+                        occ_text = ((TextView) findViewById(occ_ids[0]));
+                        occ_text.setText(String.format("%.2f ms", Xlo.avg_sample_Ts));
                     }
                     break;
                 }
