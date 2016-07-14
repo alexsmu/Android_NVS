@@ -74,23 +74,23 @@ public class SettingsMenu extends AppCompatActivity {
         ratio2  = (EditText) findViewById((R.id.value2));
         ratio3  = (EditText) findViewById((R.id.value3));
         ratio4  = (EditText) findViewById((R.id.value4));
-        ratio5  = (EditText) findViewById((R.id.value5));
-        ratio6  = (EditText) findViewById((R.id.value6));
+        //ratio5  = (EditText) findViewById((R.id.value5));
+        //ratio6  = (EditText) findViewById((R.id.value6));
 
         check1 = (CheckBox) findViewById(R.id.check1);
         check2 = (CheckBox) findViewById(R.id.check2);
         check3 = (CheckBox) findViewById(R.id.check3);
         check4 = (CheckBox) findViewById(R.id.check4);
-        check5 = (CheckBox) findViewById(R.id.check5);
-        check6 = (CheckBox) findViewById(R.id.check6);
+        //check5 = (CheckBox) findViewById(R.id.check5);
+        //check6 = (CheckBox) findViewById(R.id.check6);
         check7 = (CheckBox) findViewById(R.id.check7);
         //check8 = (CheckBox) findViewById(R.id.check8);
 
         name2  = (EditText) findViewById((R.id.name2));
         name3  = (EditText) findViewById((R.id.name3));
         name4  = (EditText) findViewById((R.id.name4));
-        name5  = (EditText) findViewById((R.id.name5));
-        name6  = (EditText) findViewById((R.id.name6));
+        //name5  = (EditText) findViewById((R.id.name5));
+        //name6  = (EditText) findViewById((R.id.name6));
 
         ratio7  = (EditText) findViewById((R.id.tire1));
         //ratio8  = (EditText) findViewById((R.id.gearval));

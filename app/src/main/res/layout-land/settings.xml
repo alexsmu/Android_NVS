@@ -238,7 +238,7 @@
                         android:textSize="16sp" />
 
                 </LinearLayout>
-
+<!--
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -312,7 +312,7 @@
                         android:textSize="16sp" />
 
                 </LinearLayout>
-
+-->
             </LinearLayout>
 
             <!--<Button
