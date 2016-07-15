@@ -26,10 +26,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -50,7 +52,6 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
-
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int graph_x_axis_end = 125;  // graph x axis domain limit
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static double[] xlo_result = null;
     private static double[] obd_result = null;
     private static boolean permission = false; // RECORD_AUDIO permission granted?
+    private static boolean storage_permission = false; // WRITE_EXTERNAL_STORAGE permission granted?
     private double[] audio_omega = new double[audio_samples]; // omega container for audio FFT
     private double[] accel_omega = new double[acc_samples];   // omega container for accel FFT
     private Fft accelFFT; // containers for each accelerometer axis FFT results
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     //These Varibales are for the tutorial
     private ShowcaseView showcaseView;
     private int counter = 0;
-    private Target t1, t2, t3, t4;
+    private Target t1, t2, t3, t4, t5, t6;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,10 +148,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         t1 = new ViewTarget(R.id.toggleVibration, this);
         t2 = new ViewTarget(R.id.vibCheck, this);
         t3 = new ViewTarget(R.id.graphPause, this);
-        t4 = new ViewTarget(R.id.toggleNoise, this);
+        t4 = new ViewTarget(R.id.screenShot, this);
+        t5 = new ViewTarget(R.id.micCheck, this);
+        t6 = new ViewTarget(R.id.toggleNoise, this);
 
         if(SettingsData.isFirstRun()) {
-            showcaseView = new ShowcaseView.Builder(this)
+            counter = 0;
+            showcaseView = new ShowcaseView.Builder(this, true)
                     .setTarget(Target.NONE)
                     .setOnClickListener(showcaseClickListener)
                     .setContentTitle("Tutorial")
@@ -159,7 +164,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     .build();
             showcaseView.setButtonText("next");
             SettingsData.setFirstRun(false);
-            counter = 0;
         }
     }
 
@@ -187,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         addDeviceSeries();
         checkBluetoothConnection();   // show connection pop-up if necessary
         check_record_permissions();
+        check_storage_permissions();
         // Bluetooth setup
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -210,9 +215,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     @Override // Handles whether user granted recording permission (Android 6.0+)
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        if (requestCode == 1) {
-            permission = grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        switch(requestCode) {
+            case 1:
+                permission = grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+            case 2:
+                storage_permission = grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
         }
     }
 
@@ -226,6 +237,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     1);
         } else { // we have permission
             permission = true;
+        }
+    }
+
+    protected void check_storage_permissions() {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) { // check for permission
+            storage_permission = false;
+            ActivityCompat.requestPermissions(MainActivity.this, // request permission
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    2);
+        } else { // we have permission
+            storage_permission = true;
         }
     }
 
@@ -553,32 +577,37 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         screenShot.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                try {
-                    File imageFile ;
+                check_storage_permissions();
+                if (storage_permission) {
+                    try {
+                        File imageFile;
 
-                    Date now = new Date();
-                    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+                        Date now = new Date();
+                        String tnow = android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now).toString();
 
-                    // image naming and path  to include sd card  appending name you choose for file
-                    String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-                    imageFile = new File(mPath);
+                        // image naming and path  to include sd card  appending name you choose for file
+                        String mPath = Environment.getExternalStorageDirectory().toString() + "/Pictures/Screenshots/" + tnow + ".jpg";
+                        imageFile = new File(mPath);
 
-                    // create bitmap screen capture
-                    View v1 = getWindow().getDecorView().getRootView();
-                    v1.setDrawingCacheEnabled(true);
-                    Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-                    v1.setDrawingCacheEnabled(false);
+                        // create bitmap screen capture
+                        View v1 = getWindow().getDecorView().getRootView();
+                        v1.setDrawingCacheEnabled(true);
+                        Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+                        v1.setDrawingCacheEnabled(false);
 
-                    FileOutputStream outputStream = new FileOutputStream(imageFile);
-                    int quality = 100;
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-                    outputStream.flush();
-                    outputStream.close();
-                    Toast.makeText(getApplicationContext(), "Screenshot saved to root directory.", Toast.LENGTH_SHORT).show();
-                } catch (Throwable e) {
-                    // Several error may come out with file handling or OOM
-                    Toast.makeText(getApplicationContext(), "Error in saving screenshot.", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
+                        FileOutputStream outputStream = new FileOutputStream(imageFile);
+                        int quality = 100;
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+                        outputStream.flush();
+                        outputStream.close();
+                        Toast.makeText(getApplicationContext(), "Screenshot saved to Gallery.", Toast.LENGTH_SHORT).show();
+                    } catch (Throwable e) {
+                        // Several error may come out with file handling or OOM
+                        Toast.makeText(getApplicationContext(), "Error in saving screenshot.", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "No permission to save", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -675,6 +704,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 startActivity(intent1);
                 break;
             case R.id.two:
+                counter = 0;
                 showcaseView = new ShowcaseView.Builder(this)
                         .setTarget(Target.NONE)
                         .setOnClickListener(showcaseClickListener)
@@ -863,30 +893,47 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public View.OnClickListener showcaseClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            RelativeLayout.LayoutParams lps = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            // This aligns button to the bottom left side of screen
+            lps.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            lps.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            // Set margins to the button, we add 16dp margins here
+            int margin = ((Number) (getResources().getDisplayMetrics().density * 16)).intValue();
+            lps.setMargins(margin, margin, margin, margin);
             switch(counter){
                 case 0:
                     showcaseView.setShowcase(t1, true);
-                    showcaseView.setContentTitle("VIBRATION");
-                    showcaseView.setContentText("This Button Will enable you to graph the vibrations.");
+                    showcaseView.setContentTitle("Vibration");
+                    showcaseView.setContentText("Press to enable/disable accelerometer");
                     break;
                 case 1:
                     showcaseView.setShowcase(t2, true);
-                    showcaseView.setContentTitle("NOISE");
-                    showcaseView.setContentText("This button will enable you to graph the noise");
+                    showcaseView.setContentTitle("Visibility");
+                    showcaseView.setContentText("Press to show/hide vibration plot");
                     break;
                 case 2:
                     showcaseView.setShowcase(t3, true);
-                    showcaseView.setContentTitle("MEASURE");
-                    showcaseView.setContentText("Finds the distance between two peaks.");
-                    showcaseView.setButtonText("close");
+                    showcaseView.setContentTitle("Updates");
+                    showcaseView.setContentText("Press to resume/pause plot updates");
                     break;
                 case 3:
                     showcaseView.setShowcase(t4, true);
-                    showcaseView.setContentTitle("PAUSE");
-                    showcaseView.setContentText("This will pause the graph that's running real time.");
-                    showcaseView.setButtonText("close");
+                    showcaseView.setContentTitle("Screenshot");
+                    showcaseView.setContentText("Press to take screenshot");
+                    showcaseView.setButtonPosition(lps);
                     break;
                 case 4:
+                    showcaseView.setShowcase(t5, true);
+                    showcaseView.setContentTitle("Visibility");
+                    showcaseView.setContentText("Press to show/hide noise plot");
+                    break;
+                case 5:
+                    showcaseView.setShowcase(t6, true);
+                    showcaseView.setContentTitle("Noise");
+                    showcaseView.setContentText("Press to enable/disable microphone");
+                    showcaseView.setButtonText("Close");
+                    break;
+                case 6:
                     showcaseView.hide();
                     break;
 
