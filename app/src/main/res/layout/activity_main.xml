@@ -34,7 +34,7 @@ android:orientation="vertical">
         android:layout_alignParentEnd="true"
         android:layout_below="@id/rpmFreq"
         android:id="@+id/fftGraph"
-        android:layout_above="@+id/graphPause" />
+        android:layout_above="@+id/vibCheck" />
 
     <LinearLayout
         android:layout_width="100dp"
@@ -93,7 +93,7 @@ android:orientation="vertical">
         android:textOff=""
         android:textOn=""
         android:background="@drawable/toggle_mic"
-        android:layout_alignTop="@+id/micCheck"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -145,7 +145,7 @@ android:orientation="vertical">
         android:id="@+id/graphPause"
         android:tag="graphPause"
         android:background="@drawable/toggle_pause"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/fftGraph"
         android:layout_centerHorizontal="true"  />
 
     <Button
@@ -157,9 +157,9 @@ android:orientation="vertical">
         android:id="@+id/screenShot"
         android:tag="screenShot"
         android:background="@drawable/ic_camera"
-        android:layout_toRightOf="@+id/graphPause"
-        android:layout_toEndOf="@+id/graphPause"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignTop="@+id/fftGraph"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
 
         <LinearLayout
             android:orientation="vertical"
