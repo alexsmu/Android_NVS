@@ -34,7 +34,7 @@ android:orientation="vertical">
         android:layout_alignParentEnd="true"
         android:layout_below="@id/rpmFreq"
         android:id="@+id/fftGraph"
-        android:layout_above="@+id/vibCheck" />
+        android:layout_above="@+id/graphPause" />
 
     <LinearLayout
         android:layout_width="100dp"
@@ -93,7 +93,7 @@ android:orientation="vertical">
         android:textOff=""
         android:textOn=""
         android:background="@drawable/toggle_mic"
-        android:layout_alignTop="@+id/graphPause"
+        android:layout_alignTop="@+id/micCheck"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -137,8 +137,8 @@ android:orientation="vertical">
         android:layout_toStartOf="@+id/toggleNoise" />
 
     <ToggleButton
-        android:layout_width="45dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:textSize="14sp"
         android:textOff=""
         android:textOn=""
@@ -147,6 +147,19 @@ android:orientation="vertical">
         android:background="@drawable/toggle_pause"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"  />
+
+    <Button
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/screenShot"
+        android:tag="screenShot"
+        android:background="@drawable/ic_camera"
+        android:layout_toRightOf="@+id/graphPause"
+        android:layout_toEndOf="@+id/graphPause"
+        android:layout_alignParentBottom="true"/>
 
         <LinearLayout
             android:orientation="vertical"

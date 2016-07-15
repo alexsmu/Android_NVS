@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     MyApplication app = new MyApplication();              // required for bluetooth socket
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
     private ToggleButton noise, vibration; // containers for layout buttons
+    private Button screenShot;
     private String spinnerName = "Profile 1";
     private double dev1val;
     private double dev2val;
@@ -313,6 +315,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graphPause = (ToggleButton) findViewById(R.id.graphPause);
         noise = (ToggleButton) findViewById(R.id.toggleNoise);
         vibration = (ToggleButton) findViewById(R.id.toggleVibration);
+        screenShot = (Button) findViewById(R.id.screenShot);
+
         //scope = (Spinner) findViewById(R.id.zoom);
 
         //We might want to hand this differently in the future
@@ -330,8 +334,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph = (GraphView) findViewById(R.id.fftGraph);
         if (graph == null) throw new AssertionError("Object cannot be null");
         graph.getLegendRenderer().setVisible(true);
-        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.BOTTOM);
-        graph.getLegendRenderer().setWidth(300);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
+        //graph.getLegendRenderer().setWidth(300);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -546,6 +550,39 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 SettingsData.setChecked(buttonView.getTag().toString(), buttonView.isChecked()); // store state
             }
         });
+
+        screenShot.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    File imageFile ;
+
+                    Date now = new Date();
+                    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+                    // image naming and path  to include sd card  appending name you choose for file
+                    String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+                    imageFile = new File(mPath);
+
+                    // create bitmap screen capture
+                    View v1 = getWindow().getDecorView().getRootView();
+                    v1.setDrawingCacheEnabled(true);
+                    Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+                    v1.setDrawingCacheEnabled(false);
+
+                    FileOutputStream outputStream = new FileOutputStream(imageFile);
+                    int quality = 100;
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                    Toast.makeText(getApplicationContext(), "Screenshot saved to root directory.", Toast.LENGTH_SHORT).show();
+                } catch (Throwable e) {
+                    // Several error may come out with file handling or OOM
+                    Toast.makeText(getApplicationContext(), "Error in saving screenshot.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
     void setBluetoothReceiver() {
@@ -668,7 +705,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         "Unknown...",
                         Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.save_screenshot:
+            /*case R.id.save_screenshot:
                     alertDialog.setTitle("About");
                     alertDialog.setMessage("Would you like to save a screenshot of the graph?");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Save",
@@ -712,7 +749,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     alertDialog.show();
 
 
-                break;
+                break;*/
 
         }
         //Return false to allow normal menu processing to proceed,

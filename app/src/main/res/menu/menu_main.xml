@@ -9,13 +9,13 @@
         android:icon="@android:drawable/stat_sys_data_bluetooth"
         android:visible="true"
         app:showAsAction="ifRoom"/>
-
+<!--
     <item android:id="@+id/save_screenshot"
         android:title="@string/save_screenshot"
         android:icon="@drawable/save"
         android:visible="true"
         app:showAsAction="ifRoom"/>
-
+-->
     <item android:id="@+id/one"
         android:title="@string/menu_1"
         android:icon="@android:drawable/ic_menu_manage"
