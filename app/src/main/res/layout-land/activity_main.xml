@@ -80,14 +80,13 @@
     </LinearLayout>
 
     <ToggleButton
-        android:layout_width="40dp"
-        android:layout_height="30dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
         android:id="@+id/toggleNoise"
         android:tag="noise"
         android:textOff=""
         android:textOn=""
-        android:layout_marginBottom="5dp"
         android:background="@drawable/toggle_mic"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
@@ -114,7 +113,6 @@
         android:textOn=""
         android:id="@+id/vibCheck"
         android:tag="vibCheck"
-        android:layout_marginTop="5dp"
         android:background="@drawable/toggle_visible"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/toggleVibration"
@@ -141,10 +139,22 @@
         android:textOn=""
         android:id="@+id/graphPause"
         android:tag="graphPause"
-        android:layout_marginBottom="5dp"
         android:layout_centerHorizontal="true"
         android:background="@drawable/toggle_pause"
         android:layout_alignParentBottom="true" />
+
+    <Button
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:textSize="14sp"
+        android:textOff=""
+        android:textOn=""
+        android:id="@+id/screenShot"
+        android:tag="screenShot"
+        android:background="@drawable/ic_camera"
+        android:layout_alignTop="@+id/fftGraph"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
 
     <LinearLayout
         android:orientation="vertical"

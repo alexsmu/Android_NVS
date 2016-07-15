@@ -137,8 +137,8 @@ android:orientation="vertical">
         android:layout_toStartOf="@+id/toggleNoise" />
 
     <ToggleButton
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
         android:textSize="14sp"
         android:textOff=""
         android:textOn=""
