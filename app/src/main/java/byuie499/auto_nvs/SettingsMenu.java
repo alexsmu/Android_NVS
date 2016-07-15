@@ -12,7 +12,10 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +48,8 @@ public class SettingsMenu extends AppCompatActivity {
     private CheckBox check8;
     private CheckBox screenOn;
     private CheckBox tutorialOn;
+    private TextView screenTxt;
+    private TextView tutorialTxt;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,6 +102,9 @@ public class SettingsMenu extends AppCompatActivity {
 
         screenOn = (CheckBox) findViewById((R.id.screenOn));
         tutorialOn = (CheckBox) findViewById((R.id.tutorialOn));
+
+        screenTxt = (TextView) findViewById(R.id.screenTxt);
+        tutorialTxt = (TextView) findViewById(R.id.tutorialTxt);
 
     }
 
@@ -437,6 +445,18 @@ public class SettingsMenu extends AppCompatActivity {
         tutorialOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setFirstRun(isChecked);
+            }
+        });
+        screenTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                screenOn.performClick();
+            }
+        });
+        tutorialTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tutorialOn.performClick();
             }
         });
     }
