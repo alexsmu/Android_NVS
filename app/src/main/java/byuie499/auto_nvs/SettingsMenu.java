@@ -28,10 +28,7 @@ public class SettingsMenu extends AppCompatActivity {
     private EditText ratio2;
     private EditText ratio3;
     private EditText ratio4;
-    private EditText ratio5;
-    private EditText ratio6;
     private EditText ratio7;
-    private EditText ratio8;
     private EditText name2;
     private EditText name3;
     private EditText name4;
@@ -39,6 +36,7 @@ public class SettingsMenu extends AppCompatActivity {
     private CheckBox check2;
     private CheckBox check3;
     private CheckBox check4;
+    private CheckBox check7;
     private CheckBox screenOn;
     private CheckBox tutorialOn;
     private TextView screenTxt;
@@ -77,6 +75,7 @@ public class SettingsMenu extends AppCompatActivity {
         check2 = (CheckBox) findViewById(R.id.check2);
         check3 = (CheckBox) findViewById(R.id.check3);
         check4 = (CheckBox) findViewById(R.id.check4);
+        check7 = (CheckBox) findViewById(R.id.check7);
 
         name2  = (EditText) findViewById((R.id.name2));
         name3  = (EditText) findViewById((R.id.name3));
@@ -157,6 +156,20 @@ public class SettingsMenu extends AppCompatActivity {
                 SettingsData.setString(SettingsData.currentProfile + "_ratio4", ratio4.getText().toString());
             }
         });
+        ratio7.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                SettingsData.setString(SettingsData.currentProfile + "_ratio7", ratio7.getText().toString());
+            }
+        });
     }
 
     void loadVars(){
@@ -175,6 +188,7 @@ public class SettingsMenu extends AppCompatActivity {
         check2.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check2", false));
         check3.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check3", false));
         check4.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check4", false));
+        check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
         screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", true));
         tutorialOn.setChecked(SettingsData.isFirstRun());
     }
@@ -259,6 +273,11 @@ public class SettingsMenu extends AppCompatActivity {
         check4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check4", isChecked);
+            }
+        });
+        check7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SettingsData.setChecked(SettingsData.currentProfile + "_check7", isChecked);
             }
         });
         screenOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
