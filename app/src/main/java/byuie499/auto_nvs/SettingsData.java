@@ -50,6 +50,18 @@ public class SettingsData {
         }
     }
 
+    public static int getInt(String name, int def_val){
+        return (prefs == null ? def_val : prefs.getInt(name, def_val));
+    }
+
+    public static void setInt(String name, int val) {
+        if (prefs != null) {
+            editor = prefs.edit();
+            editor.putInt(name, val);
+            editor.apply();
+        }
+    }
+
     public static boolean isChecked(String name, boolean def_val){
         return (prefs == null ? def_val : prefs.getBoolean(name, def_val));
     }
