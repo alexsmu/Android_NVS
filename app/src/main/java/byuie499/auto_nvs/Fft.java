@@ -15,13 +15,11 @@ public class Fft {
     private int levels;
     private Handler mHandler;
     private int what;
-    private boolean norm;
-    private boolean db;
+    public static boolean norm = false;
+    public static boolean db = false;
 
-    public Fft(int samples, Handler global_handler, int code, boolean normalize, boolean in_dB){
+    public Fft(int samples, Handler global_handler, int code){
         N = samples;
-        norm = normalize;
-        db = in_dB;
         mHandler = global_handler;
         what = code;
         cosTable = new double[N / 2];
