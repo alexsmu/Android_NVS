@@ -22,8 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SettingsMenu extends AppCompatActivity {
-    private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
-    private SettingsData staticData = null;
+    private SettingsData staticData = null;// dummy container to initialize SettingsData for the current context
     private Spinner fileSpinner;
     private EditText ratio1;
     private EditText ratio2;
@@ -36,16 +35,10 @@ public class SettingsMenu extends AppCompatActivity {
     private EditText name2;
     private EditText name3;
     private EditText name4;
-    private EditText name5;
-    private EditText name6;
     private CheckBox check1;
     private CheckBox check2;
     private CheckBox check3;
     private CheckBox check4;
-    private CheckBox check5;
-    private CheckBox check6;
-    private CheckBox check7;
-    private CheckBox check8;
     private CheckBox screenOn;
     private CheckBox tutorialOn;
     private TextView screenTxt;
@@ -79,26 +72,17 @@ public class SettingsMenu extends AppCompatActivity {
         ratio2  = (EditText) findViewById((R.id.value2));
         ratio3  = (EditText) findViewById((R.id.value3));
         ratio4  = (EditText) findViewById((R.id.value4));
-        //ratio5  = (EditText) findViewById((R.id.value5));
-        //ratio6  = (EditText) findViewById((R.id.value6));
 
         check1 = (CheckBox) findViewById(R.id.check1);
         check2 = (CheckBox) findViewById(R.id.check2);
         check3 = (CheckBox) findViewById(R.id.check3);
         check4 = (CheckBox) findViewById(R.id.check4);
-        //check5 = (CheckBox) findViewById(R.id.check5);
-        //check6 = (CheckBox) findViewById(R.id.check6);
-        check7 = (CheckBox) findViewById(R.id.check7);
-        //check8 = (CheckBox) findViewById(R.id.check8);
 
         name2  = (EditText) findViewById((R.id.name2));
         name3  = (EditText) findViewById((R.id.name3));
         name4  = (EditText) findViewById((R.id.name4));
-        //name5  = (EditText) findViewById((R.id.name5));
-        //name6  = (EditText) findViewById((R.id.name6));
 
         ratio7  = (EditText) findViewById((R.id.tire1));
-        //ratio8  = (EditText) findViewById((R.id.gearval));
 
         screenOn = (CheckBox) findViewById((R.id.screenOn));
         tutorialOn = (CheckBox) findViewById((R.id.tutorialOn));
@@ -173,134 +157,6 @@ public class SettingsMenu extends AppCompatActivity {
                 SettingsData.setString(SettingsData.currentProfile + "_ratio4", ratio4.getText().toString());
             }
         });
-/*        ratio5.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_ratio5", ratio5.getText().toString());
-            }
-        });
-        ratio6.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_ratio6", ratio6.getText().toString());
-            }
-        });
-
-        name2.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_name2", name2.getText().toString());
-            }
-        });
-        name3.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_name3", name3.getText().toString());
-            }
-        });
-        name4.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_name4", name4.getText().toString());
-            }
-        });
-        name5.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_name5", name5.getText().toString());
-            }
-        });
-        name6.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_name6", name6.getText().toString());
-            }
-        });
-
-        ratio7.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_ratio7", ratio7.getText().toString());
-            }
-        });
-        ratio8.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                SettingsData.setString(SettingsData.currentProfile + "_ratio8", ratio8.getText().toString());
-            }
-        });*/
     }
 
     void loadVars(){
@@ -308,26 +164,17 @@ public class SettingsMenu extends AppCompatActivity {
         ratio2.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
         ratio3.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
         ratio4.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
-        //ratio5.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio5", "0"));
-        //ratio6.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio6", "0"));
 
         name2.setText(SettingsData.getString(SettingsData.currentProfile + "_name2", ""));
         name3.setText(SettingsData.getString(SettingsData.currentProfile + "_name3", ""));
         name4.setText(SettingsData.getString(SettingsData.currentProfile + "_name4", ""));
-        //name5.setText(SettingsData.getString(SettingsData.currentProfile + "_name5", ""));
-        //name6.setText(SettingsData.getString(SettingsData.currentProfile + "_name6", ""));
 
         ratio7.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));
-//        ratio8.setText(SettingsData.getString(SettingsData.currentProfile + "_ratio8", "0"));
 
         check1.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check1", false));
         check2.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check2", false));
         check3.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check3", false));
         check4.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check4", false));
-        //check5.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check5", false));
-        //check6.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check6", false));
-        //check7.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check7", false));
-        //check8.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check8", false));
         screenOn.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_check9", true));
         tutorialOn.setChecked(SettingsData.isFirstRun());
     }
@@ -336,8 +183,6 @@ public class SettingsMenu extends AppCompatActivity {
         String profile = SettingsData.getString("profile", "Profile 1");
         String strNum = profile.substring(8,9);
         int num = Integer.parseInt(strNum);
-
-        //Toast.makeText(getApplicationContext(), Integer.toString(num), Toast.LENGTH_SHORT).show();
 
         switch(num) {
             case 1:
@@ -398,7 +243,6 @@ public class SettingsMenu extends AppCompatActivity {
     void addListenersToCheckBoxes(){
         check1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //prefs.edit().putString("check1", String.valueOf(check1.isChecked())).apply();
                 SettingsData.setChecked(SettingsData.currentProfile + "_check1", isChecked);
             }
         });
@@ -417,26 +261,6 @@ public class SettingsMenu extends AppCompatActivity {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check4", isChecked);
             }
         });
-/*        check5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(SettingsData.currentProfile + "_check5", isChecked);
-            }
-        });
-        check6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(SettingsData.currentProfile + "_check6", isChecked);
-            }
-        });
-        check7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(SettingsData.currentProfile + "_check7", isChecked);
-            }
-        });
-        check8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsData.setChecked(SettingsData.currentProfile + "_check8", isChecked);
-            }
-        });*/
         screenOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(SettingsData.currentProfile + "_check9", isChecked);
@@ -470,8 +294,6 @@ public class SettingsMenu extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        if (SettingsData.mContext != getApplicationContext())
-            settingsData = new SettingsData(getApplicationContext());
         if (SettingsData.mContext != getApplicationContext())
             staticData = new SettingsData(getApplicationContext());
         setSpinner();
