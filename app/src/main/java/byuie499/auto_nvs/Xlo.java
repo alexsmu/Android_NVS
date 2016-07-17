@@ -29,7 +29,6 @@ public class Xlo {
     public static boolean isEnabled = true;  // vibration selected flag
     public static boolean pseudoSampling = false;
     private int readCount = 0; // index for accumulator
-    private int eventCount = 0; // index for accumulator
     public static double avg_sample_Fs = 0;
     private double avg_sampling = 0;
     public Thread xlo_thread;
@@ -52,7 +51,6 @@ public class Xlo {
         if (isEnabled & !isRunning) {
             isRunning = true;
             if (pseudoSampling) {
-                eventCount = 0;
                 readCount = 0;
                 xlo_read = new SensorEventListener() {
                     @Override
@@ -64,8 +62,6 @@ public class Xlo {
                             rc = Math.sqrt(xc * xc + yc * yc + zc * zc);
                         else
                             rc = event.values[axis];
-                        totalR += rc;
-                        eventCount++;
                     }
 
                     @Override
@@ -81,20 +77,20 @@ public class Xlo {
                     @Override
                     public synchronized void run() {
                         last_time = current_time;
-                        rAcc0[readCount++] = rc;
+                        rAcc0[readCount] = rc;
                         current_time = System.nanoTime();
+                        totalR += rAcc0[readCount++];
                         avg_sampling += (current_time - last_time);
                         if (readCount == N) { // send message to main thread
                             avg_sample_Fs = 1000000000.0d * readCount / avg_sampling;
                             avg_sampling = 0;
-                            avgR = totalR / eventCount;
+                            avgR = totalR / readCount;
                             for (int i = 0; i < readCount; ++i) {
                                 rAcc[i] = rAcc0[i] - avgR;// copy current sensor values
                             }
                             Message done = mHandler.obtainMessage(1);
                             mHandler.sendMessage(done);
                             readCount = 0;
-                            eventCount = 0;
                             totalR = 0;
                         }
                     }
