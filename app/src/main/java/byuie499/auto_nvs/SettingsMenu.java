@@ -253,7 +253,7 @@ public class SettingsMenu extends AppCompatActivity {
         xButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!xButton.isChecked()) {
+                if (xButton.isChecked()) {
                     SettingsData.setInt(SettingsData.currentProfile + "_accelOpt", 0);
                     xButton.setChecked(true);
                     yButton.setChecked(false);
@@ -265,7 +265,7 @@ public class SettingsMenu extends AppCompatActivity {
         yButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!yButton.isChecked()) {
+                if (yButton.isChecked()) {
                     SettingsData.setInt(SettingsData.currentProfile + "_accelOpt", 1);
                     xButton.setChecked(false);
                     yButton.setChecked(true);
@@ -278,7 +278,7 @@ public class SettingsMenu extends AppCompatActivity {
         zButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!zButton.isChecked()) {
+                if (zButton.isChecked()) {
                     SettingsData.setInt(SettingsData.currentProfile + "_accelOpt", 2);
                     xButton.setChecked(false);
                     yButton.setChecked(false);
@@ -291,7 +291,7 @@ public class SettingsMenu extends AppCompatActivity {
         rButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!rButton.isChecked()) {
+                if (rButton.isChecked()) {
                     SettingsData.setInt(SettingsData.currentProfile + "_accelOpt", 3);
                     xButton.setChecked(false);
                     yButton.setChecked(false);
