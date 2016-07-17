@@ -1,19 +1,12 @@
 package byuie499.auto_nvs;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
-import android.util.Log;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Xlo {
     public static Sensor accelerometer = null; // sensor
@@ -30,19 +23,14 @@ public class Xlo {
     public static double[] rAcc0;
     public static boolean isRunning = false; // continue thread flag
     public static boolean isEnabled = true;  // vibration selected flag
-    private boolean isSampling = false;
-    private boolean sensorEvent = false;
-    private int readCount = 0;
-    public static double avg_sample_Ts = 0;
+    private int readCount = 0; // index for accumulator
+    public static double avg_sample_Fs = 0;
     private double avg_sampling = 0;
-
-    private int val = 0; // index for accumulator
+    public Thread xlo_thread;
+    public SensorEventListener xlo_read;
     private int N = 0;   // number of samples to accumulate before overwriting
     private int accum = 1; // divisions of buffer to wait before sending message
     private Handler mHandler = null; // thread handler for message
-    private Timer timer;
-
-    private TimerTask accumulate = null;
 
     public Xlo(Activity mMain, Handler global_handler, int samples, int dvsr){
         mHandler = global_handler;
@@ -57,71 +45,64 @@ public class Xlo {
     public void run() {
         if (isEnabled & !isRunning) {
             isRunning = true;
-            sm.registerListener(xlo_read, //listener
-                    accelerometer, //sensor
-                    SensorManager.SENSOR_DELAY_NORMAL); // period in us (NOT PRECISE, USUALLY FASTER)
-            timer = new Timer();
-            accumulate = new TimerTask() {
+            xlo_thread = new Thread(new Runnable() {
                 @Override
-                public synchronized void run() {
-                    isSampling = true;
-                    last_time = current_time;
-                    current_time = System.currentTimeMillis();
-                    avg_sampling += (current_time - last_time);
-                    while(sensorEvent);
-                    rAcc0[val] = rc - avgR;
-                    val = (val + 1) % N; // increment index
-                    if (val % (N / accum) == 0) { // send message to main thread
-                        avg_sample_Ts = avg_sampling / (N / accum);
-                        avg_sampling = 0;
-                        for (int i = 0; i < N; ++i) {
-                            rAcc[i] = rAcc0[i];
+                public void run() {
+                    readCount = 0;
+                    totalR = 0;
+                    current_time = System.nanoTime();
+                    xlo_read = new SensorEventListener() {
+                        @Override
+                        public void onSensorChanged(SensorEvent event) {
+                            last_time = current_time;
+                            current_time = System.nanoTime();
+                            xc = event.values[0];
+                            yc = event.values[1];
+                            zc = event.values[2];
+                            rAcc0[readCount] = Math.sqrt(xc * xc + yc * yc + zc * zc);
+                            totalR += rAcc0[readCount];
+                            avg_sampling += current_time - last_time; //converted to micro secs
+                            readCount++;
+                            if (readCount % (N / accum) == 0 || avg_sampling > 740000000) { // send message to main thread
+                                avg_sample_Fs = 1000000000.0d * readCount / avg_sampling; //in Hz
+                                avg_sampling = 0;
+                                avgR = totalR / readCount;
+                                for (int i = 0; i < readCount; ++i) {
+                                    rAcc[i] = rAcc0[i] - avgR;
+                                }
+                                for (int i = readCount; i < N; ++i) {
+                                    rAcc[i] = 0;
+                                }
+                                Message done = mHandler.obtainMessage(1);
+                                mHandler.sendMessage(done);
+                                readCount = 0;
+                                totalR = 0;
+                            }
                         }
-                        Message done = mHandler.obtainMessage(1);
-                        mHandler.sendMessage(done);
-                    }
-                    isSampling = false;
+
+                        @Override
+                        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                        }
+                    };
+                    sm.registerListener(xlo_read, //listener
+                            accelerometer, //sensor
+                            0);
                 }
-            };
-            current_time = System.currentTimeMillis();
-            timer.schedule(accumulate, // timer task
-                    0, // delay
-                    4); // period in ms
+            }, "xlo_thread");
+            xlo_thread.start();
         }
     }
 
     public void onPause() {
         if (isRunning) {
-            timer.cancel();
-            timer.purge();
             sm.unregisterListener(xlo_read, accelerometer); // release listener
+            try {
+                xlo_thread.join();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
             isRunning = false;
         }
     }
-
-    public SensorEventListener xlo_read = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            if (!isSampling) {
-                sensorEvent = true;
-                xc = event.values[0];
-                yc = event.values[1];
-                zc = event.values[2];
-                rc = Math.sqrt(xc * xc + yc * yc + zc * zc);
-                totalR += rc;
-                readCount++;
-                avgR = totalR / readCount;
-                sensorEvent = false;
-            } else {
-                readCount = 0;
-                totalR = 0;
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
 }
