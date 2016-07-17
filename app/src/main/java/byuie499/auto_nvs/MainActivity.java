@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,6 +23,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,7 +56,9 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
-    private static final int graph_x_axis_end = 125;  // graph x axis domain limit
+    private static int graph_x_axis_end = 200;  // graph x axis domain limit
+    private static int graph_x_axis_end1 = 200;  // graph x axis domain limit
+    private static int graph_y_axis_end = 20;
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
     private static final double audio_freq_step = audio_samples / audio_Fs;
@@ -62,17 +66,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
     private static final int acc_samples = 128; // accelerometer samples
-    private static final double acc_Fs = 250;  // accelerometer sampling rate. (MUST MATCH Xlo CLASS SAMPLING FROM TIMER TIMER
-    private static final double acc_freq_step = acc_samples / acc_Fs;
-    private static final boolean normalize = true;
-    private static final boolean in_dB = true;
-    private static final double audio_scaling = 4.0;
     private static final int acc_dvsr = 1;
-    private static final int acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / acc_Fs) ); // number of acc graph datapoints
-    private static final int acc_startdps = acc_samples / 2; // starting index (corresponds to 0 hz)
-    private static final int acc_enddps = acc_startdps + acc_numdps; // ending index (corresponds to x_axis_end hz)
+    private static final boolean normalize = false;
+    private static final boolean in_dB = false;
+    private static final double audio_scaling = (normalize ? 4.0 : 0.01);
+    private static int acc_numdps; // number of acc graph datapoints
+    private static int acc_startdps; // starting index (corresponds to 0 hz)
+    private static int acc_enddps; // ending index (corresponds to x_axis_end hz)
+    private static double acc_freq_step;
     private static DataPoint[] audio_dps = new DataPoint[audio_numdps];
-    private static DataPoint[] xlo_dps = new DataPoint[acc_numdps];
+    private static DataPoint[] xlo_dps;
     private static DataPoint[] tire_dps = new DataPoint[1];
     private static DataPoint[] rpm_dps = new DataPoint[1];
     private static DataPoint[] device2_dps = new DataPoint[1];
@@ -83,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static double[] audio_result = null;
     private static double[] xlo_result = null;
     private static double[] obd_result = null;
+    private double mic_max;
+    private double xlo_max;
     private static boolean permission = false; // RECORD_AUDIO permission granted?
     private static boolean storage_permission = false; // WRITE_EXTERNAL_STORAGE permission granted?
     private double[] audio_omega = new double[audio_samples]; // omega container for audio FFT
@@ -140,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
         settingsData = new SettingsData(getApplicationContext());
-
+        Correlation.peakThresh = (in_dB ? -55 : 0.5);
         setBluetoothReceiver();
         initMembers(); // initialize containers
         initGraph();   // initialize graph
@@ -153,8 +158,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         t6 = new ViewTarget(R.id.toggleNoise, this);
 
         if(SettingsData.isFirstRun()) {
+            disableClicks();
             counter = 0;
             showcaseView = new ShowcaseView.Builder(this, true)
+                    .withMaterialShowcase()
+                    .doNotBlockTouches()
+                    .setStyle(R.style.CustomShowcaseTheme2)
                     .setTarget(Target.NONE)
                     .setOnClickListener(showcaseClickListener)
                     .setContentTitle("Tutorial")
@@ -256,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public void handleVibrationChecks(){
         vibCheck.setChecked(SettingsData.isChecked(vibCheck.getTag().toString(), true));
         micCheck.setChecked(SettingsData.isChecked(micCheck.getTag().toString(), true));
-        graphPause.setChecked(SettingsData.isChecked(graphPause.getTag().toString(), false));
+        graphPause.setChecked(SettingsData.isChecked(graphPause.getTag().toString(), true));
 
         if (vibCheck.isChecked()) {
             graph.addSeries(xlo_peaks);
@@ -357,17 +366,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     protected void initGraph() {
         graph = (GraphView) findViewById(R.id.fftGraph);
         if (graph == null) throw new AssertionError("Object cannot be null");
-        graph.getLegendRenderer().setVisible(true);
-        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
-        //graph.getLegendRenderer().setWidth(300);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(100/*xMaxBoundary*/);
+        graph.getViewport().setMaxX(graph_x_axis_end);
 
         graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(-80);
-        graph.getViewport().setMaxY(20);
+        if ( in_dB )
+            graph.getViewport().setMinY(-80);
+        else
+            graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(graph_y_axis_end);
 
         //Set Scalable and Zoom
         //graph.getViewport().setScalable(true);
@@ -441,6 +450,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         addDevices();
         graph.addSeries(secondOrderPeaks);
+        graph.getLegendRenderer().setVisible(true);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
+        //graph.getLegendRenderer().setWidth(300);
     }
 
     void addDevices(){
@@ -583,10 +595,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         File imageFile;
 
                         Date now = new Date();
-                        String tnow = android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now).toString();
+                        String tnow = android.text.format.DateFormat.format("yyyy-MM-dd_hh_mm_ss", now).toString();
 
                         // image naming and path  to include sd card  appending name you choose for file
-                        String mPath = Environment.getExternalStorageDirectory().toString() + "/Pictures/Screenshots/" + tnow + ".jpg";
+                        String mPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + "/Screenshots/Screenshot_" + tnow + ".png";
+                        Log.d("SAVING SCREENSHOT", mPath + "\n\n\n -------------------------");
                         imageFile = new File(mPath);
 
                         // create bitmap screen capture
@@ -597,9 +610,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                         FileOutputStream outputStream = new FileOutputStream(imageFile);
                         int quality = 100;
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream);
                         outputStream.flush();
                         outputStream.close();
+                        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        Uri contentUri = Uri.fromFile(imageFile);
+                        mediaScanIntent.setData(contentUri);
+                        sendBroadcast(mediaScanIntent);
                         Toast.makeText(getApplicationContext(), "Screenshot saved to Gallery.", Toast.LENGTH_SHORT).show();
                     } catch (Throwable e) {
                         // Several error may come out with file handling or OOM
@@ -705,7 +722,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 break;
             case R.id.two:
                 counter = 0;
-                showcaseView = new ShowcaseView.Builder(this)
+                disableClicks();
+                showcaseView = new ShowcaseView.Builder(this, true)
+                        .withMaterialShowcase()
+                        .doNotBlockTouches()
+                        .setStyle(R.style.CustomShowcaseTheme2)
                         .setTarget(Target.NONE)
                         .setOnClickListener(showcaseClickListener)
                         .setContentTitle("Tutorial")
@@ -735,51 +756,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         "Unknown...",
                         Toast.LENGTH_SHORT).show();
                 break;
-            /*case R.id.save_screenshot:
-                    alertDialog.setTitle("About");
-                    alertDialog.setMessage("Would you like to save a screenshot of the graph?");
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Save",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        File imageFile ;
-
-                                        Date now = new Date();
-                                        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
-
-                                        // image naming and path  to include sd card  appending name you choose for file
-                                        String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-                                        imageFile = new File(mPath);
-
-                                        // create bitmap screen capture
-                                        View v1 = getWindow().getDecorView().getRootView();
-                                        v1.setDrawingCacheEnabled(true);
-                                        Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-                                        v1.setDrawingCacheEnabled(false);
-
-
-                                        FileOutputStream outputStream = new FileOutputStream(imageFile);
-                                        int quality = 100;
-                                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-                                        outputStream.flush();
-                                        outputStream.close();
-                                        
-                                    } catch (Throwable e) {
-                                        // Several error may come out with file handling or OOM
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Close",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
-                    alertDialog.show();
-
-
-                break;*/
 
         }
         //Return false to allow normal menu processing to proceed,
@@ -796,37 +772,37 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             switch(msg.what) {
                 case 0: // Audio fft is complete
                 {
+                    if (!Xlo.isRunning && !vibCheck.isChecked()) {
+                        graph.getViewport().setMaxX(graph_x_axis_end1);
+                    }
                     // add to series
                     audio_result = (double[]) msg.obj;
                     int j = 0;
+                    mic_max = -80;
                     for (int i = audio_startdps; i < audio_enddps; ++i) {
                         audio_dps[j++] = new DataPoint(audio_omega[i], audio_result[i]);
+                        if (audio_result[i] > mic_max)
+                            mic_max = audio_result[i];
                     }
+                    if (!vibCheck.isChecked() || mic_max > xlo_max)
+                        graph.getViewport().setMaxY(mic_max + 1);
                     audioSeries.resetData(audio_dps);
                     a_peaks = correlate.findPeaks(audio_dps);
                     audio_peaks.resetData(a_peaks);
+                    //audio_peaks.resetData(correlate.findSecOrderPeaks(a_peaks, obd_result[0]));
+
                     a_occ = correlate.count_occurrence(a_peaks);
-                    j = 0;
-                    for (Map.Entry<String, Integer> entry : a_occ)
-                    {
-                        occ_text = ((TextView) findViewById(occ_ids[j++]));
-                        occ_text.setText(entry.getKey() + ": " + entry.getValue());
-                        if (j == 10)
-                            break;
-                    }
-                    for (int i = j; i < 10; i++) {
-                        occ_text = ((TextView) findViewById(occ_ids[j++]));
-                        occ_text.setText(" ");
-                    }
 
                     break;
                 }
                 case 1: // Accelerometer data is ready
                 {
-                    Fft.getOmega(accel_omega, 1000 / Xlo.avg_sample_Ts);
                     // begin fft
-                    if (vibCheck.isChecked())
+                    if (vibCheck.isChecked()) {
+                        Fft.getOmega(accel_omega, Xlo.avg_sample_Fs);
+                        graph_x_axis_end = (int) Math.ceil(Xlo.avg_sample_Fs / 2);
                         accelFFT.run(Xlo.rAcc, "Accel");
+                    }
                     break;
                 }
                 case 2: // Accelerometer fft is complete
@@ -835,15 +811,32 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         // add to series
                         xlo_result = (double[]) msg.obj;
                         int j = 0;
+                        graph.getViewport().setMaxX(graph_x_axis_end);
+                        acc_numdps = (int) (Math.ceil(acc_samples * graph_x_axis_end / Xlo.avg_sample_Fs) );
+                        acc_startdps = acc_samples / 2;
+                        if (acc_numdps > (acc_samples / 2));
+                            acc_numdps = acc_samples / 2;
+                        acc_enddps = acc_startdps + acc_numdps;
+                        acc_freq_step = acc_samples / Xlo.avg_sample_Fs;
+                        xlo_dps = new DataPoint[acc_numdps];
+                        xlo_max = -80;
                         for (int i = acc_startdps; i < acc_enddps; ++i) {
                             xlo_dps[j++] = new DataPoint(accel_omega[i], xlo_result[i]);
+                            if (xlo_result[i] > xlo_max)
+                                xlo_max = xlo_result[i];
                         }
+                        if (!vibCheck.isChecked() || mic_max < xlo_max )
+                            graph.getViewport().setMaxY(xlo_max + 1);
                         x_peaks = correlate.findPeaks(xlo_dps);
                         xloSeries.resetData(xlo_dps);
                         xlo_peaks.resetData(x_peaks);
+                        occ_text = ((TextView) findViewById(occ_ids[0]));
+                        occ_text.setText(String.format("%.5f Hz", Xlo.avg_sample_Fs));
+
                         try {
                             secondOrderPeaks.resetData(correlate.findSecOrderPeaks(x_peaks, obd_result[0]));
-                        } catch (Exception ex) {
+                        } catch(Exception ex)
+                        {
                             //do nothing for now
                         }
                     }
@@ -893,6 +886,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public View.OnClickListener showcaseClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            disableClicks();
             RelativeLayout.LayoutParams lps = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             // This aligns button to the bottom left side of screen
             lps.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -904,41 +898,84 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 case 0:
                     showcaseView.setShowcase(t1, true);
                     showcaseView.setContentTitle("Vibration");
-                    showcaseView.setContentText("Press to enable/disable accelerometer");
+                    showcaseView.setContentText("Pressing the icon enables/disables accelerometer");
+                    enableClick(R.id.toggleVibration);
                     break;
                 case 1:
                     showcaseView.setShowcase(t2, true);
                     showcaseView.setContentTitle("Visibility");
-                    showcaseView.setContentText("Press to show/hide vibration plot");
+                    showcaseView.setContentText("Pressing the icon shows/hides vibration plot");
+                    enableClick(R.id.vibCheck);
                     break;
                 case 2:
                     showcaseView.setShowcase(t3, true);
                     showcaseView.setContentTitle("Updates");
-                    showcaseView.setContentText("Press to resume/pause plot updates");
+                    showcaseView.setContentText("Pressing the icon resumes/pauses plot updates");
+                    enableClick(R.id.graphPause);
                     break;
                 case 3:
                     showcaseView.setShowcase(t4, true);
                     showcaseView.setContentTitle("Screenshot");
-                    showcaseView.setContentText("Press to take screenshot");
+                    showcaseView.setContentText("Pressing the icon takes screenshot");
                     showcaseView.setButtonPosition(lps);
+                    enableClick(R.id.screenShot);
                     break;
                 case 4:
                     showcaseView.setShowcase(t5, true);
                     showcaseView.setContentTitle("Visibility");
-                    showcaseView.setContentText("Press to show/hide noise plot");
+                    showcaseView.setContentText("Pressing the icon shows/hides noise plot");
+                    enableClick(R.id.micCheck);
                     break;
                 case 5:
                     showcaseView.setShowcase(t6, true);
                     showcaseView.setContentTitle("Noise");
-                    showcaseView.setContentText("Press to enable/disable microphone");
+                    showcaseView.setContentText("Pressing the icon enables/disables microphone");
                     showcaseView.setButtonText("Close");
+                    enableClick(R.id.toggleNoise);
                     break;
                 case 6:
                     showcaseView.hide();
+                    enableClicks();
                     break;
 
             }
             counter++;
         }
     };
+
+    public void disableClicks() {
+        try {
+            graphPause.setClickable(false);
+            vibCheck.setClickable(false);
+            micCheck.setChecked(false);
+            noise.setChecked(false);
+            vibration.setClickable(false);
+            screenShot.setClickable(false);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    };
+
+    public void enableClicks() {
+        try {
+            graphPause.setClickable(true);
+            vibCheck.setClickable(true);
+            micCheck.setChecked(true);
+            noise.setChecked(true);
+            vibration.setClickable(true);
+            screenShot.setClickable(true);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    };
+
+    public void enableClick(int id) {
+        try {
+            this.findViewById(id).setClickable(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    };
+
+
 }
