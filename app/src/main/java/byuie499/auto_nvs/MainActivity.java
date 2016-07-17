@@ -17,7 +17,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -67,10 +66,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
     private static final int acc_samples = 128; // accelerometer samples
-    private static final int acc_dvsr = 1;
-    private static final boolean normalize = false;
-    private static final boolean in_dB = false;
-    private static final double audio_scaling = (normalize ? 4.0 : 0.01);
+    private static boolean normalizeDB;
+    private static double audio_scaling_normalizeDB = 4.0;
+    private static double audio_scaling = 0.01;
     private static int acc_numdps; // number of acc graph datapoints
     private static int acc_startdps; // starting index (corresponds to 0 hz)
     private static int acc_enddps; // ending index (corresponds to x_axis_end hz)
@@ -116,12 +114,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public CheckBox dontShowAgain;  // don't show again (bluetooth connection expected) checkbox
     private ToggleButton noise, vibration; // containers for layout buttons
     private Button screenShot;
-    private String spinnerName = "Profile 1";
     private double dev1val;
     private double dev2val;
     private double dev3val;
     private double dev4val;
-    private double dev5val;
     private double dev6val;
     private TextView rpmFreqText;
     private TextView tireRPMFreqText;
@@ -147,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // load layout
         settingsData = new SettingsData(getApplicationContext());
-        Correlation.peakThresh = (in_dB ? -55 : 0.5);
         setBluetoothReceiver();
         initMembers(); // initialize containers
         initGraph();   // initialize graph
@@ -197,6 +192,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         }else {
             getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+
+        normalizeDB = SettingsData.isChecked(SettingsData.currentProfile + "_check8", false);
+
+        if ( normalizeDB )
+            graph.getViewport().setMinY(-80);
+        else
+            graph.getViewport().setMinY(0);
+
+        Correlation.peakThresh = (normalizeDB ? -55 : 0.5);
+        Fft.db = normalizeDB;
+        Fft.norm = normalizeDB;
+        Xlo.axis = SettingsData.getInt(SettingsData.currentProfile + "_accelOpt", 3);
+        Xlo.pseudoSampling = SettingsData.isChecked(SettingsData.currentProfile + "_check5", false);
+        MicData.scale = (normalizeDB ? audio_scaling_normalizeDB : audio_scaling);
 
         setPrefs();
         addDeviceSeries();
@@ -334,15 +343,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         dev2val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
         dev3val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
         dev4val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
-        dev5val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio5", "0"));
-        dev6val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio6", "0"));
+        dev6val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));
     }
 
     protected void initMembers() { // Initialize member containers
         mHandler = new MainHandler(Looper.getMainLooper());
-        rec_acc = new Xlo(this, mHandler, acc_samples, acc_dvsr);
-        rec_mic = new MicData(mHandler, audio_samples, audio_scaling, normalize, in_dB);
+        rec_acc = new Xlo(this, mHandler, acc_samples);
         correlate = new Correlation();
+        accelFFT = new Fft(acc_samples, mHandler, 2);
+        rec_mic = new MicData(mHandler, audio_samples);
         vibCheck = (ToggleButton) findViewById(R.id.vibCheck);
         micCheck = (ToggleButton) findViewById(R.id.micCheck);
         rpmFreqText = (TextView) findViewById(R.id.rpmFreq);
@@ -352,16 +361,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         vibration = (ToggleButton) findViewById(R.id.toggleVibration);
         screenShot = (Button) findViewById(R.id.screenShot);
 
-        //scope = (Spinner) findViewById(R.id.zoom);
-
         //We might want to hand this differently in the future
         if (app.getGlobalBluetoothSocket() == null) {
             obdData = new OBDData(mHandler, getApplicationContext(), acc_samples, true);
         } else {
             obdData = new OBDData(mHandler,getApplicationContext(), acc_samples, false);
         }
-
-        accelFFT = new Fft(acc_samples, mHandler, 2, normalize, in_dB);
         Fft.getOmega(audio_omega, audio_Fs);
     }
 
@@ -374,10 +379,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.getViewport().setMaxX(graph_x_axis_end);
 
         graph.getViewport().setYAxisBoundsManual(true);
-        if ( in_dB )
-            graph.getViewport().setMinY(-80);
-        else
-            graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(graph_y_axis_end);
 
         //graph.getLegendRenderer().setVisible(false);
@@ -884,9 +885,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     device4_dps[0] = new DataPoint(dev1val*obd_result[0]/dev4val,0);
                     device4_series.resetData(device4_dps);
 
-                    device5_dps[0] = new DataPoint(dev1val*obd_result[0]/dev5val,0);
-                    device5_series.resetData(device5_dps);
-
                     device6_dps[0] = new DataPoint(dev1val*obd_result[0]/dev6val,0);
                     device6_series.resetData(device6_dps);
                     /*TESTING*/
@@ -969,8 +967,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         try {
             graphPause.setClickable(false);
             vibCheck.setClickable(false);
-            micCheck.setChecked(false);
-            noise.setChecked(false);
+            micCheck.setClickable(false);
+            noise.setClickable(false);
             vibration.setClickable(false);
             screenShot.setClickable(false);
         } catch (Exception e){
@@ -982,8 +980,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         try {
             graphPause.setClickable(true);
             vibCheck.setClickable(true);
-            micCheck.setChecked(true);
-            noise.setChecked(true);
+            micCheck.setClickable(true);
+            noise.setClickable(true);
             vibration.setClickable(true);
             screenShot.setClickable(true);
         } catch (Exception e){
