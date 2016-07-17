@@ -59,6 +59,8 @@
     <string name="Scan">Scan</string>
     <string name="Scanning">Scanning</string>
     <string name="additional_options">Additional Options</string>
+    <string name="graph_options">Graph Options</string>
+    <string name="psampling">Pseudo-sample vibrations</string>
     <string name="save">Save</string>
     <string name="settings">Settings</string>
 </resources>
