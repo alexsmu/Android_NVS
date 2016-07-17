@@ -17,6 +17,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private PointsGraphSeries<DataPoint> xlo_peaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> secondOrderPeaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> thirdOrderPeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> fourthOrderPeaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
@@ -378,6 +380,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(graph_y_axis_end);
 
+        //graph.getLegendRenderer().setVisible(false);
+
         //Set Scalable and Zoom
         //graph.getViewport().setScalable(true);
         //graph.getViewport().setScrollable(true);
@@ -398,6 +402,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         xlo_peaks.setColor(Color.parseColor("yellow"));
         secondOrderPeaks.setColor(Color.parseColor("blue"));
         thirdOrderPeaks.setColor(Color.parseColor("blue"));
+        fourthOrderPeaks.setColor(Color.parseColor("blue"));
 
         // Shapes
         secondOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
@@ -405,14 +410,28 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(15);
                 canvas.drawCircle(x,y,15,paint);
+                paint.setTextSize(36);
+                canvas.drawText("2e",x+4,y-10,paint);
             }
         });
 
         thirdOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(6);
-                canvas.drawCircle(x,y,5,paint);
+                paint.setStrokeWidth(15);
+                canvas.drawCircle(x,y,15,paint);
+                paint.setTextSize(36);
+                canvas.drawText("3e",x+4,y-10,paint);
+            }
+        });
+
+        fourthOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+            @Override
+            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+                paint.setStrokeWidth(15);
+                canvas.drawCircle(x,y,15,paint);
+                paint.setTextSize(36);
+                canvas.drawText("4e",x+4,y-10,paint);
             }
         });
 
@@ -453,6 +472,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
         //graph.getLegendRenderer().setWidth(300);
+        graph.addSeries(thirdOrderPeaks);
+        graph.addSeries(fourthOrderPeaks);
     }
 
     void addDevices(){
@@ -834,9 +855,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         occ_text.setText(String.format("%.5f Hz", Xlo.avg_sample_Fs));
 
                         try {
-                            secondOrderPeaks.resetData(correlate.findSecOrderPeaks(x_peaks, obd_result[0]));
-                        } catch(Exception ex)
-                        {
+                            secondOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks, obd_result[0],2));
+                            thirdOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks,obd_result[0],3));
+                            fourthOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks,obd_result[0],4));
+                        } catch (Exception ex) {
                             //do nothing for now
                         }
                     }

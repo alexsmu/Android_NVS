@@ -102,8 +102,10 @@ public class Correlation {
         return list;
     }
 
-    public DataPoint[] findSecOrderPeaks(DataPoint[] series, Double obdFreq){
-        double secondOrder = obdFreq * 2;
+    public DataPoint[] findOrderPeaks(DataPoint[] series, Double obdFreq, int order){
+
+        double secondOrder = obdFreq * order;
+        double threshold = 2;
         DataPoint[] temp = new DataPoint[1];
         temp[0] = new DataPoint(-1,-1);
 
@@ -117,6 +119,7 @@ public class Correlation {
                     temp[0] = series[i];
                 }
             }
+
         }
         return temp;
     }
