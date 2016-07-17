@@ -105,7 +105,7 @@ public class Correlation {
     public DataPoint[] findSecOrderPeaks(DataPoint[] series, Double obdFreq){
         double secondOrder = obdFreq * 2;
         DataPoint[] temp = new DataPoint[1];
-        temp[0] = new DataPoint(75,-55);
+        temp[0] = new DataPoint(-1,-1);
 
         for(int i = 0; i < series.length; i++){
             if (series[i].getX() > (secondOrder - peakTolerance) && series[i].getX() < (secondOrder + peakTolerance)) {
@@ -113,7 +113,7 @@ public class Correlation {
                     if (series[i].getY() > temp[0].getY()){
                         temp[0] = series[i];
                     }
-                }else {
+                } else {
                     temp[0] = series[i];
                 }
             }
