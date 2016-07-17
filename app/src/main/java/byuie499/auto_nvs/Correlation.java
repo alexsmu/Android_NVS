@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Correlation {
-    public static int peakThresh = -55;
+    public static double peakThresh = -55;
+    public static double peakTolerance = 2;
     public static boolean ASC = true;
     public static boolean DESC = false;
 
@@ -102,25 +103,20 @@ public class Correlation {
     }
 
     public DataPoint[] findSecOrderPeaks(DataPoint[] series, Double obdFreq){
-
         double secondOrder = obdFreq * 2;
-        double threshold = 2;
         DataPoint[] temp = new DataPoint[1];
         temp[0] = new DataPoint(75,-55);
 
         for(int i = 0; i < series.length; i++){
-            if (series[i].getX() > (secondOrder - threshold) && series[i].getX() < (secondOrder + threshold)) {
-
+            if (series[i].getX() > (secondOrder - peakTolerance) && series[i].getX() < (secondOrder + peakTolerance)) {
                 if(temp != null){
                     if (series[i].getY() > temp[0].getY()){
                         temp[0] = series[i];
                     }
                 }else {
-
                     temp[0] = series[i];
                 }
             }
-
         }
         return temp;
     }
