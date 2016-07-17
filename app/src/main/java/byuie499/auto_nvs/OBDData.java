@@ -196,7 +196,7 @@ public class OBDData {
         double tireCircumference = 0;
         try {
             //MyApplication myApp = new MyApplication();
-            tireDiameter = SettingsData.getFloat(SettingsData.currentProfile + "_ratio7", 0);//myApp.getTireDiameterInches();
+            tireDiameter = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));//myApp.getTireDiameterInches();
             tireCircumference = Math.PI * tireDiameter;
 
             //Convert to Feet
@@ -219,7 +219,7 @@ public class OBDData {
         double tireCircumference = 0;
         try {
             //MyApplication myApp = new MyApplication();
-            tireDiameter = SettingsData.getFloat(SettingsData.currentProfile + "_ratio7", 0); //myApp.getTireDiameterInches();
+            tireDiameter = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0")); //myApp.getTireDiameterInches();
             tireCircumference = Math.PI * tireDiameter;
 
             //Convert to Feet
