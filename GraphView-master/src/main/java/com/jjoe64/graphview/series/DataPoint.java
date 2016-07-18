@@ -35,35 +35,21 @@ public class DataPoint implements DataPointInterface, Serializable {
 
     private double x;
     private double y;
-    private String t;
-    private boolean o;
+    public String tag;
+    public boolean occ;
 
     public DataPoint(double x, double y) {
         this.x=x;
         this.y=y;
-        this.t = null;
-        this.o = false;
+        this.tag = null;
+        this.occ = false;
     }
 
     public DataPoint(Date x, double y) {
         this.x = x.getTime();
         this.y = y;
-        this.t = null;
-        this.o = false;
-    }
-
-    public DataPoint(double x, double y, String tag) {
-        this.x=x;
-        this.y=y;
-        this.t = tag;
-        this.o = false;
-    }
-
-    public DataPoint(double x, double y, String tag, boolean occurrence) {
-        this.x=x;
-        this.y=y;
-        this.t = tag;
-        this.o = occurrence;
+        this.tag = null;
+        this.occ = false;
     }
 
     @Override
@@ -83,10 +69,10 @@ public class DataPoint implements DataPointInterface, Serializable {
 
     @Override
     public String getTag() {
-        return t;
+        return tag;
     }
     @Override
     public boolean isOcc() {
-        return o;
+        return occ;
     }
 }
