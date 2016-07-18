@@ -289,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 if (isChecked){
                     rec_acc.onPause();
                     rec_mic.onPause();
+                    updateXloCorrelation(a_peaks);
+                    updateMicCorrelation(a_peaks);
                 } else {
                     rec_acc.run();
                     rec_mic.run();
@@ -330,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         dev2val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
         dev3val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
         dev4val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
-        check1 = SettingsData.isChecked(SettingsData.currentProfile + "_check1", false);
+        check1 = SettingsData.isChecked(SettingsData.currentProfile + "_check1", true);
         check2 = SettingsData.isChecked(SettingsData.currentProfile + "_check2", false);
         check3 = SettingsData.isChecked(SettingsData.currentProfile + "_check3", false);
         check4 = SettingsData.isChecked(SettingsData.currentProfile + "_check4", false);
@@ -827,13 +829,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     public void updateMicCorrelation(DataPoint[] peaks) {
-        audio_correlation.count_occurrence(peaks);
         audio_rpmPeaks.resetData(empty_dps);
         audio_device2_series.resetData(empty_dps);
         audio_device3_series.resetData(empty_dps);
         audio_device4_series.resetData(empty_dps);
         audio_tirePeaks.resetData(empty_dps);
-        if (OBDData.isRunning) {
+        if (OBDData.isRunning && MicData.isRecording) {
+            audio_correlation.count_occurrence(peaks);
             if (check1 && obd_result[0] > 0) {
                 audio_rpmPeaks.resetData(audio_correlation.markPeaks(peaks, obd_result[0], "E"));
                 if (check2 && dev2val > 0) {
