@@ -10,6 +10,7 @@ android:paddingLeft="@dimen/activity_horizontal_margin"
 android:paddingRight="@dimen/activity_horizontal_margin"
 android:paddingTop="@dimen/activity_vertical_margin"
 android:clipChildren="false"
+android:hardwareAccelerated="true"
 tools:context="byuie499.auto_nvs.MainActivity"
 android:orientation="vertical">
 
@@ -34,56 +35,9 @@ android:orientation="vertical">
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/rpmFreq"
+        android:hardwareAccelerated="true"
         android:id="@+id/fftGraph"
         android:layout_above="@+id/vibCheck" />
-
-    <LinearLayout
-        android:layout_width="100dp"
-        android:layout_height="110dp"
-        android:orientation="vertical"
-        android:id="@+id/occLayout0"
-        android:layout_alignTop="@+id/fftGraph"
-        android:layout_toLeftOf="@+id/occLayout1"
-        android:layout_toStartOf="@+id/occLayout1">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:id="@+id/occ0a" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-
-            android:text=""
-            android:id="@+id/occ0b" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:id="@+id/occ0c" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:id="@+id/occ0d" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:id="@+id/occ0e" />
-
-    </LinearLayout>
 
     <ToggleButton
         android:layout_width="45dp"
@@ -161,53 +115,5 @@ android:orientation="vertical">
         android:layout_alignTop="@+id/fftGraph"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"/>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="100dp"
-            android:layout_height="110dp"
-            android:layout_alignTop="@+id/fftGraph"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/occLayout1">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text=""
-                android:id="@+id/occ1a" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text=""
-                android:id="@+id/occ1b" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text=""
-                android:id="@+id/occ1c" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text=""
-                android:id="@+id/occ1d" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text=""
-                android:id="@+id/occ1e" />
-
-        </LinearLayout>
-
 
 </RelativeLayout>
