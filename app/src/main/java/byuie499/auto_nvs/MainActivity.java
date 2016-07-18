@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static int graph_y_axis_end = 20;
     private static final int audio_samples = 32768;    // samples to record before taking fft (must be power of 2)
     private static final double audio_Fs = 44100;     // audio sampling rate. (DO NOT MODIFY)
-    private static final double audio_freq_step = audio_samples / audio_Fs;
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
@@ -72,16 +71,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static int acc_numdps; // number of acc graph datapoints
     private static int acc_startdps; // starting index (corresponds to 0 hz)
     private static int acc_enddps; // ending index (corresponds to x_axis_end hz)
-    private static double acc_freq_step;
     private static DataPoint[] audio_dps = new DataPoint[audio_numdps];
     private static DataPoint[] xlo_dps;
-    private static DataPoint[] tire_dps = new DataPoint[1];
-    private static DataPoint[] rpm_dps = new DataPoint[1];
-    private static DataPoint[] device2_dps = new DataPoint[1];
-    private static DataPoint[] device3_dps = new DataPoint[1];
-    private static DataPoint[] device4_dps = new DataPoint[1];
-    private static DataPoint[] device5_dps = new DataPoint[1];
-    private static DataPoint[] device6_dps = new DataPoint[1];
+    private static DataPoint[] empty_dps = new DataPoint[] { new DataPoint(-80,-80)};
+    private static Correlation xlo_correlation = new Correlation();
+    private static Correlation audio_correlation = new Correlation();
     private static double[] audio_result = null;
     private static double[] xlo_result = null;
     private static double[] obd_result = null;
@@ -96,14 +90,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private Xlo rec_acc = null;          // container for accelerometer recording thread object
     private LineGraphSeries<DataPoint> audioSeries = new LineGraphSeries<>();       // graph series
     private LineGraphSeries<DataPoint> xloSeries = new LineGraphSeries<>();
-    private PointsGraphSeries<DataPoint> device2_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> device3_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> device5_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> device6_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> accel_device2_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> accel_device3_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> accel_device4_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_device2_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_device3_series = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_device4_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> accel_rpmPeaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> audio_rpmPeaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> fourthOrderPeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> accel_tirePeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_tirePeaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
     public Handler mHandler = null;  // container for thread handler
@@ -116,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private double dev2val;
     private double dev3val;
     private double dev4val;
-    private double dev6val;
+    private static boolean check1, check2, check3, check4, check7;
     private TextView rpmFreqText;
     private TextView tireRPMFreqText;
     private ToggleButton graphPause;
@@ -163,8 +159,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     .setOnClickListener(showcaseClickListener)
                     .setContentTitle("Tutorial")
                     .setContentText("In the Center you'll find a graph. This will contain the Information " +
-                            "on the FFT for the noise and vibration.")
-                    //.singleShot(42)
+                            "on the FFT for the noise and vibration.\n" +
+                            "Red marks on peaks represent potential pulses.\n" +
+                            "Engine RPM peaks are marked the order followed by the letter E (e.g. 2E).\n" +
+                            "If a tire diameter is specified, Speed peaks are marked like RPM peaks but with the letter S\n" +
+                            "If crankshaft diameter is provided, any enabled ratios are marked with the letter F, G, and H respectively.")
                     .build();
             showcaseView.setButtonText("next");
             SettingsData.setFirstRun(false);
@@ -302,7 +301,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(xloSeries);
                     graph.addSeries(xloSeries);
                 }
                 else
@@ -317,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(audioSeries);
                     graph.addSeries(audioSeries);
                 }
                 else
@@ -333,7 +330,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         dev2val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio2", "0"));
         dev3val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio3", "0"));
         dev4val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio4", "0"));
-        dev6val = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0"));
+        check1 = SettingsData.isChecked(SettingsData.currentProfile + "_check1", false);
+        check2 = SettingsData.isChecked(SettingsData.currentProfile + "_check2", false);
+        check3 = SettingsData.isChecked(SettingsData.currentProfile + "_check3", false);
+        check4 = SettingsData.isChecked(SettingsData.currentProfile + "_check4", false);
+        check7 = SettingsData.isChecked(SettingsData.currentProfile + "_check7", false);
     }
 
     protected void initMembers() { // Initialize member containers
@@ -371,17 +372,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMaxY(graph_y_axis_end);
 
-        //graph.getLegendRenderer().setVisible(false);
-
-        //Set Scalable and Zoom
-        //graph.getViewport().setScalable(true);
-        //graph.getViewport().setScrollable(true);
-
         // Titles
         audioSeries.setTitle("Audio");
         xloSeries.setTitle("Accel");
-        accel_rpmPeaks.setTitle("RPM");
-        audio_rpmPeaks.setTitle("RPM");
 
         // Colors
 
@@ -389,41 +382,39 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         xloSeries.setColor(Color.parseColor("#610B0B"));
         accel_rpmPeaks.setColor(Color.parseColor("blue"));
         audio_rpmPeaks.setColor(Color.parseColor("blue"));
-        fourthOrderPeaks.setColor(Color.parseColor("blue"));
+        accel_tirePeaks.setColor(Color.parseColor("blue"));
+        audio_tirePeaks.setColor(Color.parseColor("blue"));
 
         // Shapes
-        accel_rpmPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(15);
-                canvas.drawCircle(x, y, 15,paint);
-                paint.setTextSize(36);
-                canvas.drawText(dataPoint.getTag(), x+10, y-15, paint);
+        accel_rpmPeaks.setCustomShape(correlationShape);
+        audio_rpmPeaks.setCustomShape(correlationShape);
+        accel_tirePeaks.setCustomShape(correlationShape);
+        audio_tirePeaks.setCustomShape(correlationShape);
 
-            }
-        });
+        accel_device2_series.setColor(Color.parseColor("#003366"));
+        accel_device3_series.setColor(Color.parseColor("#00aeef"));
+        accel_device4_series.setColor(Color.parseColor("#8eca40"));
 
-        audio_rpmPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(15);
-                canvas.drawCircle(x, y, 15, paint);
-                paint.setTextSize(36);
-                canvas.drawText(dataPoint.getTag(), x+10, y-15, paint);
-            }
-        });
+        accel_device2_series.setCustomShape(correlationShape);
+        accel_device3_series.setCustomShape(correlationShape);
+        accel_device4_series.setCustomShape(correlationShape);
 
-        fourthOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(15);
-                canvas.drawCircle(x,y,15,paint);
-                paint.setTextSize(36);
-                canvas.drawText("4e",x+4,y-10,paint);
-            }
-        });
+        audio_device2_series.setColor(Color.parseColor("#003366"));
+        audio_device3_series.setColor(Color.parseColor("#00aeef"));
+        audio_device4_series.setColor(Color.parseColor("#8eca40"));
+
+        audio_device2_series.setCustomShape(correlationShape);
+        audio_device3_series.setCustomShape(correlationShape);
+        audio_device4_series.setCustomShape(correlationShape);
 
         audio_rpmPeaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(MainActivity.this, "Audio Peak: " + dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        audio_tirePeaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 Toast.makeText(MainActivity.this, "Audio Peak: " + dataPoint, Toast.LENGTH_SHORT).show();
@@ -437,85 +428,42 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        addDevices();
-        graph.addSeries(accel_rpmPeaks);
+        accel_tirePeaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(MainActivity.this, "Accel Peak: "+dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
-        //graph.getLegendRenderer().setWidth(300);
+    }
+
+    void addDeviceSeries(){
+        graph.addSeries(accel_rpmPeaks);
+        graph.addSeries(accel_tirePeaks);
         graph.addSeries(audio_rpmPeaks);
-        //graph.addSeries(fourthOrderPeaks);
+        graph.addSeries(audio_tirePeaks);
+        graph.addSeries(accel_device2_series);
+        graph.addSeries(accel_device3_series);
+        graph.addSeries(accel_device4_series);
+        graph.addSeries(audio_device2_series);
+        graph.addSeries(audio_device3_series);
+        graph.addSeries(audio_device4_series);
     }
 
-    void addDevices(){
-        device2_series.setTitle(SettingsData.getString("name2", ""));
-        device2_series.setColor(Color.parseColor("#003366"));
-
-        device3_series.setTitle(SettingsData.getString("name3", ""));
-        device3_series.setColor(Color.parseColor("#00aeef"));
-
-        device4_series.setTitle(SettingsData.getString("name4", ""));
-        device4_series.setColor(Color.parseColor("#8eca40"));
-
-        device5_series.setTitle(SettingsData.getString("name5", ""));
-        device5_series.setColor(Color.parseColor("#8c0066"));
-
-        device6_series.setTitle(SettingsData.getString("name6", ""));
-        device6_series.setColor(Color.parseColor("#fe6302"));
-
-        device2_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-        device3_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-        device4_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-        device5_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-        device6_series.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(5);
-                canvas.drawLine(x-1,y-500,x+1,y+1000,paint);
-            }
-        });
-    }
-
-    protected void addDeviceSeries() {
-        if (SettingsData.isChecked("check2", false)){
-            graph.addSeries(device2_series);
+    public PointsGraphSeries.CustomShape correlationShape = new PointsGraphSeries.CustomShape() {
+        @Override
+        public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
+            Paint p = new Paint(paint);
+            if (dataPoint.isOcc())
+                p.setColor(Color.parseColor("red"));
+            paint.setStrokeWidth(15);
+            canvas.drawCircle(x, y, 15, p);
+            paint.setTextSize(36);
+            canvas.drawText(dataPoint.getTag(), x+10, y-15, p);
         }
-        if (SettingsData.isChecked("check3", false)){
-            graph.addSeries(device3_series);
-        }
-        if (SettingsData.isChecked("check4", false)){
-            graph.addSeries(device4_series);
-        }
-        if (SettingsData.isChecked("check5", false)){
-            graph.addSeries(device5_series);
-        }
-        if (SettingsData.isChecked("check6", false)){
-            graph.addSeries(device6_series);
-        }
-    }
+    };
 
     void addListenerToToggleButtons() {
         noise.setChecked(SettingsData.isChecked(noise.getTag().toString(), false)); // retrieve previous state
@@ -722,8 +670,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         .setOnClickListener(showcaseClickListener)
                         .setContentTitle("Tutorial")
                         .setContentText("In the Center you'll find a graph. This will contain the Information " +
-                                "on the FFT for the noise and vibration.")
-                        //.singleShot(42)
+                                "on the FFT for the noise and vibration.\n" +
+                                "Red marks on peaks represent potential pulses.\n" +
+                                "Engine RPM peaks are marked the order followed by the letter E (e.g. 2E).\n" +
+                                "If a tire diameter is specified, Speed peaks are marked like RPM peaks but with the letter S.\n" +
+                                "If crankshaft diameter is provided, any enabled ratios are marked with the letter F, G, and H respectively.")
                         .build();
                 showcaseView.setButtonText("next");
                 break;
@@ -780,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     a_peaks = correlate.findPeaks(audio_dps);
                     try {
                         audioSeries.resetData(audio_dps);
-                        audio_rpmPeaks.resetData(correlate.markPeaks(a_peaks, obd_result[0], "E"));
+                        updateMicCorrelation(a_peaks);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -808,7 +759,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         if (acc_numdps > (acc_samples / 2));
                             acc_numdps = acc_samples / 2;
                         acc_enddps = acc_startdps + acc_numdps;
-                        acc_freq_step = acc_samples / Xlo.avg_sample_Fs;
                         xlo_dps = new DataPoint[acc_numdps];
                         xlo_max = -80;
                         for (int i = acc_startdps; i < acc_enddps; ++i) {
@@ -820,12 +770,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                             graph.getViewport().setMaxY(xlo_max + 1);
                         x_peaks = correlate.findPeaks(xlo_dps);
 
-                        occ_text = ((TextView) findViewById(occ_ids[0]));
-                        occ_text.setText(String.format("%.5f Hz", Xlo.avg_sample_Fs));
-
                         try {
                             xloSeries.resetData(xlo_dps);
-                            accel_rpmPeaks.resetData(correlate.markPeaks(x_peaks, obd_result[0], "E"));
+                            updateXloCorrelation(x_peaks);
                         } catch (Exception ex) {
                             //do nothing for now
                         }
@@ -836,28 +783,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 {
                     //OBD Data (it is test data for now)
                     obd_result = (double[]) msg.obj;
-                    rpm_dps[0] = new DataPoint(obd_result[0],0);
-
                     DecimalFormat df = new DecimalFormat("#.##");
 
                     rpmFreqText.setText("RPM/Freq: "+ df.format(obd_result[0]));
 
-                    /*TESTING*/
-/*                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
-                    device2_series.resetData(device2_dps);
-
-                    device3_dps[0] = new DataPoint(dev1val*obd_result[0]/dev3val,0);
-                    device3_series.resetData(device3_dps);
-
-                    device4_dps[0] = new DataPoint(dev1val*obd_result[0]/dev4val,0);
-                    device4_series.resetData(device4_dps);
-
-                    device6_dps[0] = new DataPoint(dev1val*obd_result[0]/dev6val,0);
-                    device6_series.resetData(device6_dps);
-                    /*TESTING*/
-
                     //Tire RPM Frequency
-                    tire_dps[0] = new DataPoint(obd_result[1],0);
                     tireRPMFreqText.setText("TireRPM/Freq: "+ df.format(obd_result[1]));
 
                     break;
@@ -866,6 +796,58 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 {
                     super.handleMessage(msg);
                 }
+            }
+        }
+    }
+
+    public void updateXloCorrelation(DataPoint[] peaks) {
+        xlo_correlation.count_occurrence(peaks);
+        accel_rpmPeaks.resetData(empty_dps);
+        accel_device2_series.resetData(empty_dps);
+        accel_device3_series.resetData(empty_dps);
+        accel_device4_series.resetData(empty_dps);
+        accel_tirePeaks.resetData(empty_dps);
+        if (OBDData.isRunning) {
+            if (check1 && obd_result[0] > 0) {
+                accel_rpmPeaks.resetData(xlo_correlation.markPeaks(peaks, obd_result[0], "E"));
+                if (check2 && dev2val > 0) {
+                    accel_device2_series.resetData(xlo_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev2val, "F"));
+                }
+                if (check3 && dev3val > 0) {
+                    accel_device3_series.resetData(xlo_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev3val, "G"));
+                }
+                if (check4 && dev4val > 0) {
+                    accel_device4_series.resetData(xlo_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev4val, "H"));
+                }
+            }
+            if (check7 && obd_result[1] == obd_result[1] && obd_result[1] > 0) {
+                accel_tirePeaks.resetData(xlo_correlation.markPeaks(peaks, obd_result[1], "S"));
+            }
+        }
+    }
+
+    public void updateMicCorrelation(DataPoint[] peaks) {
+        audio_correlation.count_occurrence(peaks);
+        audio_rpmPeaks.resetData(empty_dps);
+        audio_device2_series.resetData(empty_dps);
+        audio_device3_series.resetData(empty_dps);
+        audio_device4_series.resetData(empty_dps);
+        audio_tirePeaks.resetData(empty_dps);
+        if (OBDData.isRunning) {
+            if (check1 && obd_result[0] > 0) {
+                audio_rpmPeaks.resetData(audio_correlation.markPeaks(peaks, obd_result[0], "E"));
+                if (check2 && dev2val > 0) {
+                    audio_device2_series.resetData(audio_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev2val, "F"));
+                }
+                if (check3 && dev3val > 0) {
+                    audio_device3_series.resetData(audio_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev3val, "G"));
+                }
+                if (check4 && dev4val > 0) {
+                    audio_device4_series.resetData(audio_correlation.markPeaks(peaks, dev1val*obd_result[0]/dev4val, "H"));
+                }
+            }
+            if (check7 && obd_result[1] == obd_result[1] && obd_result[1] > 0) {
+                audio_tirePeaks.resetData(audio_correlation.markPeaks(peaks, obd_result[1], "S"));
             }
         }
     }
