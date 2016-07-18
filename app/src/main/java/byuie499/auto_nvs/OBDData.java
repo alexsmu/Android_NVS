@@ -201,69 +201,23 @@ public class OBDData {
 
             //Convert to Feet
             tireCircumference = tireCircumference/12;
-            speedInFeet = getImperialSpeed() * 5280 * (1/60.0);
+            speedInFeet = getImperialSpeed() * 88.99213;
 
         } catch (Exception ex) {
             //give error message
         }
-       return speedInFeet * (1/tireCircumference);
+       return speedInFeet / tireCircumference;
     }
 
     public double getImperialTireRPMFreq() {
-        return getImperialTireRPM()/60.0;
-    }
-
-    public double getImperialTireRPMTEST() {
-        double speedInFeet = 0;
-        double tireDiameter = 0;
-        double tireCircumference = 0;
-        try {
-            //MyApplication myApp = new MyApplication();
-            tireDiameter = Double.parseDouble(SettingsData.getString(SettingsData.currentProfile + "_ratio7", "0")); //myApp.getTireDiameterInches();
-            tireCircumference = Math.PI * tireDiameter;
-
-            //Convert to Feet
-            tireCircumference = tireCircumference/12;
-            if (testSpeedIncreasing) {
-                testImperialSpeed++;
-                if (testImperialSpeed >= 100){
-                    testSpeedIncreasing = false;
-                    testImperialSpeed--;
-                }
-            } else {
-                testImperialSpeed--;
-                if(testImperialSpeed <= 50)
-                {
-                    testSpeedIncreasing = true;
-                    testImperialSpeed++;
-                }
-            }
-
-            speedInFeet = testImperialSpeed * 5280 * (1/60.0);
-        } catch (Exception ex) {
-            //give error message
-        }
-
-        return speedInFeet * (1/tireCircumference);
-    }
-
-    public double getImperialTireRPMFreqTEST() {
-        return getImperialTireRPMTEST()/60.0;
-
+        return getImperialTireRPM() / 60.0;
     }
 
     /**
      * getMetricSpeedFrequency : Will get Frequency from Metric Speed Example Output: 5.2
      */
     public double getMetricSpeedFrequency() {
-        return getMetricSpeed()/60;
-    }
-
-    /**
-     * getImperialEngineCoolantTemp : Will get Engine Coolant Temperature in Farenheit Example Output: 80
-     */
-    public double getImperialEngineCoolantTemp() {
-        return engineCoolantTemperatureCommand.getImperialUnit();
+        return getMetricSpeed() / 3.6;
     }
 
 }
