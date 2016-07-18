@@ -216,13 +216,14 @@ public class LegendRenderer {
         float lRight = lLeft+legendWidth;
         float lBottom = lTop+legendHeight+2*mStyles.padding;
         mPaint.setColor(mStyles.backgroundColor);
-        canvas.drawRoundRect(new RectF(lLeft, lTop, lRight, lBottom), 8, 8, mPaint);
+       // canvas.drawRoundRect(new RectF(lLeft, lTop, lRight, lBottom), 8, 8, mPaint);
 
         int i=0;
         for (Series series : allSeries) {
+            if (series.getTitle() != null) {
             mPaint.setColor(series.getColor());
             canvas.drawRect(new RectF(lLeft+mStyles.padding, lTop+mStyles.padding+(i*(mStyles.textSize+mStyles.spacing)), lLeft+mStyles.padding+shapeSize, lTop+mStyles.padding+(i*(mStyles.textSize+mStyles.spacing))+shapeSize), mPaint);
-            if (series.getTitle() != null) {
+
                 mPaint.setColor(mStyles.textColor);
                 canvas.drawText(series.getTitle(), lLeft+mStyles.padding+shapeSize+mStyles.spacing, lTop+mStyles.padding+mStyles.textSize+(i*(mStyles.textSize+mStyles.spacing)), mPaint);
             }
