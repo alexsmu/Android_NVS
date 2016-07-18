@@ -63,4 +63,7 @@
     <string name="psampling">Pseudo-sample vibrations</string>
     <string name="save">Save</string>
     <string name="settings">Settings</string>
+    <string name="device1">Ratio 1</string>
+    <string name="device2">Ratio 2</string>
+    <string name="device3">Ratio 3</string>
 </resources>
