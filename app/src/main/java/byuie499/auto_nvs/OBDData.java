@@ -28,13 +28,10 @@ public class OBDData {
     private RPMCommand engineRpmCommand;
     private SpeedCommand speedCommand;
     private EngineCoolantTemperatureCommand engineCoolantTemperatureCommand;
-    private int testRPM = 3000;
-    private int testImperialSpeed = 65; //MPH
-    private boolean testSpeedIncreasing = true;
     boolean test = false;
     private int Ts = 100; //100 ms?
     private Handler mHandler = null;
-    private boolean isRunning = false;
+    public static boolean isRunning = false;
     private Timer timer;
     public static double rpmFreq;
     public static double imperialTireRPMFreq;
@@ -112,10 +109,6 @@ public class OBDData {
             timer.cancel();
             timer.purge();
         }
-    }
-
-    public int getTestRPM() {
-        return testRPM;
     }
 
     /**
