@@ -101,10 +101,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private PointsGraphSeries<DataPoint> device4_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device5_series = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> device6_series = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> audio_peaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> xlo_peaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> secondOrderPeaks = new PointsGraphSeries<>();
-    private PointsGraphSeries<DataPoint> thirdOrderPeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> accel_rpmPeaks = new PointsGraphSeries<>();
+    private PointsGraphSeries<DataPoint> audio_rpmPeaks = new PointsGraphSeries<>();
     private PointsGraphSeries<DataPoint> fourthOrderPeaks = new PointsGraphSeries<>();
     private GraphView graph = null; // container for graph object
     private SettingsData settingsData = null; // dummy container to initialize SettingsData for the current context
@@ -279,11 +277,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         graphPause.setChecked(SettingsData.isChecked(graphPause.getTag().toString(), true));
 
         if (vibCheck.isChecked()) {
-            graph.addSeries(xlo_peaks);
             graph.addSeries(xloSeries);
         }
         if (micCheck.isChecked()) {
-            graph.addSeries(audio_peaks);
             graph.addSeries(audioSeries);
         }
 
@@ -306,14 +302,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(xlo_peaks);
                     graph.removeSeries(xloSeries);
-                    graph.addSeries(xlo_peaks);
                     graph.addSeries(xloSeries);
                 }
                 else
                 {
-                    graph.removeSeries(xlo_peaks);
                     graph.removeSeries(xloSeries);
                 }
             }
@@ -324,14 +317,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SettingsData.setChecked(buttonView.getTag().toString(), isChecked); // store state
                 if(isChecked) {
-                    graph.removeSeries(audio_peaks);
                     graph.removeSeries(audioSeries);
-                    graph.addSeries(audio_peaks);
                     graph.addSeries(audioSeries);
                 }
                 else
                 {
-                    graph.removeSeries(audio_peaks);
                     graph.removeSeries(audioSeries);
                 }
             }
@@ -390,39 +380,36 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         // Titles
         audioSeries.setTitle("Audio");
         xloSeries.setTitle("Accel");
-        audio_peaks.setTitle("AudioPeaks");
-        xlo_peaks.setTitle("AccelPeaks");
-        secondOrderPeaks.setTitle("2ndOrder");
-        thirdOrderPeaks.setTitle("3rdOrder");
+        accel_rpmPeaks.setTitle("RPM");
+        audio_rpmPeaks.setTitle("RPM");
 
         // Colors
 
         audioSeries.setColor(Color.parseColor("#0B6138"));
         xloSeries.setColor(Color.parseColor("#610B0B"));
-        audio_peaks.setColor(Color.parseColor("yellow"));
-        xlo_peaks.setColor(Color.parseColor("yellow"));
-        secondOrderPeaks.setColor(Color.parseColor("blue"));
-        thirdOrderPeaks.setColor(Color.parseColor("blue"));
+        accel_rpmPeaks.setColor(Color.parseColor("blue"));
+        audio_rpmPeaks.setColor(Color.parseColor("blue"));
         fourthOrderPeaks.setColor(Color.parseColor("blue"));
 
         // Shapes
-        secondOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+        accel_rpmPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(15);
-                canvas.drawCircle(x,y,15,paint);
+                canvas.drawCircle(x, y, 15,paint);
                 paint.setTextSize(36);
-                canvas.drawText("2e",x+4,y-10,paint);
+                canvas.drawText(dataPoint.getTag(), x+10, y-15, paint);
+
             }
         });
 
-        thirdOrderPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
+        audio_rpmPeaks.setCustomShape(new PointsGraphSeries.CustomShape() {
             @Override
             public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
                 paint.setStrokeWidth(15);
-                canvas.drawCircle(x,y,15,paint);
+                canvas.drawCircle(x, y, 15, paint);
                 paint.setTextSize(36);
-                canvas.drawText("3e",x+4,y-10,paint);
+                canvas.drawText(dataPoint.getTag(), x+10, y-15, paint);
             }
         });
 
@@ -436,32 +423,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        audio_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(4);
-                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
-                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
-            }
-        });
-
-        xlo_peaks.setCustomShape(new PointsGraphSeries.CustomShape() {
-            @Override
-            public void draw(Canvas canvas, Paint paint, float x, float y, DataPointInterface dataPoint) {
-                paint.setStrokeWidth(4);
-                canvas.drawLine(x-5, y-5, x+5, y+5, paint);
-                canvas.drawLine(x+5, y-5, x-5, y+5, paint);
-            }
-        });
-
-        audio_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+        audio_rpmPeaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 Toast.makeText(MainActivity.this, "Audio Peak: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
-        xlo_peaks.setOnDataPointTapListener(new OnDataPointTapListener() {
+        accel_rpmPeaks.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 Toast.makeText(MainActivity.this, "Accel Peak: "+dataPoint, Toast.LENGTH_SHORT).show();
@@ -469,12 +438,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         });
 
         addDevices();
-        graph.addSeries(secondOrderPeaks);
+        graph.addSeries(accel_rpmPeaks);
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.MIDDLE);
         //graph.getLegendRenderer().setWidth(300);
-        graph.addSeries(thirdOrderPeaks);
-        graph.addSeries(fourthOrderPeaks);
+        graph.addSeries(audio_rpmPeaks);
+        //graph.addSeries(fourthOrderPeaks);
     }
 
     void addDevices(){
@@ -808,13 +777,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     }
                     if (!vibCheck.isChecked() || mic_max > xlo_max)
                         graph.getViewport().setMaxY(mic_max + 1);
-                    audioSeries.resetData(audio_dps);
                     a_peaks = correlate.findPeaks(audio_dps);
-                    audio_peaks.resetData(a_peaks);
-                    //audio_peaks.resetData(correlate.findSecOrderPeaks(a_peaks, obd_result[0]));
-
-                    a_occ = correlate.count_occurrence(a_peaks);
-
+                    try {
+                        audioSeries.resetData(audio_dps);
+                        audio_rpmPeaks.resetData(correlate.markPeaks(a_peaks, obd_result[0], "E"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
                 case 1: // Accelerometer data is ready
@@ -850,15 +819,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         if (!vibCheck.isChecked() || mic_max < xlo_max )
                             graph.getViewport().setMaxY(xlo_max + 1);
                         x_peaks = correlate.findPeaks(xlo_dps);
-                        xloSeries.resetData(xlo_dps);
-                        xlo_peaks.resetData(x_peaks);
+
                         occ_text = ((TextView) findViewById(occ_ids[0]));
                         occ_text.setText(String.format("%.5f Hz", Xlo.avg_sample_Fs));
 
                         try {
-                            secondOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks, obd_result[0],2));
-                            thirdOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks,obd_result[0],3));
-                            fourthOrderPeaks.resetData(correlate.findOrderPeaks(x_peaks,obd_result[0],4));
+                            xloSeries.resetData(xlo_dps);
+                            accel_rpmPeaks.resetData(correlate.markPeaks(x_peaks, obd_result[0], "E"));
                         } catch (Exception ex) {
                             //do nothing for now
                         }
@@ -876,7 +843,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                     rpmFreqText.setText("RPM/Freq: "+ df.format(obd_result[0]));
 
                     /*TESTING*/
-                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
+/*                    device2_dps[0] = new DataPoint(dev1val*obd_result[0]/dev2val,0);
                     device2_series.resetData(device2_dps);
 
                     device3_dps[0] = new DataPoint(dev1val*obd_result[0]/dev3val,0);
@@ -974,7 +941,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         } catch (Exception e){
             e.printStackTrace();
         }
-    };
+    }
 
     public void enableClicks() {
         try {
@@ -987,7 +954,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         } catch (Exception e){
             e.printStackTrace();
         }
-    };
+    }
 
     public void enableClick(int id) {
         try {
@@ -995,7 +962,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         } catch (Exception e) {
             e.printStackTrace();
         }
-    };
-
+    }
 
 }
