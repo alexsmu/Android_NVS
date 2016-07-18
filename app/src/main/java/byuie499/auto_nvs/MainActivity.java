@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int audio_numdps = (int)(Math.ceil(audio_samples * graph_x_axis_end / audio_Fs) ); // number of audio graph datapoints
     private static final int audio_startdps = audio_samples / 2; // starting index (corresponds to 0 hz)
     private static final int audio_enddps = audio_startdps + audio_numdps; // ending index (corresponds to x_axis_end hz)
+    private static final int audio_enddps_occ = audio_startdps + (int) Math.ceil(audio_samples * 1000 / audio_Fs) ; // in prep for better audio occurrence finding.
     private static final int acc_samples = 128; // accelerometer samples
     private static boolean normalizeDB;
     private static double audio_scaling_normalizeDB = 4.0;
