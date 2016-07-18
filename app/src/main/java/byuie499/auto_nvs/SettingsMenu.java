@@ -151,7 +151,7 @@ public class SettingsMenu extends AppCompatActivity {
 
         ratio7.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio7.getTag().toString(), "0"));
 
-        check1.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_" + check1.getTag().toString(), false));
+        check1.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_" + check1.getTag().toString(), true));
         check2.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_" + check2.getTag().toString(), false));
         check3.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_" + check3.getTag().toString(), false));
         check4.setChecked(SettingsData.isChecked(SettingsData.currentProfile + "_" + check4.getTag().toString(), false));
