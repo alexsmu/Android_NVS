@@ -13,30 +13,11 @@ import java.util.Map;
 public class Correlation {
     public static double peakThresh = -55;
     public static double peakTolerance = 2;
-    public static boolean ASC = true;
-    public static boolean DESC = false;
-
-    private static int getFreqIndexCeil (double frequency, double freq_step) {
-        return (int)( Math.ceil(freq_step * frequency) );
-    }
-
-    private static int getFreqIndexFloor (double frequency, double freq_step) {
-        return (int)( Math.floor(freq_step * frequency) );
-    }
-
-    private static double interpolateMagnitude(double frequency, double freq_step, DataPoint[] datapoints)
-    {
-        int ceil = getFreqIndexCeil(frequency, freq_step);
-        int floor = getFreqIndexFloor(frequency, freq_step);
-        double slope = (datapoints[ceil].getY() - datapoints[floor].getY()) / (datapoints[ceil].getX() - datapoints[floor].getX());
-        double mag = datapoints[floor].getY() + slope * (frequency - datapoints[floor].getX());
-        return mag;
-    }
 
     public DataPoint[] findPeaks(DataPoint[] data) {
         int max = 0;
         int numPeaks = 0 ;
-        int[] indexes = new int[(data.length + 1)];
+        int[] indexes = new int[data.length];
         DataPoint[] peaks;
         // Checking for the conditions of the peaks
         // if the change is ocurring, then graph.
@@ -61,7 +42,7 @@ public class Correlation {
         return peaks;
     }
 
-    public List<Map.Entry<String, Integer>> count_occurrence(DataPoint[] peaks) {
+    public HashMap<String, Integer> count_occurrence(DataPoint[] peaks) {
         double val;
         String sval;
         int occ;
@@ -69,57 +50,81 @@ public class Correlation {
         for (int i = 0; i < peaks.length; i++) {
             for (int j = i + 1; j < peaks.length; j++) {
                 val = peaks[j].getX() - peaks[i].getX();
-                sval = String.format("%.2fHz", val);
+                sval = String.format("%.0f", val);
                 occ = (occurrences.get(sval) == null ? 1 : occurrences.get(sval) + 1);
                 occurrences.put(sval, occ);
             }
         }
 
-        return sortByComparator(occurrences, DESC);
+        return occurrences;
     }
 
-    private static List<Map.Entry<String, Integer>> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
-    {
-        List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+    public DataPoint[] markPeaks(DataPoint[] peaks, double freq, String tag){
+        double secondOrder = freq * 2;
+        double thirdOrder = freq * 3;
+        double fourthOrder = freq * 4;
+        double x;
+        String xp;
+        DataPoint[] temp = new DataPoint[] {
+                new DataPoint(freq, -200),
+                new DataPoint(secondOrder, -200),
+                new DataPoint(thirdOrder, -200),
+                new DataPoint(fourthOrder, -200),
+        };
+        HashMap<String, Integer> occurrences = count_occurrence(peaks);
 
-        // Sorting the list based on values
-        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>()
-        {
-            public int compare(Map.Entry<String, Integer> o1,
-                               Map.Entry<String, Integer> o2)
-            {
-                if (order)
-                {
-                    return o1.getValue().compareTo(o2.getValue());
-                }
-                else
-                {
-                    return o2.getValue().compareTo(o1.getValue());
-                }
-            }
-        });
-
-        return list;
-    }
-
-    public DataPoint[] findOrderPeaks(DataPoint[] series, Double obdFreq, int order){
-
-        double secondOrder = obdFreq * order;
-        double threshold = 2;
-        DataPoint[] temp = new DataPoint[1];
-        temp[0] = new DataPoint(-1,-1);
-
-        for(int i = 0; i < series.length; i++){
-            if (series[i].getX() > (secondOrder - peakTolerance) && series[i].getX() < (secondOrder + peakTolerance)) {
-                if(temp != null){
-                    if (series[i].getY() > temp[0].getY()){
-                        temp[0] = series[i];
+        for(int i = 0; i < peaks.length; i++){
+            x = peaks[i].getX();
+            xp = String.format("%.0f", x);
+            if (x > (freq - peakTolerance) && x < (freq + peakTolerance)) {
+                if (temp[0] != null) {
+                    if (peaks[i].getY() > temp[0].getY()) {
+                        temp[0] = peaks[i];
+                        temp[0].tag = "1" + tag;
+                        temp[0].occ = occurrences.containsKey(xp);
                     }
                 } else {
-                    temp[0] = series[i];
+                    temp[0] = peaks[i];
+                    temp[0].tag = "1" + tag;
+                    temp[0].occ = occurrences.containsKey(xp);
+                }
+            } else if (x > (secondOrder - peakTolerance) && x < (secondOrder + peakTolerance)) {
+                if (temp[1] != null) {
+                    if (peaks[i].getY() > temp[1].getY()) {
+                        temp[1] = peaks[i];
+                        temp[1].tag = "2" + tag;
+                        temp[1].occ = occurrences.containsKey(xp);
+                    }
+                } else {
+                    temp[1] = peaks[i];
+                    temp[1].tag = "2" + tag;
+                    temp[1].occ = occurrences.containsKey(xp);
+                }
+            } else if (x > (thirdOrder - peakTolerance) && x < (thirdOrder + peakTolerance)) {
+                if (temp[2] != null) {
+                    if (peaks[i].getY() > temp[2].getY()) {
+                        temp[2] = peaks[i];
+                        temp[2].tag = "3" + tag;
+                        temp[2].occ = occurrences.containsKey(xp);
+                    }
+                } else {
+                    temp[2] = peaks[i];
+                    temp[2].tag = "3" + tag;
+                    temp[2].occ = occurrences.containsKey(xp);
+                }
+            } else if (x > (fourthOrder - peakTolerance) && x < (fourthOrder + peakTolerance)) {
+                if (temp[3] != null) {
+                    if (peaks[i].getY() > temp[3].getY()) {
+                        temp[3] = peaks[i];
+                        temp[3].tag = "4" + tag;
+                        temp[3].occ = occurrences.containsKey(xp);
+                    }
+                } else {
+                    temp[3] = peaks[i];
+                    temp[3].tag = "4" + tag;
+                    temp[3].occ = occurrences.containsKey(xp);
                 }
             }
-
         }
         return temp;
     }
