@@ -124,7 +124,11 @@ public class BluetoothActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.bluetooth_scan:
                 alertDialog.setTitle("Bluetooth Scan");
-                alertDialog.setMessage("Insert bluetooth scan info here.");
+                alertDialog.setMessage("In order to pair your OBDII with this phone:\n" +
+                        "1. Go to your Bluetooth Settings.\n" +
+                        "2. Pair your phone with the OBDII.\n" +
+                        "3. Come back to this list, and click\n    OBDII to connect it."
+                );
                 alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
