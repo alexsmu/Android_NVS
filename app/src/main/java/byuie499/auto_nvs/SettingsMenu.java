@@ -141,9 +141,9 @@ public class SettingsMenu extends AppCompatActivity {
 
     void loadVars(){
         ratio1.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio1.getTag().toString(), "0"));
-        ratio2.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio1.getTag().toString(), "0"));
-        ratio3.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio1.getTag().toString(), "0"));
-        ratio4.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio1.getTag().toString(), "0"));
+        ratio2.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio2.getTag().toString(), "0"));
+        ratio3.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio3.getTag().toString(), "0"));
+        ratio4.setText(SettingsData.getString(SettingsData.currentProfile + "_" + ratio4.getTag().toString(), "0"));
 
         name2.setText(SettingsData.getString(SettingsData.currentProfile + "_" + name2.getTag().toString(), ""));
         name3.setText(SettingsData.getString(SettingsData.currentProfile + "_" + name3.getTag().toString(), ""));
