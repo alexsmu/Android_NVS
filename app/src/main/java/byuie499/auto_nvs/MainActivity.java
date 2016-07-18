@@ -46,8 +46,6 @@ import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 import com.jjoe64.graphview.series.Series;
 import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
@@ -122,10 +120,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private Correlation correlate;
     private DataPoint[] a_peaks;
     private DataPoint[] x_peaks;
-    private List<Map.Entry<String, Integer>> a_occ;
-    private TextView occ_text;
-    private int[] occ_ids = { R.id.occ0a, R.id.occ0b, R.id.occ0c, R.id.occ0d, R.id.occ0e,
-            R.id.occ1a, R.id.occ1b, R.id.occ1c, R.id.occ1d, R.id.occ1e};
 
     //These Varibales are for the tutorial
     private ShowcaseView showcaseView;
@@ -289,8 +283,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 if (isChecked){
                     rec_acc.onPause();
                     rec_mic.onPause();
-                    updateXloCorrelation(a_peaks);
-                    updateMicCorrelation(a_peaks);
                 } else {
                     rec_acc.run();
                     rec_mic.run();
@@ -308,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 else
                 {
                     graph.removeSeries(xloSeries);
+                    updateXloCorrelation(x_peaks);
                 }
             }
         });
@@ -322,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 else
                 {
                     graph.removeSeries(audioSeries);
+                    updateMicCorrelation(a_peaks);
                 }
             }
         });
@@ -803,13 +797,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     public void updateXloCorrelation(DataPoint[] peaks) {
-        xlo_correlation.count_occurrence(peaks);
         accel_rpmPeaks.resetData(empty_dps);
         accel_device2_series.resetData(empty_dps);
         accel_device3_series.resetData(empty_dps);
         accel_device4_series.resetData(empty_dps);
         accel_tirePeaks.resetData(empty_dps);
-        if (OBDData.isRunning) {
+        if (OBDData.isRunning && vibCheck.isChecked()) {
+            xlo_correlation.count_occurrence(peaks);
             if (check1 && obd_result[0] > 0) {
                 accel_rpmPeaks.resetData(xlo_correlation.markPeaks(peaks, obd_result[0], "E"));
                 if (check2 && dev2val > 0) {
@@ -834,7 +828,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         audio_device3_series.resetData(empty_dps);
         audio_device4_series.resetData(empty_dps);
         audio_tirePeaks.resetData(empty_dps);
-        if (OBDData.isRunning && MicData.isRecording) {
+        if (OBDData.isRunning && micCheck.isChecked()) {
             audio_correlation.count_occurrence(peaks);
             if (check1 && obd_result[0] > 0) {
                 audio_rpmPeaks.resetData(audio_correlation.markPeaks(peaks, obd_result[0], "E"));
