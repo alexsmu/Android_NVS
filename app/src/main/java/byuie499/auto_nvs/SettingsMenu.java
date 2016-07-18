@@ -137,6 +137,9 @@ public class SettingsMenu extends AppCompatActivity {
         ratio3.addTextChangedListener(new TextListener(ratio3.getTag().toString()));
         ratio4.addTextChangedListener(new TextListener(ratio4.getTag().toString()));
         ratio7.addTextChangedListener(new TextListener(ratio7.getTag().toString()));
+        name2.addTextChangedListener(new TextListener(name2.getTag().toString()));
+        name3.addTextChangedListener(new TextListener(name3.getTag().toString()));
+        name4.addTextChangedListener(new TextListener(name4.getTag().toString()));
     }
 
     void loadVars(){
