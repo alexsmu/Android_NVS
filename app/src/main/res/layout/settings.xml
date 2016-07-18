@@ -149,7 +149,7 @@
                         android:layout_height="fill_parent"
                         android:layout_weight="10"
                         android:gravity="center_vertical"
-                        android:hint="@string/name"
+                        android:hint="@string/device1"
                         android:textSize="16sp" />
                     <EditText
                         android:id="@+id/value2"
@@ -189,7 +189,7 @@
                         android:layout_height="fill_parent"
                         android:layout_weight="10"
                         android:gravity="center_vertical"
-                        android:hint="@string/name"
+                        android:hint="@string/device2"
                         android:textSize="16sp" />
                     <EditText
                         android:id="@+id/value3"
@@ -229,7 +229,7 @@
                         android:layout_height="fill_parent"
                         android:layout_weight="10"
                         android:gravity="center_vertical"
-                        android:hint="@string/name"
+                        android:hint="@string/device3"
                         android:textSize="16sp" />
                     <EditText
                         android:id="@+id/value4"
