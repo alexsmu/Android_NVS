@@ -64,6 +64,7 @@ public class Correlation {
         double fourthOrder = freq * 4;
         double x;
         String xp;
+        String xp2;
         DataPoint[] temp = new DataPoint[] {
                 new DataPoint(freq, -200),
                 new DataPoint(secondOrder, -200),
@@ -73,54 +74,55 @@ public class Correlation {
 
         for(int i = 0; i < peaks.length; i++){
             x = peaks[i].getX();
-            xp = String.format("%.0f", x * 2);
+            xp = String.format("%.0f", x);
+            xp2 = String.format("%.0f", x * 2);
             if (x > (freq - peakTolerance) && x < (freq + peakTolerance)) {
                 if (temp[0] != null) {
                     if (peaks[i].getY() > temp[0].getY()) {
                         temp[0] = peaks[i];
                         temp[0].tag = "1" + tag;
-                        temp[0].occ = occurrences.containsKey(xp);
+                        temp[0].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                     }
                 } else {
                     temp[0] = peaks[i];
                     temp[0].tag = "1" + tag;
-                    temp[0].occ = occurrences.containsKey(xp);
+                    temp[0].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                 }
             } else if (x > (secondOrder - peakTolerance) && x < (secondOrder + peakTolerance)) {
                 if (temp[1] != null) {
                     if (peaks[i].getY() > temp[1].getY()) {
                         temp[1] = peaks[i];
                         temp[1].tag = "2" + tag;
-                        temp[1].occ = occurrences.containsKey(xp);
+                        temp[1].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                     }
                 } else {
                     temp[1] = peaks[i];
                     temp[1].tag = "2" + tag;
-                    temp[1].occ = occurrences.containsKey(xp);
+                    temp[1].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                 }
             } else if (x > (thirdOrder - peakTolerance) && x < (thirdOrder + peakTolerance)) {
                 if (temp[2] != null) {
                     if (peaks[i].getY() > temp[2].getY()) {
                         temp[2] = peaks[i];
                         temp[2].tag = "3" + tag;
-                        temp[2].occ = occurrences.containsKey(xp);
+                        temp[2].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                     }
                 } else {
                     temp[2] = peaks[i];
                     temp[2].tag = "3" + tag;
-                    temp[2].occ = occurrences.containsKey(xp);
+                    temp[2].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                 }
             } else if (x > (fourthOrder - peakTolerance) && x < (fourthOrder + peakTolerance)) {
                 if (temp[3] != null) {
                     if (peaks[i].getY() > temp[3].getY()) {
                         temp[3] = peaks[i];
                         temp[3].tag = "4" + tag;
-                        temp[3].occ = occurrences.containsKey(xp);
+                        temp[3].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                     }
                 } else {
                     temp[3] = peaks[i];
                     temp[3].tag = "4" + tag;
-                    temp[3].occ = occurrences.containsKey(xp);
+                    temp[3].occ = occurrences.containsKey(xp) && occurrences.containsKey(xp2) && occurrences.get(xp2) > 4;
                 }
             }
         }
