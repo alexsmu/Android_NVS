@@ -13,6 +13,7 @@ import java.util.Map;
 public class Correlation {
     public static double peakThresh = -55;
     public static double peakTolerance = 2;
+    public HashMap<String, Integer> occurrences;
 
     public DataPoint[] findPeaks(DataPoint[] data) {
         int max = 0;
@@ -42,11 +43,11 @@ public class Correlation {
         return peaks;
     }
 
-    public HashMap<String, Integer> count_occurrence(DataPoint[] peaks) {
+    public void count_occurrence(DataPoint[] peaks) {
         double val;
         String sval;
         int occ;
-        HashMap<String, Integer> occurrences = new HashMap<>();
+        occurrences = new HashMap<>();
         for (int i = 0; i < peaks.length; i++) {
             for (int j = i + 1; j < peaks.length; j++) {
                 val = peaks[j].getX() - peaks[i].getX();
@@ -55,8 +56,6 @@ public class Correlation {
                 occurrences.put(sval, occ);
             }
         }
-
-        return occurrences;
     }
 
     public DataPoint[] markPeaks(DataPoint[] peaks, double freq, String tag){
@@ -71,11 +70,10 @@ public class Correlation {
                 new DataPoint(thirdOrder, -200),
                 new DataPoint(fourthOrder, -200),
         };
-        HashMap<String, Integer> occurrences = count_occurrence(peaks);
 
         for(int i = 0; i < peaks.length; i++){
             x = peaks[i].getX();
-            xp = String.format("%.0f", x);
+            xp = String.format("%.0f", x * 2);
             if (x > (freq - peakTolerance) && x < (freq + peakTolerance)) {
                 if (temp[0] != null) {
                     if (peaks[i].getY() > temp[0].getY()) {
