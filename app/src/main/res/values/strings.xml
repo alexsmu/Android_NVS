@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Auto NVS</string>
+    <string name="app_name">Auto NVH</string>
     <string name="tab_1">Config</string>
     <string name="tab_2">Data</string>
     <string name="OBDIIReadings">OBDII Readings</string>
